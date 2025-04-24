@@ -6,23 +6,32 @@ const CriarPedido = () => {
     const [endereco, setEndereco] = useState("");
     const [produto, setProduto] = useState("");
     const [quantidade, setQuantidade] = useState(1);
-    const [itens, setItens] = useState<{ nome: string, quantidade: number, valor: number }[]>([]);
+    const [itens, setItens] = useState<{ nome: string, quantidade: number, valor: number, observacao: string}[]>([]);
+    const [observacao, setObservacao] = useState("");
 
     const produtosMock = [
         { nome: "Pizza Calabresa", valor: 65 },
         { nome: "Coca-Cola 2L", valor: 10 }
     ];
 
-    const [observacao, setObservacao] = useState("");
+
 
 
     const adicionarItem = () => {
         const produtoSelecionado = produtosMock.find(p => p.nome === produto);
         if (!produtoSelecionado) return;
 
-        setItens([...itens, { nome: produto, quantidade, valor: produtoSelecionado.valor }]);
+        setItens([...itens, {
+            nome: produto,
+            quantidade,
+            valor: produtoSelecionado.valor,
+            observacao // 👈 salva a observação aqui
+        }]);
+
+        // resetar campos
         setProduto("");
         setQuantidade(1);
+        setObservacao(""); // limpa textarea
     };
 
     const total = itens.reduce((acc, item) => acc + item.quantidade * item.valor, 0);
@@ -93,6 +102,7 @@ const CriarPedido = () => {
                             <td>{item.quantidade}</td>
                             <td>R$ {item.valor.toFixed(2)}</td>
                             <td>R$ {(item.quantidade * item.valor).toFixed(2)}</td>
+                            <td>{item.observacao || "—"}</td>
                         </tr>
                     ))}
                 </tbody>
