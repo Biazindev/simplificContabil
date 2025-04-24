@@ -1,32 +1,32 @@
-import React, { useState } from 'react';
-import { Container, Login, User } from "./styles";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react'
+import { Container, Login, User } from "./styles"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 const Credentials = () => {
-    const [email, setEmail] = useState("");
-    const [senha, setSenha] = useState("");
-    const [mensagem, setMensagem] = useState("");
-    const navigate = useNavigate(); // 👈 Hook de navegação
+    const [email, setEmail] = useState("")
+    const [senha, setSenha] = useState("")
+    const [mensagem, setMensagem] = useState("")
+    const navigate = useNavigate()
 
     const handleLogin = async () => {
         try {
             const response = await axios.post<string>("http://localhost:8080/auth/login", {
                 email,
                 senha
-            });
+            })
 
-            setMensagem(response.data); // ✅ agora sem erro
-            alert("Login bem-sucedido!");
-            navigate("/dashboard");
+            setMensagem(response.data)
+            alert("Login bem-sucedido!")
+            navigate("/dashboard")
         } catch (error: any) {
             if (error.response?.status === 401) {
-                setMensagem("Credenciais inválidas.");
+                setMensagem("Credenciais inválidas.")
             } else {
-                setMensagem("Erro no login. Tente novamente.");
+                setMensagem("Erro no login. Tente novamente.")
             }
         }
-    };
+    }
 
     return (
         <Container>
@@ -42,7 +42,7 @@ const Credentials = () => {
                 {mensagem && <p>{mensagem}</p>}
             </Login>
         </Container>
-    );
-};
+    )
+}
 
-export default Credentials;
+export default Credentials

@@ -1,22 +1,14 @@
-// src/App.tsx
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Credentials from './Credentials';
-import DashboardPizzaria from "./pages/dashboardpizzaria/DashboardPizzaria";
-import CriarPedido from "./pages/dashboardpizzaria/pedido/novo/CriarPedido";
+import { BrowserRouter as Router, Routes, Route, BrowserRouter } from 'react-router-dom'
+import Rotas from './routes'
 
 
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Credentials />} />
-        <Route path="/dashboard" element={<DashboardPizzaria />} />
-        <Route path="/dashboard/pizzaria/pedidos/novo" element={<CriarPedido />} />
-      </Routes>
-    </Router>
-  );
+    <BrowserRouter>
+    <Rotas />
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App
