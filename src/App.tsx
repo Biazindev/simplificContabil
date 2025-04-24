@@ -1,12 +1,19 @@
-    import Credentials from './Credentials'
-import {GlobalCss} from './styles'
-    function App() {
-      return (
-        <>
-          <GlobalCss />
-            <Credentials />
-        </>
-      )
-    }
+// src/App.tsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Credentials from './Credentials';
+import DashboardPizzaria from "./pages/dashboardpizzaria/DashboardPizzaria";
 
-    export default App
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Credentials />} />
+        <Route path="/dashboard" element={<DashboardPizzaria />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;

@@ -1,21 +1,48 @@
-import { Container, Login, User } from "./styles"
+import React, { useState } from 'react';
+import { Container, Login, User } from "./styles";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Credentials = () => {
+    const [email, setEmail] = useState("");
+    const [senha, setSenha] = useState("");
+    const [mensagem, setMensagem] = useState("");
+    const navigate = useNavigate(); // 👈 Hook de navegação
+
+    const handleLogin = async () => {
+        try {
+            const response = await axios.post<string>("http://localhost:8080/auth/login", {
+                email,
+                senha
+            });
+
+            setMensagem(response.data); // ✅ agora sem erro
+            alert("Login bem-sucedido!");
+            navigate("/dashboard");
+        } catch (error: any) {
+            if (error.response?.status === 401) {
+                setMensagem("Credenciais inválidas.");
+            } else {
+                setMensagem("Erro no login. Tente novamente.");
+            }
+        }
+    };
+
     return (
-            <Container>  
-                <Login>
-                    <h1>Simplifica Contabil</h1>
-                        <User>
-                            <input type="text" placeholder="E-mail" />
-                        </User>
-                        <User>
-                            <input type="text" placeholder="Senha" />
-                        </User>
-                        <button type="submit">Login</button>
-                </Login>
-            </Container>
-    )
-}
+        <Container>
+            <Login>
+                <h1>Simplifica Contábil</h1>
+                <User>
+                    <input type="text" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </User>
+                <User>
+                    <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} />
+                </User>
+                <button type="button" onClick={handleLogin}>Login</button>
+                {mensagem && <p>{mensagem}</p>}
+            </Login>
+        </Container>
+    );
+};
 
-
-export default Credentials
+export default Credentials;
