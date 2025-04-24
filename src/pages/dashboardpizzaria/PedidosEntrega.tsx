@@ -6,6 +6,8 @@ interface ProdutoPedido {
     nome: string;
     valor: number;
     quantidade: number;
+    observacao?: string;
+
 }
 
 interface PedidoEntrega {
@@ -51,7 +53,32 @@ const PedidosEntrega: React.FC = () => {
             produtos: [
                 { id: 1, nome: "X Tudo", valor: 45.0, quantidade: 1 }
             ]
+        },
+        {
+            id: 4,
+            cliente: "Carlos Henrique",
+            endereco: "Av. Brasil, 1500",
+            status: "Saiu para entrega",
+            pago: true,
+            motoboy: "João Motoca",
+            produtos: [
+                {
+                    id: 1,
+                    nome: "Pizza Portuguesa",
+                    valor: 70.0,
+                    quantidade: 1,
+                    observacao: "Sem pimentão, por favor"
+                },
+                {
+                    id: 2,
+                    nome: "Guaraná 2L",
+                    valor: 8.0,
+                    quantidade: 1
+                }
+            ]
         }
+
+
     ]);
 
     const [modalAberto, setModalAberto] = useState(false);
@@ -59,6 +86,7 @@ const PedidosEntrega: React.FC = () => {
     const [modalTrocoAberto, setModalTrocoAberto] = useState(false);
     const [troco, setTroco] = useState<number>(0);
     const [motoboy, setMotoboy] = useState<string>("");
+    const [valorPagoPeloCliente, setValorPagoPeloCliente] = useState<number>(0);
 
     const [nomeProduto, setNomeProduto] = useState("");
     const [valorProduto, setValorProduto] = useState<number>(0);
@@ -67,13 +95,6 @@ const PedidosEntrega: React.FC = () => {
     const abrirModal = (pedido: PedidoEntrega) => {
         setPedidoSelecionado(pedido);
         setModalAberto(true);
-    };
-
-    const abrirModalTroco = (pedido: PedidoEntrega) => {
-        setPedidoSelecionado(pedido);
-        setTroco(0);
-        setMotoboy("");
-        setModalTrocoAberto(true);
     };
 
     const confirmarSaidaParaEntrega = () => {
@@ -90,11 +111,23 @@ const PedidosEntrega: React.FC = () => {
         setPedidoSelecionado(null);
         setTroco(0);
         setMotoboy("");
+        setValorPagoPeloCliente(0);
     };
 
     const finalizarEntrega = (id: number) => {
         setPedidos(prev => prev.filter(p => p.id !== id));
         setModalAberto(false);
+    };
+
+    const [precisaDeTroco, setPrecisaDeTroco] = useState<boolean>(false);
+
+    const abrirModalTroco = (pedido: PedidoEntrega) => {
+        setPedidoSelecionado(pedido);
+        setTroco(0);
+        setMotoboy("");
+        setValorPagoPeloCliente(0);
+        setPrecisaDeTroco(false); // ← Adicionado corretamente aqui
+        setModalTrocoAberto(true);
     };
 
     const handleAdicionarProduto = () => {
@@ -143,7 +176,8 @@ const PedidosEntrega: React.FC = () => {
                                         <th>Produto</th>
                                         <th>Valor</th>
                                         <th>Quantidade</th>
-                                        <th>Total</th>
+                                        <th>Valor</th>
+                                        <th>Observação</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -154,6 +188,7 @@ const PedidosEntrega: React.FC = () => {
                                             <td>R$ {produto.valor.toFixed(2)}</td>
                                             <td>{produto.quantidade}</td>
                                             <td>R$ {(produto.valor * produto.quantidade).toFixed(2)}</td>
+                                            <td>{produto.observacao || "—"}</td> {/* novo */}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -163,9 +198,26 @@ const PedidosEntrega: React.FC = () => {
                                 <strong>Total do Pedido:</strong> R$ {total.toFixed(2)}
                             </p>
 
+                            {pedido.status === "Saiu para entrega" && pedido.motoboy && (
+                                <p style={{
+                                    color: '#dc2626',
+                                    fontWeight: 'bold',
+                                    border: '1px solid red',
+                                    padding: '0.25rem 0.5rem',
+                                    display: 'inline-block',
+                                    marginTop: '0.5rem',
+                                    borderRadius: '0.375rem'
+                                }}>
+                                    🚴‍♂️ Entregador: {pedido.motoboy}
+                                </p>
+                            )}
+
                             <div style={{ display: "flex", gap: "0.5rem" }}>
                                 <button onClick={() => abrirModal(pedido)}>Editar Pedido</button>
-                                <button onClick={() => finalizarEntrega(pedido.id)}>Finalizar Entrega</button>
+                                <button onClick={() => finalizarEntrega(pedido.id)}>Cancelar Pedido</button>
+                                {pedido.status === "Saiu para entrega" && (
+                                    <button onClick={() => finalizarEntrega(pedido.id)}>Finalizar Entrega</button>
+                                )}
                                 {pedido.status === "EM PREPARO" && (
                                     <button onClick={() => abrirModalTroco(pedido)}>Sair para Entrega</button>
                                 )}
@@ -279,35 +331,77 @@ const PedidosEntrega: React.FC = () => {
                 </S.ModalOverlay>
             )}
 
+
             {modalTrocoAberto && pedidoSelecionado && (
                 <S.ModalOverlay onClick={() => setModalTrocoAberto(false)}>
                     <S.ModalContent onClick={(e) => e.stopPropagation()}>
                         <h3>🛵 Saída para Entrega</h3>
                         <p><strong>Cliente:</strong> {pedidoSelecionado.cliente}</p>
-                        <p><strong>Valor Total:</strong> R$ {pedidoSelecionado.produtos.reduce((acc, p) => acc + p.valor * p.quantidade, 0).toFixed(2)}</p>
 
-                        <div className="input-group">
-                            <label>Nome do Motoboy</label>
-                            <input
-                                type="text"
-                                value={motoboy}
-                                onChange={(e) => setMotoboy(e.target.value)}
-                            />
-                        </div>
+                        {(() => {
+                            const total = pedidoSelecionado.produtos.reduce((acc, p) => acc + p.valor * p.quantidade, 0);
+                            const trocoCliente = valorPagoPeloCliente - total;
+                            const trocoInvalido = precisaDeTroco && trocoCliente < 0;
 
-                        <div className="input-group">
-                            <label>Troco levado pelo motoboy (R$)</label>
-                            <input
-                                type="number"
-                                value={troco}
-                                onChange={(e) => setTroco(parseFloat(e.target.value))}
-                            />
-                        </div>
+                            return (
+                                <S.AddProdutoWrapper>
+                                    <p><strong>Valor Total:</strong> R$ {total.toFixed(2)}</p>
 
-                        <div className="modal-buttons">
-                            <button className="finalizar" onClick={confirmarSaidaParaEntrega}>Confirmar Saída</button>
-                            <button className="fechar" onClick={() => setModalTrocoAberto(false)}>Cancelar</button>
-                        </div>
+                                    <div className="form-row">
+                                        <div className="input-group">
+                                            <label>Nome do Motoboy</label>
+                                            <input
+                                                type="text"
+                                                value={motoboy}
+                                                onChange={(e) => setMotoboy(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="input-group">
+                                            <label>Precisa de troco?</label>
+                                            <select
+                                                value={precisaDeTroco ? "sim" : "nao"}
+                                                onChange={(e) => setPrecisaDeTroco(e.target.value === "sim")}
+                                            >
+                                                <option value="nao">Não</option>
+                                                <option value="sim">Sim</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {precisaDeTroco && (
+                                        <>
+                                            <div className="form-row">
+                                                <div className="input-group">
+                                                    <label>Troco para (R$)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={valorPagoPeloCliente}
+                                                        onChange={(e) => setValorPagoPeloCliente(parseFloat(e.target.value))}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <p><strong>Troco para o cliente:</strong> R$ {trocoCliente.toFixed(2)}</p>
+                                            {trocoInvalido && (
+                                                <p style={{ color: 'red' }}><strong>O valor informado é menor que o total do pedido!</strong></p>
+                                            )}
+                                        </>
+                                    )}
+
+                                    <div className="modal-buttons">
+                                        <button
+                                            className="finalizar"
+                                            onClick={confirmarSaidaParaEntrega}
+                                            disabled={!motoboy || (precisaDeTroco && trocoInvalido)}
+                                        >
+                                            Confirmar Saída
+                                        </button>
+                                        <button className="fechar" onClick={() => setModalTrocoAberto(false)}>Cancelar</button>
+                                    </div>
+                                </S.AddProdutoWrapper>
+                            );
+                        })()}
                     </S.ModalContent>
                 </S.ModalOverlay>
             )}

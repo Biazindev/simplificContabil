@@ -6,12 +6,11 @@ import {
     FiShoppingCart,
     FiUsers,
     FiTruck,
-    FiX // 👈 Adiciona esse
+    FiX
 } from "react-icons/fi";
 import PedidosEntrega from "./PedidosEntrega";
-
-
-
+import CriarPedido from "./pedido/novo/CriarPedido"
+import { Link } from "react-router-dom";
 
 const DashboardPizzaria: React.FC = () => {
     const mesas = [
@@ -34,9 +33,9 @@ const DashboardPizzaria: React.FC = () => {
     ];
 
     const [modalMesa, setModalMesa] = useState<null | typeof mesas[0]>(null);
+    const [modalCriarPedidoAberto, setModalCriarPedidoAberto] = useState(false);
     const [novoItem, setNovoItem] = useState("");
     const [quantidade, setQuantidade] = useState(1);
-
 
     return (
         <>
@@ -44,9 +43,10 @@ const DashboardPizzaria: React.FC = () => {
                 <S.Sidebar>
                     <h1>🌭 Fome Zero </h1>
                     <nav>
+                        <a href="/dashboard">🏠 Dashboard</a>
                         <a href="#">🧃 Estoque</a>
                         <a href="#">📝 Nota Fiscal</a>
-                        <a href="#">🏷️ Pedidos</a>
+                        <a href="#" onClick={() => setModalCriarPedidoAberto(true)}>🏷️ Pedidos</a>
                         <a href="#">🍽️ Mesas</a>
                         <a href="#">🛵 Entregas</a>
                         <a href='#'>🧾 Recibo</a>
@@ -91,8 +91,8 @@ const DashboardPizzaria: React.FC = () => {
                             </thead>
                             <tbody>
                                 {modalMesa.pedidos.map((item, i) => {
-                                    const nome = item; // você pode adaptar isso se for um objeto mais estruturado depois
-                                    const valor = 20; // valor mock, substituir pelo real se tiver
+                                    const nome = item;
+                                    const valor = 20;
                                     const quantidade = 1;
                                     const total = valor * quantidade;
 
@@ -130,7 +130,7 @@ const DashboardPizzaria: React.FC = () => {
 
                             <button className="add" onClick={() => {
                                 if (!novoItem || quantidade < 1) return;
-                                modalMesa.pedidos.push(novoItem); // 👉 depois podemos trocar para objeto completo
+                                modalMesa.pedidos.push(novoItem);
                                 setNovoItem("");
                                 setQuantidade(1);
                             }}>
@@ -141,7 +141,15 @@ const DashboardPizzaria: React.FC = () => {
                         <S.ModalActions>
                             <button className="finalizar">Finalizar Mesa</button>
                         </S.ModalActions>
+                    </S.ModalContent>
+                </S.ModalOverlay>
+            )}
 
+{modalCriarPedidoAberto && (
+                <S.ModalOverlay onClick={() => setModalCriarPedidoAberto(false)}>
+                    <S.ModalContent onClick={(e) => e.stopPropagation()}>
+                        <S.ModalClose onClick={() => setModalCriarPedidoAberto(false)}><FiX size={20} /></S.ModalClose>
+                        <CriarPedido />
                     </S.ModalContent>
                 </S.ModalOverlay>
             )}
