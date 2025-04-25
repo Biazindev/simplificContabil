@@ -145,3 +145,29 @@ export const ModalClose = styled.button`
   font-size: 1.25rem;
   cursor: pointer;
 `;
+export const Sugestoes = styled.ul`
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 0 0 8px 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    z-index: 10;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    li {
+        padding: 10px;
+        cursor: pointer;
+        transition: background 0.2s;
+
+        &:hover {
+            background-color: #f5f5f5;
+        }
+    }
+`;

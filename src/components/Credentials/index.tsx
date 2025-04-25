@@ -11,7 +11,7 @@ const Credentials = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await axios.post<string>("http://localhost:8080/auth/login", {
+            const response = await axios.post<string>("https://simplifica-contabil.onrender.com/auth/login", {
                 email,
                 senha
             })
