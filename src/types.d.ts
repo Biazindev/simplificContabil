@@ -55,3 +55,15 @@ type ProdutoProps = {
     quantidade: number
     observacao: string | null
   }
+
+  type VendaProps = {
+    id: number
+    cliente: string
+    produtos: { id: number
+    quantidade: number }[]
+    metodoPagamento: string
+    valorPago: number
+    totalVenda: number
+    dataVenda: string
+  }
+  

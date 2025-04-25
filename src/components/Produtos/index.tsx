@@ -1,58 +1,275 @@
-import { useGetFeatureProdutoQuery } from '../../services/api'
+import { useState } from 'react'
+import {
+  useAddProdutoMutation,
+  useDeleteProdutoMutation,
+  useGetProdutosQuery
+} from '../../services/api'
+
+import * as S from './styles'
+
+interface ProdutoProps {
+  id: number
+  nome: string
+  descricao: string
+  precoUnitario: number
+  ncm: string
+  ativo: boolean
+  quantidade: number
+  observacao: string | null
+  dataCadastro: number[]
+  imagem: string | null
+}
+
+const getDataCadastro = (): number[] => {
+  const now = new Date()
+  return [
+    now.getFullYear(),
+    now.getMonth() + 1,
+    now.getDate(),
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+    now.getMilliseconds() * 1_000_000
+  ]
+}
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value)
+}
+
+const parseCurrency = (value: string): number => {
+  return Number(value.replace(/\./g, '').replace(',', '.')) || 0
+}
 
 const Produtos = () => {
-  const { data, isLoading, error } = useGetFeatureProdutoQuery()
+  const { data, isLoading, error } = useGetProdutosQuery()
+  const [postProduto] = useAddProdutoMutation()
+  const [deleteProduto] = useDeleteProdutoMutation()
 
-  if (isLoading) return <p>Carregando produtos...</p>
-  if (error) return <p>Erro ao carregar produtos.</p>
+  const [produto, setProduto] = useState<Omit<ProdutoProps, 'id' | 'dataCadastro'>>({
+    nome: '',
+    descricao: '',
+    precoUnitario: 0,
+    ncm: '',
+    ativo: true,
+    quantidade: 0,
+    observacao: '',
+    imagem: null
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target
+
+    if (type === 'checkbox') {
+      setProduto((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }))
+    } else if (name === 'precoUnitario') {
+      const parsed = parseCurrency(value)
+      setProduto((prev) => ({ ...prev, precoUnitario: parsed }))
+    } else {
+        setProduto((prev) => ({
+          ...prev,
+          [name]:
+            name === 'quantidade'
+              ? Number(value)
+              : value
+        }))
+    }
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProduto((prev) => ({
+          ...prev,
+          imagem: reader.result as string
+        }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+  
+    const novoProduto = {
+      ...produto,
+      dataCadastro: getDataCadastro(),
+      observacao: produto.observacao || null
+    }
+  
+    try {
+      const response = await postProduto(novoProduto).unwrap()
+      alert('Produto cadastrado com sucesso!')
+      setProduto({
+        nome: '',
+        descricao: '',
+        precoUnitario: 0,
+        ncm: '',
+        ativo: true,
+        quantidade: 0,
+        observacao: '',
+        imagem: null
+      })
+    } catch (error: any) {
+      if (
+        error?.status === 'PARSING_ERROR' &&
+        error?.originalStatus === 200 &&
+        typeof error?.data === 'string' &&
+        error?.data.includes('Produto cadastrado')
+      ) {
+        alert(error.data)
+        return
+      }
+  
+      console.error('Erro ao cadastrar produto:', error)
+      alert('Erro ao cadastrar produto.')
+    }
+  }
+  
+
+  const handleEditar = (id: number) => {
+    console.log('Editar produto ID:', id)
+  }
+
+  const handleDeletar = async (id: number) => {
+    const confirmar = window.confirm(`Tem certeza que deseja excluir o produto ID ${id}?`)
+    if (!confirmar) return
+  
+    try {
+      await deleteProduto(id).unwrap()
+      alert('Produto excluído com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error)
+      alert('Erro ao excluir produto.')
+    }
+  }
+  
 
   return (
-    <div>
-      {Array.isArray(data) ? (
-        data.map((produto) => {
-          const dataFormatada = new Date(
-            produto.dataCadastro[0],
-            produto.dataCadastro[1] - 1,
-            produto.dataCadastro[2],
-            produto.dataCadastro[3],
-            produto.dataCadastro[4],
-            produto.dataCadastro[5]
-          ).toLocaleString('pt-BR')
+    <S.Container>
+      <S.Title>Cadastrar Produto</S.Title>
+      <S.Form onSubmit={handleSubmit}>
+        <S.Label htmlFor="nome">Nome</S.Label>
+        <S.Input
+          type="text"
+          name="nome"
+          placeholder="Nome"
+          value={produto.nome}
+          onChange={handleChange}
+          required
+        />
+        <S.Label htmlFor="descricao">Descrição</S.Label>
+        <S.TextArea
+          name="descricao"
+          placeholder="Descrição"
+          value={produto.descricao}
+          onChange={handleChange}
+          required
+        />
+        <S.Label htmlFor="precoUnitario">Preço Unitário</S.Label>
+        <S.Input
+          type="number"
+          name="precoUnitario"
+          placeholder="Preço Unitário"
+          value={produto.precoUnitario}
+          onChange={handleChange}
+          required
+        />
+        <S.Label htmlFor="ncm">NCM (8 dígitos)</S.Label>
+        <S.Input
+          type="text"
+          name="ncm"
+          placeholder="NCM (8 dígitos)"
+          value={produto.ncm}
+          onChange={handleChange}
+          required
+        />
+        <S.Label htmlFor="quantidade">Quantidade</S.Label>
+        <S.Input
+          type="number"
+          name="quantidade"
+          placeholder="Quantidade"
+          value={produto.quantidade}
+          onChange={handleChange}
+          required
+        />
+        <S.Label htmlFor="observacao">Observação</S.Label>
+        <S.TextArea
+          name="observacao"
+          placeholder="Observação"
+          value={produto.observacao ?? ''}
+          onChange={handleChange}
+        />
+        <S.Label>
+          <div>
+          Ativo:
+          <S.Input
+            type="checkbox"
+            name="ativo"
+            checked={produto.ativo}
+            onChange={handleChange}
+          />
+          </div>
+        </S.Label>
 
-          return (
-            <div
-              key={produto.id}
-              style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem' }}
-            >
-              <h3>{produto.nome}</h3>
+        <S.Label>
+          Imagem:
+          <S.Input type="file" accept="image/*" onChange={handleImageChange} />
+        </S.Label>
+        {produto.imagem && <S.ImgPreview src={produto.imagem} alt="Preview" />}
 
-              {produto.imagem && (
-                <img
-                  src={`data:image/png;base64,${produto.imagem}`}
-                  alt={produto.nome}
-                  style={{
-                    width: 120,
-                    height: 120,
-                    objectFit: 'cover',
-                    marginBottom: '1rem'
-                  }}
-                />
-              )}
+        <S.Button type="submit">Cadastrar</S.Button>
+      </S.Form>
 
-              <p><strong>Descrição:</strong> {produto.descricao}</p>
-              <p><strong>Preço:</strong> R$ {produto.precoUnitario.toFixed(2)}</p>
-              <p><strong>NCM:</strong> {produto.ncm}</p>
-              <p><strong>Ativo:</strong> {produto.ativo ? 'Sim' : 'Não'}</p>
-              <p><strong>Quantidade:</strong> {produto.quantidade}</p>
-              <p><strong>Observação:</strong> {produto.observacao || 'Nenhuma'}</p>
-              <p><strong>Data de Cadastro:</strong> {dataFormatada}</p>
-            </div>
-          )
-        })
+      <S.Title>Lista de Produtos</S.Title>
+      {isLoading && <p>Carregando produtos...</p>}
+      {error && <p>Erro ao carregar produtos.</p>}
+
+      {Array.isArray(data) && data.length > 0 ? (
+        <S.Table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Descrição</th>
+              <th>Preço (R$)</th>
+              <th>Quantidade</th>
+              <th>Ativo</th>
+              <th>Data de Cadastro</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((produto) => {
+              const [ano, mes, dia, hora, minuto, segundo] = produto.dataCadastro
+              const dataFormatada = new Date(ano, mes - 1, dia, hora, minuto, segundo).toLocaleString('pt-BR')              
+              return (
+                <tr key={produto.id}>
+                  <td>{produto.id}</td>
+                  <td>{produto.nome}</td>
+                  <td>{produto.descricao}</td>
+                  <td>{produto.precoUnitario.toFixed(2).replace('.', ',')}</td>
+                  <td>{produto.quantidade}</td>
+                  <td>{produto.ativo ? 'Sim' : 'Não'}</td>
+                  <td>{dataFormatada}</td>
+                  <td>
+                  <button>Editar</button>
+                  <button onClick={() => handleDeletar(produto.id)}>Excluir</button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </S.Table>
       ) : (
         <p>Nenhum produto encontrado.</p>
       )}
-    </div>
+    </S.Container>
   )
 }
 
