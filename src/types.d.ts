@@ -27,3 +27,31 @@ interface CardProps {
     children: React.ReactNode
     className?: string
 }
+
+type ProdutoProps = {
+    produto: {
+      id: number
+      nome: string
+      descricao: string
+      precoUnitario: number
+      ncm: string
+      ativo: boolean
+      dataCadastro: number[]
+      imagem: string | null
+      quantidade: number
+      observacao: string | null
+    }
+  }
+
+  type ProdutoProps = {
+    id: number
+    nome: string
+    descricao: string
+    precoUnitario: number
+    ncm: string
+    ativo: boolean
+    dataCadastro: number[]
+    imagem: string | null
+    quantidade: number
+    observacao: string | null
+  }

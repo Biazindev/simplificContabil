@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { FiX } from "react-icons/fi";
 import * as S from "./style";
 
 const CadastroCliente: React.FC = () => {
