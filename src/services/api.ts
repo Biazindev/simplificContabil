@@ -1,6 +1,32 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
+export interface Endereco {
+    cep: string;
+    bairro: string;
+    municipio: string;
+    logradouro: string;
+    numero: string;
+    uf: string;
+    complemento: string;
+  }
+  
+  export interface PessoaFisica {
+    nome: string;
+    cpf: string;
+    email: string;
+    telefone: string;
+    endereco: Endereco;
+    dataNascimento: ''
+  }
+
+  export interface PessoaJuridica {
+    razaoSocial: string;
+    cnpj: string;
+  }
+  
+
 export type ProdutoProps = {
+  mensagem: string
   id: number
   nome: string
   descricao: string
@@ -28,7 +54,7 @@ const api = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: 'https://simplifica-contabil.onrender.com'
   }),
-  tagTypes: ['Produto', 'Venda'],
+  tagTypes: ['Produto', 'Venda', 'Cliente'],
   endpoints: (builder) => ({
     getProdutos: builder.query<ProdutoProps[], void>({
       query: () => '/produtos',
@@ -90,19 +116,58 @@ const api = createApi({
         method: 'DELETE'
       }),
       invalidatesTags: ['Venda']
-    })
+    }),
+    getClientes: builder.query<ClienteProps[], void>({
+        query: () => '/clientes',
+        providesTags: ['Cliente']
+      }),
+
+      getClienteByCpf: builder.query<ClienteProps, string>({
+        query: (cpf) => `/clientes/buscar-cpf?cpf=${cpf}`,
+      }),
+      
+      addCliente: builder.mutation<string, ClienteProps>({
+        query: (cliente) => ({
+          url: '/clientes',
+          method: 'POST',
+          body: cliente
+        }),
+        invalidatesTags: ['Cliente']
+      }),
+      
+      updateCliente: builder.mutation<ClienteProps, ClienteProps>({
+        query: (cliente) => ({
+          url: `/clientes/${cliente.id}`,
+          method: 'PUT',
+          body: cliente
+        }),
+        invalidatesTags: ['Cliente']
+      }),
+      
+      deleteCliente: builder.mutation<{ success: boolean; id: number }, number>({
+        query: (id) => ({
+          url: `/clientes/${id}`,
+          method: 'DELETE'
+        }),
+        invalidatesTags: ['Cliente'],
+      })
   })
 })
 
 export const {
-  useGetProdutosQuery,
-  useAddProdutoMutation,
-  useUpdateProdutoMutation,
-  useDeleteProdutoMutation,
-  useGetVendasQuery,
-  useAddVendaMutation,
-  useUpdateVendaMutation,
-  useDeleteVendaMutation
-} = api
+    useGetProdutosQuery,
+    useAddProdutoMutation,
+    useUpdateProdutoMutation,
+    useDeleteProdutoMutation,
+    useGetVendasQuery,
+    useAddVendaMutation,
+    useUpdateVendaMutation,
+    useDeleteVendaMutation,
+    useGetClientesQuery,
+    useGetClienteByCpfQuery,
+    useAddClienteMutation,
+    useUpdateClienteMutation,
+    useDeleteClienteMutation
+  } = api
 
 export default api

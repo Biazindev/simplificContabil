@@ -6,12 +6,14 @@ import CriarCliente from './pages/dashboardpizzaria/cliente/novo/CadastroCliente
 import Stock from './components/Stock'
 import Produtos from './components/Produtos'
 import Vendas from './components/Vendas/Venda'
+import Cliente from './components/Clientes/Cliente'
 
 
 const Rotas = () => (
   <Routes>
         <Route path="/" element={<Credentials />} />
         <Route path="/produtos" element={<Produtos />} />
+        <Route path="/clientes" element={<Cliente />} />
         <Route path="/pdv" element={<Vendas />} />
         <Route path="/dashboard" element={<DashboardPizzaria />} />
         <Route path="/dashboard/pizzaria/pedidos/novo" element={<CriarPedido />} />

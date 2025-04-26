@@ -104,7 +104,7 @@ export const Table = styled.table`
 
   th,
   td {
-    padding: 12px;
+    padding: 4px;
     text-align: left;
     border: 1px solid #ddd;
   }
@@ -130,7 +130,7 @@ export const Table = styled.table`
     background-color: #3c6382;
     color: white;
     padding: 6px 12px;
-    margin-right: 4px;
+    margin-left: 8px;
     border: none;
     border-radius: 4px;
     cursor: pointer;

@@ -237,10 +237,10 @@ const Produtos = () => {
               <th>ID</th>
               <th>Nome</th>
               <th>Descrição</th>
-              <th>Preço (R$)</th>
               <th>Quantidade</th>
               <th>Ativo</th>
               <th>Data de Cadastro</th>
+              <th>Preço (R$)</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -253,10 +253,10 @@ const Produtos = () => {
                   <td>{produto.id}</td>
                   <td>{produto.nome}</td>
                   <td>{produto.descricao}</td>
-                  <td>{produto.precoUnitario.toFixed(2).replace('.', ',')}</td>
                   <td>{produto.quantidade}</td>
                   <td>{produto.ativo ? 'Sim' : 'Não'}</td>
                   <td>{dataFormatada}</td>
+                  <td>{produto.precoUnitario.toFixed(2).replace('.', ',')}</td>
                   <td>
                   <button>Editar</button>
                   <button onClick={() => handleDeletar(produto.id)}>Excluir</button>
