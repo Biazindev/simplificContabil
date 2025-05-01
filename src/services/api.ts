@@ -52,7 +52,7 @@ export type VendaProps = {
 const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'https://simplifica-contabil.onrender.com'
+    baseUrl: '56.124.21.33:8080'
   }),
   tagTypes: ['Produto', 'Venda', 'Cliente'],
   endpoints: (builder) => ({

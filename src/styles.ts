@@ -8,13 +8,6 @@ export const GlobalCss = createGlobalStyle`
         font-family: Roboto, sans-serif;
         list-style: none;
     }
-
-        .container {
-        max-width: 1024px;
-            width: 100%;
-            margin: 0 auto;
-            overflow: hidden;
-        }
 `
 
 export const cores = {

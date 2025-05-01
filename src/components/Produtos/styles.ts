@@ -76,27 +76,6 @@ export const Label = styled.label`
   }
 `
 
-
-export const Button = styled.button`
-  background-color: #0066cc;
-  color: #fff;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #005bb5;
-  }
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-`;
-
 export const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -145,4 +124,26 @@ export const ImgPreview = styled.img`
   max-width: 100px;
   margin-top: 8px;
   display: block;
-`;
+`
+
+export const Button = styled.button`
+  background-color: #10b981;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 400;
+  font-size: 18px;
+  cursor: pointer;
+  margin-top: 1rem;
+  width: 100%;
+
+  &:hover {
+  background-color: #0be881;
+  }
+
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+  }
+`

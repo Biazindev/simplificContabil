@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Container, Login, User } from "./styles"
 import axios from "axios"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import ImgLogo from '../../assets/image/img.jpg'
 
 const Credentials = () => {
     const [email, setEmail] = useState("")
@@ -23,23 +24,30 @@ const Credentials = () => {
             if (error.response?.status === 401) {
                 setMensagem("Credenciais inválidas.")
             } else {
-                setMensagem("Erro no login. Tente novamente.")
+                setMensagem("Usuário ou senha inválidos.")
             }
         }
     }
 
     return (
         <Container>
+            <div>
+                <img src={ImgLogo} alt="sistem" />
+            </div>
             <Login>
-                <h1>Simplifica Contábil</h1>
-                <User>
-                    <input type="text" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
-                </User>
-                <User>
-                    <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} />
-                </User>
-                <button type="button" onClick={handleLogin}>Login</button>
-                {mensagem && <p>{mensagem}</p>}
+                <div>
+                    <h1>Simplifica Contábil</h1>
+                    <User>
+                        <input type="text" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    </User>
+                    <User>
+                        <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} />
+                    </User>
+                    <button type="button" onClick={handleLogin}>Login</button>
+                    {mensagem && <p>{mensagem}</p>}
+                    <Link to="/recuperar-senha">Esqueceu a Senha</Link>
+                </div>
+                
             </Login>
         </Container>
     )

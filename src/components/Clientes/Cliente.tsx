@@ -1,46 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
+import * as S from '../Clientes/styles'
 import {
   useGetClienteByCpfQuery,
   useAddClienteMutation,
-} from '../../services/api';
+} from '../../services/api'
 
 interface Endereco {
-  logradouro: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  municipio: string;
-  uf: string;
-  cep: string;
+  logradouro: string
+  numero: string
+  complemento: string
+  bairro: string
+  municipio: string
+  uf: string
+  cep: string
 }
 
 interface PessoaFisica {
-  nome: string;
-  cpf: string;
-  email: string;
-  telefone: string;
-  dataNascimento: string;
-  endereco: Endereco;
+  nome: string
+  cpf: string
+  email: string
+  telefone: string
+  dataNascimento: string
+  endereco: Endereco
 }
 
 interface PessoaJuridica {
-  nome: string;
-  cnpj: string;
-  email: string;
-  telefone: string;
-  endereco: Endereco;
+  nome: string
+  cnpj: string
+  email: string
+  telefone: string
+  endereco: Endereco
 }
 
 interface ClienteForm {
-  pessoaFisica: PessoaFisica | null | undefined;
-  pessoaJuridica: PessoaJuridica | null | undefined;
+  pessoaFisica: PessoaFisica | null | undefined
+  pessoaJuridica: PessoaJuridica | null | undefined
 }
 
 function parseEndereco(enderecoStr: string): Endereco {
   try {
-    const [logradouroNumero, bairro, municipioUf] = enderecoStr.split(' - ');
-    const [logradouro, numero] = logradouroNumero.split(', ');
-    const [municipio, uf] = municipioUf.split('/');
+    const [logradouroNumero, bairro, municipioUf] = enderecoStr.split(' - ')
+    const [logradouro, numero] = logradouroNumero.split(', ')
+    const [municipio, uf] = municipioUf.split('/')
 
     return {
       logradouro: logradouro?.trim() || '',
@@ -70,10 +71,10 @@ function stringifyEndereco(endereco: Endereco): string {
 }
 
 const Cliente = () => {
-  const [cpfBusca, setCpfBusca] = useState('');
-  const [form, setForm] = useState<ClienteForm | null>(null);
-  const [cpfJaCadastrado, setCpfJaCadastrado] = useState(false);
-  const [erroBusca, setErroBusca] = useState<string | null>(null);
+  const [cpfBusca, setCpfBusca] = useState('')
+  const [form, setForm] = useState<ClienteForm | null>(null)
+  const [cpfJaCadastrado, setCpfJaCadastrado] = useState(false)
+  const [erroBusca, setErroBusca] = useState<string | null>(null)
 
   const { data: cliente, error } = useGetClienteByCpfQuery(cpfBusca, {
     skip: !cpfBusca,
@@ -86,7 +87,7 @@ const Cliente = () => {
       setErroBusca('Digite um CPF');
       return;
     }
-  
+
     if (cliente) {
       if (!cliente.cpf) {
         setForm({
@@ -107,7 +108,7 @@ const Cliente = () => {
             },
           },
           pessoaJuridica: null,
-        });
+        })
         setCpfJaCadastrado(false);
         setErroBusca('Cliente não encontrado. Preencha os dados.');
       } else {
@@ -115,14 +116,14 @@ const Cliente = () => {
           typeof cliente.endereco === 'string'
             ? parseEndereco(cliente.endereco)
             : cliente.endereco ?? {
-                logradouro: '',
-                numero: '',
-                bairro: '',
-                municipio: '',
-                uf: '',
-                cep: '',
-              };
-  
+              logradouro: '',
+              numero: '',
+              bairro: '',
+              municipio: '',
+              uf: '',
+              cep: '',
+            }
+
         setForm({
           pessoaFisica: {
             nome: cliente.nome ?? '',
@@ -133,7 +134,7 @@ const Cliente = () => {
             endereco,
           },
           pessoaJuridica: null,
-        });
+        })
         setCpfJaCadastrado(true);
         setErroBusca(null);
       }
@@ -156,20 +157,19 @@ const Cliente = () => {
           },
         },
         pessoaJuridica: null,
-      });
+      })
       setCpfJaCadastrado(false);
       setErroBusca(null);
     }
-  };
-  
+  }
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     campo: string,
     tipo: 'cliente' | 'endereco'
   ) => {
-    if (!form) return;
-    const { value } = e.target;
+    if (!form) return
+    const { value } = e.target
 
     if (tipo === 'cliente' && form.pessoaFisica) {
       setForm({
@@ -178,7 +178,7 @@ const Cliente = () => {
           ...form.pessoaFisica,
           [campo]: value,
         },
-      });
+      })
     } else if (tipo === 'endereco' && form.pessoaFisica) {
       setForm({
         ...form,
@@ -189,14 +189,14 @@ const Cliente = () => {
             [campo]: value,
           },
         },
-      });
+      })
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!form || !form.pessoaFisica) return;
+    if (!form || !form.pessoaFisica) return
 
     const payload = {
       nome: form.pessoaFisica.nome,
@@ -207,130 +207,137 @@ const Cliente = () => {
       pessoaFisica: form.pessoaFisica,
       pessoaJuridica: undefined,
       dataNascimento: form.pessoaFisica.dataNascimento,
-    };
+    }
 
     try {
       await addCliente(payload).unwrap();
-      setForm(null);
-      setCpfBusca('');
-      setCpfJaCadastrado(false);
-      setErroBusca(null);
+      setForm(null)
+      setCpfBusca('')
+      setCpfJaCadastrado(false)
+      setErroBusca(null)
     } catch (error) {
-      console.error('Erro ao adicionar cliente', error);
+      console.error('Erro ao adicionar cliente', error)
     }
-  };
+  }
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Clientes</h2>
+    <S.Container>
+      <div>
+        <S.Section>
+          <div>
+            <S.Title>Digite CPF para cadastrar um novo cliente ou buscar um cliente já cadastrado</S.Title>
+          </div>
+          <div>
+            <S.Input
+              type="text"
+              placeholder="Digite o CPF"
+              value={cpfBusca}
+              onChange={(e) => setCpfBusca(e.target.value)}
+            />
+            <S.Button type="button" onClick={handleBuscaCpf}>
+              Consultar
+            </S.Button>
+            {erroBusca && <S.Error>{erroBusca}</S.Error>}
+          </div>
+        </S.Section>
+        {form && (
+          <S.Form onSubmit={handleSubmit}>
+            <h3>Cadastro Pessoa Física</h3>
 
-      <div style={{ marginBottom: 20 }}>
-        <h3>Buscar CPF</h3>
-        <input
-          type="text"
-          placeholder="Digite o CPF"
-          value={cpfBusca}
-          onChange={(e) => setCpfBusca(e.target.value)}
-        />
-        <button onClick={handleBuscaCpf}>Consultar</button>
-        {erroBusca && <p style={{ color: 'orange' }}>{erroBusca}</p>}
+            <S.Input
+              type="text"
+              name="nome"
+              placeholder="Nome"
+              value={form.pessoaFisica?.nome || ''}
+              onChange={(e) => handleChange(e, 'nome', 'cliente')}
+              disabled={cpfJaCadastrado}
+            />
+            <S.Input
+              type="text"
+              name="cpf"
+              placeholder="CPF"
+              value={form.pessoaFisica?.cpf || ''}
+              onChange={(e) => handleChange(e, 'cpf', 'cliente')}
+              disabled={cpfJaCadastrado}
+            />
+            <S.Input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={form.pessoaFisica?.email || ''}
+              onChange={(e) => handleChange(e, 'email', 'cliente')}
+              disabled={cpfJaCadastrado}
+            />
+            <S.Input
+              type="text"
+              name="telefone"
+              placeholder="Telefone"
+              value={form.pessoaFisica?.telefone || ''}
+              onChange={(e) => handleChange(e, 'telefone', 'cliente')}
+              disabled={cpfJaCadastrado}
+            />
+            <S.Input
+              type="date"
+              name="dataNascimento"
+              value={form.pessoaFisica?.dataNascimento || ''}
+              onChange={(e) => handleChange(e, 'dataNascimento', 'cliente')}
+              disabled={cpfJaCadastrado}
+            />
+
+            <S.Subtitle>Endereço</S.Subtitle>
+
+            <S.Input
+              type="text"
+              name="logradouro"
+              placeholder="Logradouro"
+              value={form.pessoaFisica?.endereco.logradouro || ''}
+              onChange={(e) => handleChange(e, 'logradouro', 'endereco')}
+              disabled={cpfJaCadastrado}
+            />
+            <S.Input
+              type="text"
+              name="numero"
+              placeholder="Número"
+              value={form.pessoaFisica?.endereco.numero || ''}
+              onChange={(e) => handleChange(e, 'numero', 'endereco')}
+              disabled={cpfJaCadastrado}
+            />
+            <S.Input
+              type="text"
+              name="bairro"
+              placeholder="Bairro"
+              value={form.pessoaFisica?.endereco.bairro || ''}
+              onChange={(e) => handleChange(e, 'bairro', 'endereco')}
+              disabled={cpfJaCadastrado}
+            />
+            <S.Input
+              type="text"
+              name="municipio"
+              placeholder="Município"
+              value={form.pessoaFisica?.endereco.municipio || ''}
+              onChange={(e) => handleChange(e, 'municipio', 'endereco')}
+              disabled={cpfJaCadastrado}
+            />
+            <S.Input
+              type="text"
+              name="uf"
+              placeholder="UF"
+              value={form.pessoaFisica?.endereco.uf || ''}
+              onChange={(e) => handleChange(e, 'uf', 'endereco')}
+              disabled={cpfJaCadastrado}
+            />
+
+            <S.ContainerButton>
+              <S.Button type="submit" disabled={cpfJaCadastrado}>
+                {cpfJaCadastrado ? 'Cliente já cadastrado' : 'Salvar'}
+              </S.Button>
+              <S.Button>Criar nova venda</S.Button>
+            </S.ContainerButton>
+          </S.Form>
+        )}
       </div>
+    </S.Container>
+  )
+}
 
-      {form && (
-        <form onSubmit={handleSubmit} style={{ marginBottom: 20 }}>
-          <h3>Cadastro Pessoa Física</h3>
-
-          <input
-            type="text"
-            name="nome"
-            placeholder="Nome"
-            value={form.pessoaFisica?.nome || ''}
-            onChange={(e) => handleChange(e, 'nome', 'cliente')}
-            disabled={cpfJaCadastrado}
-          />
-          <input
-            type="text"
-            name="cpf"
-            placeholder="CPF"
-            value={form.pessoaFisica?.cpf || ''}
-            onChange={(e) => handleChange(e, 'cpf', 'cliente')}
-            disabled={cpfJaCadastrado}
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={form.pessoaFisica?.email || ''}
-            onChange={(e) => handleChange(e, 'email', 'cliente')}
-            disabled={cpfJaCadastrado}
-          />
-          <input
-            type="text"
-            name="telefone"
-            placeholder="Telefone"
-            value={form.pessoaFisica?.telefone || ''}
-            onChange={(e) => handleChange(e, 'telefone', 'cliente')}
-            disabled={cpfJaCadastrado}
-          />
-          <input
-            type="date"
-            name="dataNascimento"
-            placeholder="Data de Nascimento"
-            value={form.pessoaFisica?.dataNascimento || ''}
-            onChange={(e) => handleChange(e, 'dataNascimento', 'cliente')}
-            disabled={cpfJaCadastrado}
-          />
-
-          <h4>Endereço</h4>
-
-          <input
-            type="text"
-            name="logradouro"
-            placeholder="Logradouro"
-            value={form.pessoaFisica?.endereco.logradouro || ''}
-            onChange={(e) => handleChange(e, 'logradouro', 'endereco')}
-            disabled={cpfJaCadastrado}
-          />
-          <input
-            type="text"
-            name="numero"
-            placeholder="Número"
-            value={form.pessoaFisica?.endereco.numero || ''}
-            onChange={(e) => handleChange(e, 'numero', 'endereco')}
-            disabled={cpfJaCadastrado}
-          />
-          <input
-            type="text"
-            name="bairro"
-            placeholder="Bairro"
-            value={form.pessoaFisica?.endereco.bairro || ''}
-            onChange={(e) => handleChange(e, 'bairro', 'endereco')}
-            disabled={cpfJaCadastrado}
-          />
-          <input
-            type="text"
-            name="municipio"
-            placeholder="Município"
-            value={form.pessoaFisica?.endereco.municipio || ''}
-            onChange={(e) => handleChange(e, 'municipio', 'endereco')}
-            disabled={cpfJaCadastrado}
-          />
-          <input
-            type="text"
-            name="uf"
-            placeholder="UF"
-            value={form.pessoaFisica?.endereco.uf || ''}
-            onChange={(e) => handleChange(e, 'uf', 'endereco')}
-            disabled={cpfJaCadastrado}
-          />
-
-          <button type="submit" disabled={cpfJaCadastrado}>
-            {cpfJaCadastrado ? 'Cliente já cadastrado' : 'Salvar'}
-          </button>
-        </form>
-      )}
-    </div>
-  );
-};
-
-export default Cliente;
+export default Cliente

@@ -3,9 +3,9 @@ import { FiX } from 'react-icons/fi'
 
 import PedidosEntrega from "./PedidosEntrega"
 import CriarPedido from "./pedido/novo/CriarPedido"
-import CadastroCliente from "./cliente/novo/CadastroCliente"
 
 import * as S from "./style"
+import Cliente from "../../components/Clientes/Cliente"
 
 const DashboardPizzaria: React.FC = () => {
     const mesas = [
@@ -25,25 +25,7 @@ const DashboardPizzaria: React.FC = () => {
     return (
         <>
             <S.Wrapper>
-                <S.Sidebar>
-                    <h1>🌭 Fome Zero </h1>
-                    <nav>
-                        <a href="/dashboard">🏠 Dashboard</a>
-                        <a href="/stock">🧃 Estoque</a>
-                        <a href="#" onClick={() => setModalCriarPedidoAberto(true)}>🏷️ Pedidos</a>
-                        <a href="#">🍽️ Mesas</a>
-                        <a href="#">🛵 Entregas</a>
-                        <a href="#" onClick={() => setModalCadastroClienteAberto(true)}>👤 Cadastro de Clientes</a>
-                        <a href='#'>🧾 Recibo</a>
-                        <a href="#">📝 Nota Fiscal</a>
-                    </nav>
-                </S.Sidebar>
-
                 <S.Main>
-                    <S.Header>
-                        <span>BIAZIN SISTEMAS — {new Date().toLocaleTimeString()}</span>
-                    </S.Header>
-
                     <S.Section>
                         <S.Titulo>Mesas Que Estão Abertas</S.Titulo>
                         <S.MesasGrid>
@@ -131,7 +113,7 @@ const DashboardPizzaria: React.FC = () => {
                         <S.ModalClose onClick={() => setModalCadastroClienteAberto(false)}>
                             {FiX({ size: 20 })}
                         </S.ModalClose>
-                        <CadastroCliente />
+                        <Cliente />
                     </S.ModalContent>
                 </S.ModalOverlay>
             )}
