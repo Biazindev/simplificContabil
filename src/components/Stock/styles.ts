@@ -15,8 +15,12 @@ export const Title = styled.h2`
 
 export const TabContainer = styled.div`
   display: flex;
+  width: 800px;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  text-decoration: none;
+  font-weight: normal;
+  border: none;
 `
 
 export const TabButton = styled.button<{ active?: boolean }>`
@@ -37,13 +41,18 @@ export const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-width: 400px;
+  text-decoration: none;
+  font-weight: normal;
+  border: none;
 `
 
 export const Input = styled.input`
   padding: 0.5rem;
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
+  text-decoration: none;
+  font-weight: normal;
+  border: none;
 `
 
 export const Button = styled.button`

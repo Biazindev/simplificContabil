@@ -11,66 +11,65 @@ import {
     SidebarItem,
     HeaderContainer,
     Main,
-    Title,
-    Avatar
-  } from "./styles";
-  
-  import { Outlet, useNavigate } from "react-router-dom";
-  import { RxAvatar, RxDashboard, RxBox, RxPerson, RxExit } from "react-icons/rx";
-  
-  const Header = () => {
+    Avatar,
+    UserProfile,
+    UserName
+} from "./styles";
+
+import { Outlet, useNavigate } from "react-router-dom";
+import { RxAvatar, RxDashboard, RxBox, RxPerson, RxExit } from "react-icons/rx";
+
+const Header = () => {
     const navigate = useNavigate();
-  
+
     return (
-      <Layout>
-        <Sidebar>
-          <h2 style={{ marginBottom: "2rem" }}>ERP</h2>
-          <SidebarItem href="/dashboard">
-            <RxDashboard /> Dashboard
-          </SidebarItem>
-          <SidebarItem href="/produtos">
-            <RxBox /> Produtos
-          </SidebarItem>
-          <SidebarItem href="/clientes">
-            <RxPerson /> Clientes
-          </SidebarItem>
-          <SidebarItem href="/stock">
-          <PiCodesandboxLogoLight /> Estoque
-          </SidebarItem>
-          <SidebarItem href="/dashboard/pizzaria">
-          <MdOutlineTableBar /> Mesas
-          </SidebarItem>
-          <SidebarItem href="/dashboard/pizzaria/pedidos/novo">
-          <TfiAgenda /> Pedidos
-          </SidebarItem>
-          <SidebarItem href="/#">
-          <FaMotorcycle /> Entregas
-          </SidebarItem>
-          <SidebarItem href="/#">
-          <IoReceiptOutline /> Recibo
-          </SidebarItem>
-          <SidebarItem href="/#">
-          <FaFileInvoiceDollar /> Nota fiscal
-          </SidebarItem>
-          <SidebarItem onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-            <RxExit /> Sair
-          </SidebarItem>
-        </Sidebar>
-  
-        <HeaderContainer>
-          <Title>Simplifica Contábil</Title>
-          <span>BIAZIN SISTEMAS — {new Date().toLocaleTimeString()}</span>
-          <Avatar>
-            <RxAvatar size={24} />
-          </Avatar>
-        </HeaderContainer>
-  
-        <Main>
-          <Outlet />
-        </Main>
-      </Layout>
+        <Layout>
+            <Sidebar>
+                <h2 style={{ marginBottom: "2rem" }}>ERP</h2>
+                <SidebarItem href="/dashboard">
+                    <RxDashboard /> Dashboard
+                </SidebarItem>
+                <SidebarItem href="/produtos">
+                    <RxBox /> Produtos
+                </SidebarItem>
+                <SidebarItem href="/clientes">
+                    <RxPerson /> Clientes
+                </SidebarItem>
+                <SidebarItem href="/stock">
+                    <PiCodesandboxLogoLight /> Estoque
+                </SidebarItem>
+                <SidebarItem href="/dashboard/pizzaria">
+                    <MdOutlineTableBar /> Mesas
+                </SidebarItem>
+                <SidebarItem href="/dashboard/pizzaria/pedidos/novo">
+                    <TfiAgenda /> Pedidos
+                </SidebarItem>
+                <SidebarItem href="/#">
+                    <FaMotorcycle /> Entregas
+                </SidebarItem>
+                <SidebarItem href="/#">
+                    <IoReceiptOutline /> Recibo
+                </SidebarItem>
+                <SidebarItem href="/#">
+                    <FaFileInvoiceDollar /> Nota fiscal
+                </SidebarItem>
+                <SidebarItem onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
+                    <RxExit /> Sair
+                </SidebarItem>
+            </Sidebar>
+            <HeaderContainer>
+                <UserProfile>
+                    <UserName>User</UserName>
+                    <Avatar>
+                        <RxAvatar size={32} />
+                    </Avatar>
+                </UserProfile>
+            </HeaderContainer>
+            <Main>
+                <Outlet />
+            </Main>
+        </Layout>
     );
-  };
-  
-  export default Header;
-  
+};
+
+export default Header;

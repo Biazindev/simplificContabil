@@ -49,8 +49,8 @@
                 <S.Form onSubmit={handleManualSubmit}>
                 <S.Input type="text" placeholder="Nome do produto" required />
                 <S.Input type="text" placeholder="Código" required />
-                <S.Input type="number" placeholder="Preço" required />
-                <S.Input type="number" placeholder="Quantidade" required />
+                <S.Input type="text" placeholder="Preço" required />
+                <S.Input type="text" placeholder="Quantidade" required />
                 <S.Img>
                 <   h4>Adicione Imagem</h4>
                     <S.Input type="file" accept=".xml" onChange={handleXmlUpload} />
