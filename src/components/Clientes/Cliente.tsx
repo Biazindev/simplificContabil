@@ -5,14 +5,14 @@ import {
   useAddClienteMutation,
 } from '../../services/api'
 
-interface Endereco {
-  logradouro: string
-  numero: string
-  complemento: string
+export interface Endereco {
+  cep: string
   bairro: string
   municipio: string
+  logradouro: string
+  numero: string
   uf: string
-  cep: string
+  complemento?: string        // agora opcional
 }
 
 interface PessoaFisica {

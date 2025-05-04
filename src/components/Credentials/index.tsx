@@ -1,30 +1,32 @@
 import { useState } from 'react'
 import { Container, Login, User } from "./styles"
-import axios from "axios"
 import { Link, useNavigate } from "react-router-dom"
 import ImgLogo from '../../assets/image/img.jpg'
+import { useLoginMutation } from '../../services/api'
 
 const Credentials = () => {
-    const [email, setEmail] = useState("")
-    const [senha, setSenha] = useState("")
-    const [mensagem, setMensagem] = useState("")
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
+    const [mensagem, setMensagem] = useState('')
     const navigate = useNavigate()
+
+    // useLoginMutation retorna { accessToken, username, roles } mas o JWT já vem via cookie HttpOnly
+    const [login, { isLoading, error }] = useLoginMutation()
 
     const handleLogin = async () => {
         try {
-            const response = await axios.post<string>("https://simplifica-contabil.onrender.com/auth/login", {
-                email,
-                senha
-            })
+            // Desestruturamos accessToken apenas para efeito de leitura,
+            // mas não precisamos salvar no localStorage pois usamos cookie HttpOnly
+            const { accessToken } = await login({ username, password }).unwrap()
 
-            setMensagem(response.data)
-            alert("Login bem-sucedido!")
-            navigate("/dashboard")
-        } catch (error: any) {
-            if (error.response?.status === 401) {
-                setMensagem("Credenciais inválidas.")
+            setMensagem('')
+            alert('Login bem-sucedido!')
+            navigate('/dashboard')
+        } catch (err: any) {
+            if (err?.status === 401) {
+                setMensagem('Credenciais inválidas.')
             } else {
-                setMensagem("Usuário ou senha inválidos.")
+                setMensagem('Erro ao tentar logar. Tente novamente.')
             }
         }
     }
@@ -32,22 +34,42 @@ const Credentials = () => {
     return (
         <Container>
             <div>
-                <img src={ImgLogo} alt="sistem" />
+                <img src={ImgLogo} alt="Simplifica Contábil" />
             </div>
+
             <Login>
                 <div>
                     <h1>Simplifica Contábil</h1>
+
                     <User>
-                        <input type="text" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <input
+                            type="text"
+                            placeholder="Usuário"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
                     </User>
+
                     <User>
-                        <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} />
+                        <input
+                            type="password"
+                            placeholder="Senha"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </User>
-                    <button type="button" onClick={handleLogin}>Login</button>
+
+                    <button onClick={handleLogin} disabled={isLoading}>
+                        {isLoading ? 'Entrando...' : 'Login'}
+                    </button>
+
                     {mensagem && <p>{mensagem}</p>}
+                    {error && !mensagem && (
+                        <p>Ocorreu um erro. Verifique sua conexão.</p>
+                    )}
+
                     <Link to="/recuperar-senha">Esqueceu a Senha</Link>
                 </div>
-                
             </Login>
         </Container>
     )
