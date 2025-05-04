@@ -1,25 +1,26 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Container, Login, User } from "./styles"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import ImgLogo from '../../assets/image/img.jpg'
-import { useLoginMutation } from '../../services/api'
+import {
+    useLoginMutation,
+    useForgotPasswordMutation
+} from '../../services/api'
 
 const Credentials = () => {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
-    const [mensagem, setMensagem] = useState('')
+    const [mensagem, setMensagem] = useState<string | null>(null)
+    const [forgotMessage, setForgotMessage] = useState<string | null>(null)
     const navigate = useNavigate()
 
-    // useLoginMutation retorna { accessToken, username, roles } mas o JWT já vem via cookie HttpOnly
-    const [login, { isLoading, error }] = useLoginMutation()
+    const [login, { isLoading: isLoggingIn, error: loginError }] = useLoginMutation()
+    const [forgotPassword, { isLoading: isSendingReset }] = useForgotPasswordMutation()
 
     const handleLogin = async () => {
+        setMensagem(null)
         try {
-            // Desestruturamos accessToken apenas para efeito de leitura,
-            // mas não precisamos salvar no localStorage pois usamos cookie HttpOnly
-            const { accessToken } = await login({ username, password }).unwrap()
-
-            setMensagem('')
+            await login({ username, password }).unwrap()
             alert('Login bem-sucedido!')
             navigate('/dashboard')
         } catch (err: any) {
@@ -28,6 +29,20 @@ const Credentials = () => {
             } else {
                 setMensagem('Erro ao tentar logar. Tente novamente.')
             }
+        }
+    }
+
+    const handleForgot = async () => {
+        if (!username) {
+            setForgotMessage('Digite seu usuário ou e-mail acima para receber o link.')
+            return
+        }
+        setForgotMessage(null)
+        try {
+            const { message } = await forgotPassword({ email: username }).unwrap()
+            setForgotMessage(message)
+        } catch {
+            setForgotMessage('Falha ao enviar e-mail de recuperação.')
         }
     }
 
@@ -44,9 +59,9 @@ const Credentials = () => {
                     <User>
                         <input
                             type="text"
-                            placeholder="Usuário"
+                            placeholder="Usuário ou e-mail"
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={e => setUsername(e.target.value)}
                         />
                     </User>
 
@@ -55,20 +70,30 @@ const Credentials = () => {
                             type="password"
                             placeholder="Senha"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={e => setPassword(e.target.value)}
                         />
                     </User>
 
-                    <button onClick={handleLogin} disabled={isLoading}>
-                        {isLoading ? 'Entrando...' : 'Login'}
+                    <button
+                        type="button"
+                        onClick={handleLogin}
+                        disabled={isLoggingIn}
+                    >
+                        {isLoggingIn ? 'Entrando…' : 'Login'}
                     </button>
 
                     {mensagem && <p>{mensagem}</p>}
-                    {error && !mensagem && (
-                        <p>Ocorreu um erro. Verifique sua conexão.</p>
-                    )}
 
-                    <Link to="/recuperar-senha">Esqueceu a Senha</Link>
+                    <button
+                        type="button"
+                        onClick={handleForgot}
+                        disabled={isSendingReset}
+                        style={{ marginTop: '0.5rem', background: 'none', border: 'none', color: '#06c', cursor: 'pointer' }}
+                    >
+                        {isSendingReset ? 'Enviando link…' : 'Esqueci a Senha'}
+                    </button>
+                    {forgotMessage && <p>{forgotMessage}</p>}
+
                 </div>
             </Login>
         </Container>

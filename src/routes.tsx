@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom"
 import Credentials from "./components/Credentials"
+import Login from "./components/Credentials"
 import Header from "./components/Header"
 import CriarPedido from "./pages/dashboardpizzaria/pedido/novo/CriarPedido"
 import Stock from "./components/Stock"
@@ -8,6 +9,10 @@ import Vendas from "./components/Vendas/Venda"
 import Cliente from "./components/Clientes/Cliente"
 import Dashboard from "./components/Dashboard"
 import DashboardPizzaria from "./pages/dashboardpizzaria/DashboardPizzaria"
+import { ForgotPassword } from './components/Credentials/ForgotPassword'
+import { ResetPassword } from './components/Credentials/ResetPassword'
+
+
 
 const Rotas = () => (
   <Routes>
@@ -21,6 +26,9 @@ const Rotas = () => (
       <Route path="/pdv" element={<Vendas />} />
       <Route path="/stock" element={<Stock />} />
       <Route path="/dashboard/pizzaria" element={<DashboardPizzaria/>} />
+      <Route path="/recuperar-senha" element={<ForgotPassword />} />
+      <Route path="/resetar-senha" element={<ResetPassword />} />
+      <Route path="/login" element={<ResetPassword />} />
     </Route>
   </Routes>
 )

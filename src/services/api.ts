@@ -6,6 +6,12 @@ const API_BASE =
 
 // ——— Tipos de domínio —————————————————————————————————————————
 
+export interface ForgotPasswordRequest { email: string }
+export interface ResetPasswordRequest {
+  token: string
+  newPassword: string
+}
+
 export interface Endereco {
   cep: string
   bairro: string
@@ -116,6 +122,22 @@ export const api = createApi({
       })
     }),
 
+    forgotPassword: builder.mutation<{ message: string }, ForgotPasswordRequest>({
+      query: (body) => ({
+        url: '/help/forgot-password',
+        method: 'POST',
+        body
+      })
+    }),
+
+    resetPassword: builder.mutation<{ message: string }, ResetPasswordRequest>({
+      query: (body) => ({
+        url: '/help/reset-password',
+        method: 'POST',
+        body
+      })
+    }),
+
     // Produtos
     addProduto: builder.mutation<ProdutoProps, Partial<ProdutoProps>>({
       query: (novoProduto) => ({
@@ -222,7 +244,9 @@ export const {
   useGetClienteByCpfQuery,
   useAddClienteMutation,
   useUpdateClienteMutation,
-  useDeleteClienteMutation
+  useDeleteClienteMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation
 } = api
 
 export default api
