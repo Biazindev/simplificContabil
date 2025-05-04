@@ -20,7 +20,9 @@ const Credentials = () => {
     const handleLogin = async () => {
         setMensagem(null)
         try {
-            await login({ username, password }).unwrap()
+            const response = await login({ username, password }).unwrap()
+            console.log('Resposta da API de login:', response)
+            localStorage.setItem('token', response.accessToken)
             alert('Login bem-sucedido!')
             navigate('/dashboard')
         } catch (err: any) {
@@ -31,6 +33,8 @@ const Credentials = () => {
             }
         }
     }
+    
+    
 
     const handleForgot = async () => {
         if (!username) {

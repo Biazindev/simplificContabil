@@ -29,6 +29,7 @@ interface CardProps {
 }
 
 type ProdutoProps = {
+    id: any
     produto: {
       id: number
       nome: string
@@ -118,3 +119,58 @@ interface ClienteProps {
     pessoaJuridica?: PessoaJuridica;
   }
   
+  interface Endereco {
+    cep: string;
+    bairro: string;
+    municipio: string;
+    logradouro: string;
+    numero: string;
+    uf: string;
+    complemento: string;
+  }
+  
+  interface PessoaFisica {
+    id?: number;
+    nome: string;
+    cpf: string;
+    email: string;
+    telefone: string;
+    endereco: Endereco;
+    dataNascimento: string;
+  }
+  
+  interface PessoaJuridica {
+    razaoSocial: string;
+    cnpj: string;
+  }
+  
+  interface ClienteProps {
+    id: number;
+    pessoaFisica: PessoaFisica;
+    pessoaJuridica?: PessoaJuridica;
+    tipoPessoa: 'FISICA' | 'JURIDICA';
+  }
+  
+  type ProdutoProps = {
+    mensagem: string;
+    id: number;
+    nome: string;
+    descricao: string;
+    precoUnitario: number;
+    ncm: string;
+    ativo: boolean;
+    dataCadastro: number[];
+    imagem: string | null;
+    quantidade: number;
+    observacao: string | null;
+  }
+  
+  type VendaProps = {
+    id: number;
+    cliente: string;
+    produtos: { id: number; quantidade: number }[];
+    metodoPagamento: string;
+    valorPago: number;
+    totalVenda: number;
+    dataVenda: string;
+  }

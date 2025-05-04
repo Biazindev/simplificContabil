@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as S from '../Clientes/styles'
 import {
   useGetClienteByCpfQuery,
+  useGetClienteByIdQuery,
   useAddClienteMutation,
 } from '../../services/api'
+
 
 export interface Endereco {
   cep: string
@@ -12,12 +14,14 @@ export interface Endereco {
   logradouro: string
   numero: string
   uf: string
-  complemento?: string        // agora opcional
+  complemento?: string
 }
 
 interface PessoaFisica {
+  id?: number
   nome: string
   cpf: string
+  tipoPessoa: string
   email: string
   telefone: string
   dataNascimento: string
@@ -33,8 +37,8 @@ interface PessoaJuridica {
 }
 
 interface ClienteForm {
-  pessoaFisica: PessoaFisica | null | undefined
-  pessoaJuridica: PessoaJuridica | null | undefined
+  pessoaFisica: PessoaFisica | null
+  pessoaJuridica: PessoaJuridica | null
 }
 
 function parseEndereco(enderecoStr: string): Endereco {
@@ -51,9 +55,9 @@ function parseEndereco(enderecoStr: string): Endereco {
       municipio: municipio?.trim() || '',
       uf: uf?.trim() || '',
       cep: '',
-    };
+    }
   } catch (e) {
-    console.error('Erro ao fazer parse do endereço:', e);
+    console.error('Erro ao fazer parse do endereço:', e)
     return {
       logradouro: '',
       numero: '',
@@ -62,12 +66,8 @@ function parseEndereco(enderecoStr: string): Endereco {
       complemento: '',
       uf: '',
       cep: '',
-    };
+    }
   }
-}
-
-function stringifyEndereco(endereco: Endereco): string {
-  return `${endereco.logradouro}, ${endereco.numero} - ${endereco.bairro} - ${endereco.municipio}/${endereco.uf}`;
 }
 
 const Cliente = () => {
@@ -75,12 +75,53 @@ const Cliente = () => {
   const [form, setForm] = useState<ClienteForm | null>(null)
   const [cpfJaCadastrado, setCpfJaCadastrado] = useState(false)
   const [erroBusca, setErroBusca] = useState<string | null>(null)
+  const [clienteId, setClienteId] = useState<string | null>(null)
+  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
+  const [buscaPorId, setBuscaPorId] = useState(false)
 
-  const { data: cliente, error } = useGetClienteByCpfQuery(cpfBusca, {
-    skip: !cpfBusca,
-  });
+  const { data: cliente, error, isLoading } = useGetClienteByCpfQuery(cpfBusca, {
+    skip: !cpfBusca || buscaPorId,
+  })
 
-  const [addCliente] = useAddClienteMutation();
+  const { data: clientePorId } = useGetClienteByIdQuery(clienteId!, {
+    skip: !buscaPorId || !clienteId,
+  })
+
+  const [addCliente] = useAddClienteMutation()
+
+  useEffect(() => {
+    if (cliente) {
+      const endereco =
+        typeof cliente.endereco === 'string'
+          ? parseEndereco(cliente.endereco)
+          : cliente.endereco ?? {
+            logradouro: '',
+            numero: '',
+            bairro: '',
+            municipio: '',
+            uf: '',
+            cep: '',
+          };
+
+      setForm({
+        pessoaFisica: {
+          nome: cliente.nome ?? '',
+          cpf: cliente.cpf ?? '',
+          tipoPessoa: cliente.tipoPessoa ?? '',
+          email: cliente.email ?? '',
+          telefone: cliente.telefone ?? '',
+          dataNascimento: cliente.dataNascimento ?? '',
+          endereco,
+          id: cliente.id ?? '',
+        },
+        pessoaJuridica: null,
+      });
+
+      setCpfJaCadastrado(true);
+      setErroBusca(null);
+      setBuscaPorId(false);
+    }
+  }, [cliente]);
 
   const handleBuscaCpf = async () => {
     if (!cpfBusca.trim()) {
@@ -88,61 +129,27 @@ const Cliente = () => {
       return;
     }
 
-    if (cliente) {
-      if (!cliente.cpf) {
-        setForm({
-          pessoaFisica: {
-            nome: '',
-            cpf: cpfBusca,
-            email: '',
-            telefone: '',
-            dataNascimento: '',
-            endereco: {
-              logradouro: '',
-              numero: '',
-              bairro: '',
-              municipio: '',
-              uf: '',
-              cep: '',
-              complemento: '',
-            },
-          },
-          pessoaJuridica: null,
-        })
-        setCpfJaCadastrado(false);
-        setErroBusca('Cliente não encontrado. Preencha os dados.');
-      } else {
-        const endereco =
-          typeof cliente.endereco === 'string'
-            ? parseEndereco(cliente.endereco)
-            : cliente.endereco ?? {
-              logradouro: '',
-              numero: '',
-              bairro: '',
-              municipio: '',
-              uf: '',
-              cep: '',
-            }
-
-        setForm({
-          pessoaFisica: {
-            nome: cliente.nome ?? '',
-            cpf: cliente.cpf ?? '',
-            email: cliente.email ?? '',
-            telefone: cliente.telefone ?? '',
-            dataNascimento: cliente.dataNascimento ?? '',
-            endereco,
-          },
-          pessoaJuridica: null,
-        })
-        setCpfJaCadastrado(true);
-        setErroBusca(null);
+    try {
+      clientePorId()
+      if (cliente) {
+        if (cliente.id) {
+          setClienteId(String(cliente.id));
+          setMostrarConfirmacao(true);
+        } else {
+          throw new Error('Cliente não encontrado');
+        }
       }
-    } else {
+    } catch (error: any) {
+      const mensagemBackend =
+        (error?.data && error.data.message) || 'Cliente não encontrado. Preencha os dados.';
+
+      setErroBusca(mensagemBackend);
       setForm({
         pessoaFisica: {
+          id: 0,
           nome: '',
           cpf: cpfBusca,
+          tipoPessoa: '',
           email: '',
           telefone: '',
           dataNascimento: '',
@@ -157,11 +164,11 @@ const Cliente = () => {
           },
         },
         pessoaJuridica: null,
-      })
+      });
       setCpfJaCadastrado(false);
-      setErroBusca(null);
     }
   }
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -194,31 +201,33 @@ const Cliente = () => {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!form || !form.pessoaFisica) return
-
+    e.preventDefault();
+  
+    if (!form || !form.pessoaFisica) return;
+  
+    const { tipoPessoa, id, ...pessoaFisicaSemCampos } = form.pessoaFisica;
+  
     const payload = {
-      nome: form.pessoaFisica.nome,
-      cpf: form.pessoaFisica.cpf,
-      telefone: form.pessoaFisica.telefone,
-      endereco: stringifyEndereco(form.pessoaFisica.endereco),
-      email: form.pessoaFisica.email,
-      pessoaFisica: form.pessoaFisica,
-      pessoaJuridica: undefined,
-      dataNascimento: form.pessoaFisica.dataNascimento,
-    }
-
+      pessoaFisica: {
+        ...pessoaFisicaSemCampos,
+        endereco: {
+          ...form.pessoaFisica.endereco,
+        },
+      },
+      pessoaJuridica: null,
+    };
+  
     try {
       await addCliente(payload).unwrap();
-      setForm(null)
-      setCpfBusca('')
-      setCpfJaCadastrado(false)
-      setErroBusca(null)
+      setForm(null);
+      setCpfBusca('');
+      setCpfJaCadastrado(false);
+      setErroBusca(null);
     } catch (error) {
-      console.error('Erro ao adicionar cliente', error)
+      console.error('Erro ao adicionar cliente', error);
     }
-  }
+  };
+  
 
   return (
     <S.Container>
@@ -240,6 +249,30 @@ const Cliente = () => {
             {erroBusca && <S.Error>{erroBusca}</S.Error>}
           </div>
         </S.Section>
+
+        {mostrarConfirmacao && (
+          <div>
+            <p>Cliente já cadastrado, deseja prosseguir com os dados já cadastrados?</p>
+            <S.Button
+              type="button"
+              onClick={() => {
+                setBuscaPorId(true)
+                setMostrarConfirmacao(false)
+              }}
+            >
+              Sim
+            </S.Button>
+            <S.Button
+              type="button"
+              onClick={() => {
+                setMostrarConfirmacao(false)
+              }}
+            >
+              Cancelar
+            </S.Button>
+          </div>
+        )}
+
         {form && (
           <S.Form onSubmit={handleSubmit}>
             <h3>Cadastro Pessoa Física</h3>
@@ -257,6 +290,14 @@ const Cliente = () => {
               name="cpf"
               placeholder="CPF"
               value={form.pessoaFisica?.cpf || ''}
+              onChange={(e) => handleChange(e, 'cpf', 'cliente')}
+              disabled={cpfJaCadastrado}
+            />
+            <S.Input
+              type="text"
+              name="tipo"
+              placeholder="Tipo"
+              value={form.pessoaFisica?.tipoPessoa || ''}
               onChange={(e) => handleChange(e, 'cpf', 'cliente')}
               disabled={cpfJaCadastrado}
             />
@@ -326,13 +367,9 @@ const Cliente = () => {
               onChange={(e) => handleChange(e, 'uf', 'endereco')}
               disabled={cpfJaCadastrado}
             />
-
-            <S.ContainerButton>
-              <S.Button type="submit" disabled={cpfJaCadastrado}>
-                {cpfJaCadastrado ? 'Cliente já cadastrado' : 'Salvar'}
-              </S.Button>
-              <S.Button>Criar nova venda</S.Button>
-            </S.ContainerButton>
+            <S.Button type="submit" disabled={cpfJaCadastrado}>
+              {cpfJaCadastrado ? 'Atualizar' : 'Cadastrar'}
+            </S.Button>
           </S.Form>
         )}
       </div>

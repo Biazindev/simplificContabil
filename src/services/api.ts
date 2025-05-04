@@ -1,119 +1,118 @@
-// services/api.ts
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-
-const API_BASE =
-  process.env.REACT_APP_API_BASE_URL ?? 'https://api.biazinsistemas.com'
-
-// ——— Tipos de domínio —————————————————————————————————————————
+import {
+  createApi,
+  fetchBaseQuery,
+  BaseQueryFn,
+  FetchArgs,
+  FetchBaseQueryError
+} from '@reduxjs/toolkit/query/react'
+import { Mutex } from 'async-mutex'
 
 export interface ForgotPasswordRequest { email: string }
-export interface ResetPasswordRequest {
-  token: string
-  newPassword: string
+export interface ResetPasswordRequest { token: string; newPassword: string }
+export interface Endereco {
+  cep: string; bairro: string; municipio: string; logradouro: string; numero: string; uf: string; complemento?: string
+}
+export interface PessoaFisica {
+  id?: number;
+  nome: string;
+  cpf: string;
+  telefone: string;
+  email: string;
+  dataNascimento: string;
+  endereco: Endereco;
 }
 
 export interface Endereco {
-  cep: string
-  bairro: string
-  municipio: string
-  logradouro: string
-  numero: string
-  uf: string
-  complemento?: string
+  cep: string;
+  bairro: string;
+  municipio: string;
+  logradouro: string;
+  numero: string;
+  uf: string;
+  complemento?: string;
 }
-
-export interface PessoaFisica {
-  nome: string
-  cpf: string
-  email: string
-  telefone: string
-  endereco: Endereco
-  dataNascimento: string
-}
-
 export interface PessoaJuridica {
-  razaoSocial: string
-  cnpj: string
+  razaoSocial: string; cnpj: string
 }
-
 export interface ClienteProps {
-  id: number
-  nome: string
-  cpf?: string
-  cnpj?: string
-  email?: string
-  telefone?: string
-  endereco?: Endereco
-  dataNascimento?: string
-  razaoSocial?: string
-  pessoaFisica?: PessoaFisica
-  pessoaJuridica?: PessoaJuridica
+  id: number; nome: string; cpf?: string; cnpj?: string; email?: string; telefone?: string;
+  endereco?: Endereco; dataNascimento?: string; razaoSocial?: string;
+  pessoaFisica?: PessoaFisica; pessoaJuridica?: PessoaJuridica
+}
+export interface CreateClienteRequest {
+  pessoaFisica?: PessoaFisica;
+  pessoaJuridica?: PessoaJuridica | null;
 }
 
-export interface CreateClienteRequest {
-  nome: string
-  cpf?: string
-  telefone?: string
-  email?: string
-  endereco: string
-  dataNascimento?: string
-  pessoaFisica?: PessoaFisica
-  pessoaJuridica?: PessoaJuridica
-}
 
 export type ProdutoProps = {
-  mensagem: string
-  id: number
-  nome: string
-  descricao: string
-  precoUnitario: number
-  ncm: string
-  ativo: boolean
-  dataCadastro: number[]
-  imagem: string | null
-  quantidade: number
-  observacao: string | null
+  mensagem: string; id: number; nome: string; descricao: string;
+  precoUnitario: number; ncm: string; ativo: boolean; dataCadastro: number[];
+  imagem: string | null; quantidade: number; observacao: string | null
 }
-
 export type VendaProps = {
-  id: number
-  cliente: string
-  produtos: { id: number; quantidade: number }[]
-  metodoPagamento: string
-  valorPago: number
-  totalVenda: number
-  dataVenda: string
+  id: number; cliente: string;
+  produtos: { id: number; quantidade: number }[]; metodoPagamento: string;
+  valorPago: number; totalVenda: number; dataVenda: string
 }
+export interface LoginRequest { username: string; password: string }
+export interface LoginResponse { accessToken: string; username: string; roles: string[] }
 
-export interface LoginRequest {
-  username: string
-  password: string
+const mutex = new Mutex()
+
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl: 'https://api.biazinsistemas.com',
+  credentials: 'include',
+  prepareHeaders: (headers) => {
+    const token = localStorage.getItem('token')
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+    headers.set('Content-Type', 'application/json')
+    return headers
+  }
+})
+
+const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  await mutex.waitForUnlock()
+  let result = await rawBaseQuery(args, api, extraOptions)
+
+  if (result.error && result.error.status === 401) {
+    if (!mutex.isLocked()) {
+      const release = await mutex.acquire()
+      try {
+        const refreshResult = await rawBaseQuery('/auth/refresh-token', api, extraOptions)
+        if (
+          refreshResult.data &&
+          typeof refreshResult.data === 'object' &&
+          'accessToken' in refreshResult.data
+        ) {
+          const { accessToken } = refreshResult.data as { accessToken: string }
+          localStorage.setItem('token', accessToken)
+
+          result = await rawBaseQuery(args, api, extraOptions)
+        } else {
+          // Handle error or failed refresh token request
+        }
+      } finally {
+        release()
+      }
+    } else {
+      await mutex.waitForUnlock()
+      result = await rawBaseQuery(args, api, extraOptions)
+    }
+  }
+
+  return result
 }
-
-// A resposta JSON ainda devolve esses campos,
-// mas o JWT real fica no cookie HttpOnly.
-export interface LoginResponse {
-  accessToken: string
-  username: string
-  roles: string[]
-}
-
-// ——— RTK Query setup ——————————————————————————————————————————————————
 
 export const api = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE,
-    // 📨 manda sempre os cookies de autenticação
-    credentials: 'include',
-    prepareHeaders: (headers) => {
-      headers.set('Content-Type', 'application/json')
-      return headers
-    }
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['Auth', 'Produto', 'Venda', 'Cliente'],
   endpoints: (builder) => ({
-    // Autenticação — cookie é setado pelo backend
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (creds) => ({
         url: '/auth/login',
@@ -138,7 +137,6 @@ export const api = createApi({
       })
     }),
 
-    // Produtos
     addProduto: builder.mutation<ProdutoProps, Partial<ProdutoProps>>({
       query: (novoProduto) => ({
         url: '/produtos',
@@ -167,7 +165,6 @@ export const api = createApi({
       invalidatesTags: ['Produto']
     }),
 
-    // Vendas
     getVendas: builder.query<VendaProps[], void>({
       query: () => '/pdv',
       providesTags: ['Venda']
@@ -196,14 +193,21 @@ export const api = createApi({
       invalidatesTags: ['Venda']
     }),
 
-    // Clientes
     getClientes: builder.query<ClienteProps[], void>({
       query: () => '/clientes',
       providesTags: ['Cliente']
     }),
-    getClienteByCpf: builder.query<ClienteProps, string>({
+    getClienteByCpf: builder.query<{
+      endereco: any;
+      dataNascimento: string;
+      telefone: string;
+      email: string;
+      cpf: string;
+      nome: string;
+      tipoPessoa: string; id: number 
+}, string>({
       query: (cpf) => `/clientes/buscar-cpf?cpf=${cpf}`
-    }),
+    }),    
     addCliente: builder.mutation<ClienteProps, CreateClienteRequest>({
       query: (cliente) => ({
         url: '/clientes',
@@ -226,9 +230,77 @@ export const api = createApi({
         method: 'DELETE'
       }),
       invalidatesTags: ['Cliente']
+    }),
+
+    getClienteIdByCpf: builder.query<{ id: string }, string>({
+      query: (cpf) => `/clientes/cpf/${cpf}`,
+    }),
+    
+    getClienteById: builder.query<any, string>({
+      query: (id) => `/clientes/${id}`,
+    }),
+    getClientesPf: builder.query<ClienteProps[], string>({
+      query: () => '/pessoas-fisicas',
+      providesTags: ['Cliente']
+    }),
+    getClienteByCpfPf: builder.query<ClienteProps, string>({
+      query: (cpf) => `/pessoas-fisicas/buscar-cpf?cpf=${cpf}`
+    }),
+    addClientePf: builder.mutation<ClienteProps, CreateClienteRequest>({
+      query: (cliente) => ({
+        url: '/pessoas-fisicas',
+        method: 'POST',
+        body: cliente
+      }),
+      invalidatesTags: ['Cliente']
+    }),
+    updateClientePf: builder.mutation<ClienteProps, ClienteProps>({
+      query: (cliente) => ({
+        url: `/pessoas-fisicas/${cliente.id}`,
+        method: 'PUT',
+        body: cliente
+      }),
+      invalidatesTags: ['Cliente']
+    }),
+    deleteClientePf: builder.mutation<{ success: boolean; id: number }, number>({
+      query: (id) => ({
+        url: `/pessoas-fisicas/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['Cliente']
+    }),
+    getClientesPj: builder.query<ClienteProps[], void>({
+      query: () => '/pessoas-juridicas',
+      providesTags: ['Cliente']
+    }),
+    getClienteByCpfPj: builder.query<ClienteProps, string>({
+      query: (cpf) => `/pessoas-juridicas/buscar-cpf?cpf=${cpf}`
+    }),
+    addClientePj: builder.mutation<ClienteProps, CreateClienteRequest>({
+      query: (cliente) => ({
+        url: '/pessoas-juridicas',
+        method: 'POST',
+        body: cliente
+      }),
+      invalidatesTags: ['Cliente']
+    }),
+    updateClientePj: builder.mutation<ClienteProps, ClienteProps>({
+      query: (cliente) => ({
+        url: `/pessoas-juridicas/${cliente.id}`,
+        method: 'PUT',
+        body: cliente
+      }),
+      invalidatesTags: ['Cliente']
+    }),
+    deleteClientePj: builder.mutation<{ success: boolean; id: number }, number>({
+      query: (id) => ({
+        url: `/pessoas-juridicas/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['Cliente']
     })
   })
-})
+});
 
 export const {
   useLoginMutation,
@@ -246,7 +318,20 @@ export const {
   useUpdateClienteMutation,
   useDeleteClienteMutation,
   useForgotPasswordMutation,
-  useResetPasswordMutation
+  useResetPasswordMutation,
+  useGetClientesPfQuery,
+  useGetClienteByCpfPfQuery,
+  useAddClientePfMutation,
+  useUpdateClientePfMutation,
+  useDeleteClientePfMutation,
+  useGetClientesPjQuery,
+  useGetClienteByCpfPjQuery,
+  useAddClientePjMutation,
+  useUpdateClientePjMutation,
+  useDeleteClientePjMutation,
+  useLazyGetClienteIdByCpfQuery,
+  useLazyGetClienteByIdQuery,
+  useGetClienteByIdQuery
 } = api
 
 export default api
