@@ -9,6 +9,8 @@ import {
   useGetClienteByIdQuery,
   useAddClienteMutation,
   useUpdateClienteMutation,
+  ClienteProps,
+  PessoaJuridica,
 } from '../../services/api'
 
 
@@ -40,14 +42,6 @@ interface PessoaFisica {
   email: string
   telefone: string
   dataNascimento: string
-  endereco: Endereco
-}
-
-interface PessoaJuridica {
-  nome: string
-  cnpj: string
-  email: string
-  telefone: string
   endereco: Endereco
 }
 
@@ -298,26 +292,33 @@ const Cliente = () => {
         return;
       }
   
-      if (result && typeof result === "object" && "cliente" in result && result.cliente) {
-        const cliente = result.cliente;
-  
+      if (result && typeof result === "object" && "data" in result && result.data && typeof result.data === "object") {
+        const cliente = result.data as ClienteProps;
+      
         setForm({
           pessoaFisica: cliente.pessoaFisica
             ? { ...cliente.pessoaFisica, tipoPessoa: "FISICA" }
             : null,
-          pessoaJuridica: cliente.pessoaJuridica ?? null,
-        })
-  
+            pessoaJuridica: cliente.pessoaJuridica
+            ? {
+                nome: cliente.pessoaJuridica.nome ?? "",
+                email: cliente.pessoaJuridica.email ?? "",
+                cnpj: cliente.pessoaJuridica.cnpj ?? "",
+                telefone: cliente.pessoaJuridica.telefone ?? "",
+                endereco: cliente.pessoaJuridica.endereco ?? "",
+              }
+            : null,
+        });
+      
         setCpfBusca("");
         setCpfJaCadastrado(false);
         setErroBusca(null);
-  
+      
         dispatch(setClienteSelecionado(cliente));
         localStorage.setItem("clienteSelecionado", JSON.stringify(cliente));
-  
+      
         console.log("Navegando para produtos...");
         navigate("/produtos");
-        return;
       }
   
       console.error("Erro: Cliente não foi salvo corretamente ou resposta inválida");

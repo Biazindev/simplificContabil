@@ -138,11 +138,7 @@ interface ClienteProps {
     endereco: Endereco;
     dataNascimento: string;
   }
-  
-  interface PessoaJuridica {
-    razaoSocial: string;
-    cnpj: string;
-  }
+
   
   interface ClienteProps {
     id: number;
@@ -213,14 +209,6 @@ interface PessoaFisica {
   email: string
   telefone: string
   dataNascimento: string
-  endereco: Endereco
-}
-
-interface PessoaJuridica {
-  nome: string
-  cnpj: string
-  email: string
-  telefone: string
   endereco: Endereco
 }
 

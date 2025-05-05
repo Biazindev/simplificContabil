@@ -32,9 +32,15 @@ export interface Endereco {
   complemento?: string;
 }
 export interface PessoaJuridica {
-  razaoSocial: string; cnpj: string
+  nome?: string;
+  email?: string;
+  telefone?: string;
+  endereco?: string;
+  cnpj: string
 }
+
 export interface ClienteProps {
+  cliente: void | ClienteProps;
   id: number; nome: string; cpf?: string; cnpj?: string; email?: string; telefone?: string;
   endereco?: Endereco; dataNascimento?: string; razaoSocial?: string;
   pessoaFisica?: PessoaFisica; pessoaJuridica?: PessoaJuridica
