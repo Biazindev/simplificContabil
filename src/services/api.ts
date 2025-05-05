@@ -32,10 +32,11 @@ export interface Endereco {
   complemento?: string;
 }
 export interface PessoaJuridica {
+  id?: number;
   nome?: string;
   email?: string;
   telefone?: string;
-  endereco?: string;
+  endereco?: Endereco
   cnpj: string
 }
 
@@ -100,7 +101,6 @@ const baseQueryWithReauth: BaseQueryFn<
 
           result = await rawBaseQuery(args, api, extraOptions)
         } else {
-          // Handle error or failed refresh token request
         }
       } finally {
         release()
@@ -236,7 +236,7 @@ export const api = createApi({
     
     deleteCliente: builder.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
-        url: `/clientes/${id}`,
+        url: `/clientes/deletar/${id}`,
         method: 'DELETE'
       }),
       invalidatesTags: ['Cliente']
