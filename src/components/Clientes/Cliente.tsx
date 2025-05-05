@@ -298,13 +298,15 @@ const Cliente = () => {
         return;
       }
   
-      if (result && typeof result === "object" && "cliente" in result) {
+      if (result && typeof result === "object" && "cliente" in result && result.cliente) {
         const cliente = result.cliente;
   
         setForm({
-          pessoaFisica: cliente.pessoaFisica,
-          pessoaJuridica: cliente.pessoaJuridica || null,
-        });
+          pessoaFisica: cliente.pessoaFisica
+            ? { ...cliente.pessoaFisica, tipoPessoa: "FISICA" }
+            : null,
+          pessoaJuridica: cliente.pessoaJuridica ?? null,
+        })
   
         setCpfBusca("");
         setCpfJaCadastrado(false);
