@@ -228,7 +228,6 @@ const Produtos = () => {
 
       <S.Title>Lista de Produtos</S.Title>
       {isLoading && <p>Carregando produtos...</p>}
-      {error && <p>Erro ao carregar produtos.</p>}
 
       {Array.isArray(data) && data.length > 0 ? (
         <S.Table>

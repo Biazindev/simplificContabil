@@ -67,47 +67,45 @@ export interface LoginResponse { accessToken: string; username: string; roles: s
 
 const mutex = new Mutex()
 
-const rawBaseQuery = fetchBaseQuery({
+const baseQuery = fetchBaseQuery({
   baseUrl: 'https://api.biazinsistemas.com',
-  credentials: 'include',
+  credentials: 'include',             
   prepareHeaders: (headers) => {
-    const token = localStorage.getItem('token')
-    if (token) headers.set('Authorization', `Bearer ${token}`)
-    headers.set('Content-Type', 'application/json')
+    const token = localStorage.getItem('ACCESS_TOKEN')
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`)
+    }
     return headers
-  }
+  },
 })
 
-const baseQueryWithReauth: BaseQueryFn<
+export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
-  FetchBaseQueryError
+  unknown
 > = async (args, api, extraOptions) => {
-  await mutex.waitForUnlock()
-  let result = await rawBaseQuery(args, api, extraOptions)
+  // primeiro, faz a request normalmente:
+  let result = await baseQuery(args, api, extraOptions)
 
-  if (result.error && result.error.status === 401) {
-    if (!mutex.isLocked()) {
-      const release = await mutex.acquire()
-      try {
-        const refreshResult = await rawBaseQuery('/auth/refresh-token', api, extraOptions)
-        if (
-          refreshResult.data &&
-          typeof refreshResult.data === 'object' &&
-          'accessToken' in refreshResult.data
-        ) {
-          const { accessToken } = refreshResult.data as { accessToken: string }
-          localStorage.setItem('token', accessToken)
+  // se deu 401, tenta refresh do token e repete a query
+  if (result.error && (result.error as any).status === 401) {
+    console.log('401, tentando refresh…')
+    const refreshResult = await baseQuery(
+      { url: '/auth/refresh-token', method: 'POST' } as FetchArgs,
+      api,
+      extraOptions
+    )
+    if (refreshResult.data) {
+      // supondo que o refresh cookie já foi enviado/recebido via credentials: 'include'
+      // e o servidor mandou um novo ACCESS_TOKEN em Set-Cookie ou no body:
+      const newToken = (refreshResult.data as any).accessToken
+      localStorage.setItem('ACCESS_TOKEN', newToken)
 
-          result = await rawBaseQuery(args, api, extraOptions)
-        } else {
-        }
-      } finally {
-        release()
-      }
+      // refaz a request original
+      result = await baseQuery(args, api, extraOptions)
     } else {
-      await mutex.waitForUnlock()
-      result = await rawBaseQuery(args, api, extraOptions)
+      // não conseguiu refresh: força logout, etc
+      api.dispatch({ type: 'auth/logout' })
     }
   }
 
@@ -225,7 +223,7 @@ export const api = createApi({
 
     updateCliente: builder.mutation<void, { id: number; pessoaFisica: PessoaFisica }>({
       query: ({ id, pessoaFisica }) => ({
-        url: `/clientes/${id}`,
+        url: `/clientes/${id}`, 
         method: 'PUT',
         body: {
           pessoaFisica,

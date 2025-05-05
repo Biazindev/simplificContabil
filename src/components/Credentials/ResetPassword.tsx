@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate, Navigate } from 'react-router-dom'
 import { useResetPasswordMutation } from '../../services/api'
 
+// type guard para error com status
+function isErrorWithStatus(e: any): e is { status: number } {
+    return e && typeof e === 'object' && 'status' in e
+}
+
 export function ResetPassword() {
-    // 1) Hooks sempre no topo:
     const [searchParams] = useSearchParams()
     const token = searchParams.get('token') ?? ''
     const [newPassword, setNewPassword] = useState('')
@@ -11,16 +15,13 @@ export function ResetPassword() {
     const [triggerReset, { isLoading, error }] = useResetPasswordMutation()
     const navigate = useNavigate()
 
-    // 2) Se não tiver token, redireciona antes de qualquer coisa (mas após todos os hooks)
     if (!token) {
         return <Navigate to="/login" replace />
     }
 
-    // 3) Se a API retornar erro de token inválido/expirado, manda de volta pra pedir reset
     useEffect(() => {
         if (
-            error &&
-            'status' in error &&
+            isErrorWithStatus(error) &&
             (error.status === 400 || error.status === 401)
         ) {
             alert('Link inválido ou expirado. Peça um novo e-mail de recuperação.')
@@ -28,7 +29,6 @@ export function ResetPassword() {
         }
     }, [error, navigate])
 
-    // 4) Função de submit
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setMessage(null)
@@ -41,7 +41,6 @@ export function ResetPassword() {
         }
     }
 
-    // 5) JSX final - nenhum hook aqui dentro, apenas markup
     return (
         <form onSubmit={handleSubmit}>
             <h2>Nova Senha</h2>
