@@ -174,3 +174,63 @@ interface ClienteProps {
     totalVenda: number;
     dataVenda: string;
   }
+
+  interface ResponseData {
+    status: number;
+    data: {
+        cliente: {
+            pessoaFisica: any
+            pessoaJuridica: any
+        }
+    }
+}
+
+export interface ResponseData {
+  status: number;
+  data: {
+      cliente: {
+          pessoaFisica: any
+          pessoaJuridica: any
+      }
+  }
+}
+
+export interface Endereco {
+  cep: string
+  bairro: string
+  municipio: string
+  logradouro: string
+  numero: string
+  uf: string
+  complemento?: string
+}
+
+interface PessoaFisica {
+  id?: number
+  nome: string
+  cpf: string
+  tipoPessoa: string
+  email: string
+  telefone: string
+  dataNascimento: string
+  endereco: Endereco
+}
+
+interface PessoaJuridica {
+  nome: string
+  cnpj: string
+  email: string
+  telefone: string
+  endereco: Endereco
+}
+
+interface ClienteForm {
+  pessoaFisica: PessoaFisica | null
+  pessoaJuridica: PessoaJuridica | null
+}
+
+
+interface ClienteResponse {
+  cliente: ClienteProps;
+  message: string;
+}

@@ -11,6 +11,7 @@ import Dashboard from "./components/Dashboard"
 import DashboardPizzaria from "./pages/dashboardpizzaria/DashboardPizzaria"
 import { ForgotPassword } from './components/Credentials/ForgotPassword'
 import { ResetPassword } from './components/Credentials/ResetPassword'
+import GetClientes from "./components/Get/GetClientes"
 
 
 
@@ -29,6 +30,7 @@ const Rotas = () => (
       <Route path="/recuperar-senha" element={<ForgotPassword />} />
       <Route path="/resetar-senha" element={<ResetPassword />} />
       <Route path="/login" element={<ResetPassword />} />
+      <Route path="/get" element={<GetClientes />} />
     </Route>
   </Routes>
 )

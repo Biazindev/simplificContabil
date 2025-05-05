@@ -40,8 +40,8 @@ export interface ClienteProps {
   pessoaFisica?: PessoaFisica; pessoaJuridica?: PessoaJuridica
 }
 export interface CreateClienteRequest {
-  pessoaFisica?: PessoaFisica;
-  pessoaJuridica?: PessoaJuridica | null;
+  pessoaFisica?: PessoaFisica | null
+  pessoaJuridica?: PessoaJuridica | null
 }
 
 
@@ -206,7 +206,7 @@ export const api = createApi({
       nome: string;
       tipoPessoa: string; id: number 
 }, string>({
-      query: (cpf) => `/clientes/buscar-cpf?cpf=${cpf}`
+      query: (cpf) => `/clientes/buscar-documento?documento=${cpf}`
     }),    
     addCliente: builder.mutation<ClienteProps, CreateClienteRequest>({
       query: (cliente) => ({
@@ -216,14 +216,18 @@ export const api = createApi({
       }),
       invalidatesTags: ['Cliente']
     }),
-    updateCliente: builder.mutation<ClienteProps, ClienteProps>({
-      query: (cliente) => ({
-        url: `/clientes/${cliente.id}`,
+
+    updateCliente: builder.mutation<void, { id: number; pessoaFisica: PessoaFisica }>({
+      query: ({ id, pessoaFisica }) => ({
+        url: `/clientes/${id}`,
         method: 'PUT',
-        body: cliente
+        body: {
+          pessoaFisica,
+          pessoaJuridica: null,
+        },
       }),
-      invalidatesTags: ['Cliente']
     }),
+    
     deleteCliente: builder.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
         url: `/clientes/${id}`,
