@@ -255,7 +255,7 @@ const Produtos = () => {
                   <td>{produto.quantidade}</td>
                   <td>{produto.ativo ? 'Sim' : 'Não'}</td>
                   <td>{dataFormatada}</td>
-                  <td>{produto.precoUnitario.toFixed(2).replace('.', ',')}</td>
+                  <td>{produto.precoUnitario != null ? produto.precoUnitario.toFixed(2) : '0,00'}</td>
                   <td>
                   <button>Editar</button>
                   <button onClick={() => handleDeletar(produto.id)}>Excluir</button>
