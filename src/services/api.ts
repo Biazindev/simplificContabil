@@ -13,11 +13,10 @@ export interface Endereco {
   cep: string; bairro: string; municipio: string; logradouro: string; numero: string; uf: string; complemento?: string
 }
 export interface PessoaFisica {
-  id?: number;
   nome: string;
   cpf: string;
-  telefone: string;
   email: string;
+  telefone: string;
   dataNascimento: string;
   endereco: Endereco;
 }
@@ -34,34 +33,30 @@ export interface Endereco {
 
 
 export interface PessoaJuridica {
-  id?: number;
+  email: string;
   cnpj: string;
-  nomeFantasia: string;
   razaoSocial: string;
-  dataAbertura: string;
+  nomeFantasia: string;
   situacao: string;
   tipo: string;
-  porte: string;
-  inscricaoEstadual: string;
   naturezaJuridica: string;
-  atividadesPrincipais: AtividadePrincipal[];
-  atividadesSecundarias: AtividadeSecundaria[];
+  porte: string;
+  dataAbertura: string;
+  ultimaAtualizacao: string | null;
+  atividadesPrincipais: Atividade[];
+  atividadesSecundarias: Atividade[];
   socios: Socio[];
-  capitalSocial: string;
-  simples: Simples;
   endereco: Endereco;
+  simples: SimplesNacional;
   telefone: string;
-  email?: string;
+  inscricaoEstadual: string;
+  capitalSocial: number;
 }
 
-export interface AtividadePrincipal {
-  codigoAtividadePrincipal: string;
-  descricaoAtividadesPrincipais: string;
-}
 
-export interface AtividadeSecundaria {
-  codigoAtividadesSecundarias: string;
-  descricaoAtividadesSecundarias: string;
+export interface Atividade {
+  codigo: string;
+  descricao: string;
 }
 
 export interface Socio {
@@ -74,6 +69,14 @@ export interface Simples {
   simples: boolean;
   mei: boolean;
 }
+
+export interface SimplesNacional {
+  optante: boolean;
+  dataOpcao?: string; 
+  dataExclusao?: string | null;
+  ultimaAtualizacao?: string | null;
+}
+
 
 export interface Endereco {
   cep: string;
@@ -250,19 +253,61 @@ export const api = createApi({
       query: () => '/clientes',
       providesTags: ['Cliente']
     }),
-    getClienteByCpf: builder.query<{
-      pessoaJuridica: null;
-      pessoaFisica: any;
-      endereco: any;
-      dataNascimento: string;
-      telefone: string;
-      email: string;
-      cpf: string;
-      nome: string;
-      tipoPessoa: string; id: number 
-}, string>({
-      query: (cpf) => `/clientes/buscar-documento?documento=${cpf}`
-    }),    
+    getClienteByDocumento: builder.query<{
+      id: number;
+      tipoPessoa: 'FISICA' | 'JURIDICA';
+      pessoaFisica: {
+        endereco: { logradouro: string; numero: string; bairro: string; municipio: string; uf: string; cep: string; complemento: string; };
+        nome: string;
+        cpf: string;
+        email: string;
+        telefone: string;
+        dataNascimento: string;
+      } | null;
+      pessoaJuridica: {
+        porte: string;
+        dataAbertura: string;
+        ultimaAtualizacao: null;
+        socios: never[];
+        inscricaoEstadual: string;
+        telefone: string;
+        email: string;
+        endereco: { logradouro: string; numero: string; bairro: string; municipio: string; uf: string; cep: string; complemento: string; };
+        cnpj: string;
+        razaoSocial: string;
+        nomeFantasia: string;
+        situacao: string;
+        tipo: string;
+        naturezaJuridica: string;
+        atividadesPrincipais: {
+          codigo: string;
+          descricao: string;
+        }[];
+        atividadesSecundarias: {
+          codigo: string;
+          descricao: string;
+        }[];
+        capitalSocial: number;
+        simples: {
+          ultimaAtualizacao: null;
+          optante: boolean;
+          dataOpcao?: string;
+          dataExclusao?: string;
+        };
+      } | null;
+      endereco: {
+        cep: string;
+        bairro: string;
+        municipio: string;
+        logradouro: string;
+        numero: string;
+        uf: string;
+        complemento?: string;
+      } | null;
+    }, string>({
+      query: (documento) => `/clientes/buscar-documento?documento=${documento}`,
+    }),
+        
     addCliente: builder.mutation<ClienteProps, CreateClienteRequest>({
       query: (cliente) => ({
         url: '/clientes',
@@ -379,7 +424,7 @@ export const {
   useUpdateVendaMutation,
   useDeleteVendaMutation,
   useGetClientesQuery,
-  useGetClienteByCpfQuery,
+  useGetClienteByDocumentoQuery,
   useAddClienteMutation,
   useUpdateClienteMutation,
   useDeleteClienteMutation,
