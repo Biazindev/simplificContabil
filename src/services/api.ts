@@ -31,14 +31,60 @@ export interface Endereco {
   uf: string;
   complemento?: string;
 }
+
+
 export interface PessoaJuridica {
   id?: number;
-  nome?: string;
+  cnpj: string;
+  nomeFantasia: string;
+  razaoSocial: string;
+  dataAbertura: string;
+  situacao: string;
+  tipo: string;
+  porte: string;
+  inscricaoEstadual: string;
+  naturezaJuridica: string;
+  atividadesPrincipais: AtividadePrincipal[];
+  atividadesSecundarias: AtividadeSecundaria[];
+  socios: Socio[];
+  capitalSocial: string;
+  simples: Simples;
+  endereco: Endereco;
+  telefone: string;
   email?: string;
-  telefone?: string;
-  endereco?: Endereco
-  cnpj: string
 }
+
+export interface AtividadePrincipal {
+  codigoAtividadePrincipal: string;
+  descricaoAtividadesPrincipais: string;
+}
+
+export interface AtividadeSecundaria {
+  codigoAtividadesSecundarias: string;
+  descricaoAtividadesSecundarias: string;
+}
+
+export interface Socio {
+  nome: string;
+  qualificacao: string;
+  cpf: string;
+}
+
+export interface Simples {
+  simples: boolean;
+  mei: boolean;
+}
+
+export interface Endereco {
+  cep: string;
+  bairro: string;
+  municipio: string;
+  logradouro: string;
+  numero: string;
+  uf: string;
+  complemento?: string;
+}
+
 
 export interface ClienteProps {
   cliente: void | ClienteProps;
@@ -47,8 +93,9 @@ export interface ClienteProps {
   pessoaFisica?: PessoaFisica; pessoaJuridica?: PessoaJuridica
 }
 export interface CreateClienteRequest {
-  pessoaFisica?: PessoaFisica | null
-  pessoaJuridica?: PessoaJuridica | null
+  tipoPessoa: 'FISICA' | 'JURIDICA' | undefined | null
+  pessoaFisica: PessoaFisica | null;
+  pessoaJuridica: PessoaJuridica | null;
 }
 
 
@@ -202,6 +249,8 @@ export const api = createApi({
       providesTags: ['Cliente']
     }),
     getClienteByCpf: builder.query<{
+      pessoaJuridica: null;
+      pessoaFisica: any;
       endereco: any;
       dataNascimento: string;
       telefone: string;
@@ -258,7 +307,8 @@ export const api = createApi({
       query: (cliente) => ({
         url: '/pessoas-fisicas',
         method: 'POST',
-        body: cliente
+        body: cliente,
+        tipoPessoa: undefined
       }),
       invalidatesTags: ['Cliente']
     }),
@@ -266,7 +316,8 @@ export const api = createApi({
       query: (cliente) => ({
         url: `/pessoas-fisicas/${cliente.id}`,
         method: 'PUT',
-        body: cliente
+        body: cliente,
+        tipoPessoa: undefined,
       }),
       invalidatesTags: ['Cliente']
     }),
@@ -288,7 +339,8 @@ export const api = createApi({
       query: (cliente) => ({
         url: '/pessoas-juridicas',
         method: 'POST',
-        body: cliente
+        body: cliente,
+        tipoPessoa: undefined,
       }),
       invalidatesTags: ['Cliente']
     }),
@@ -296,7 +348,7 @@ export const api = createApi({
       query: (cliente) => ({
         url: `/pessoas-juridicas/${cliente.id}`,
         method: 'PUT',
-        body: cliente
+        body: cliente,
       }),
       invalidatesTags: ['Cliente']
     }),

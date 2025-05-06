@@ -205,7 +205,6 @@ interface PessoaFisica {
   id?: number
   nome: string
   cpf: string
-  tipoPessoa: string
   email: string
   telefone: string
   dataNascimento: string

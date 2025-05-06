@@ -33,19 +33,6 @@ interface ClienteProps {
   endereco?: Endereco
   dataNascimento?: string
   razaoSocial?: string
-  pessoaFisica?: PessoaFisica
-  pessoaJuridica?: PessoaJuridica
-}
-
-interface CreateClienteRequest {
-  nome: string
-  cpf?: string
-  telefone?: string
-  email?: string
-  endereco: string
-  dataNascimento?: string
-  pessoaFisica?: PessoaFisica
-  pessoaJuridica?: PessoaJuridica
 }
 
 type ProdutoProps = {
