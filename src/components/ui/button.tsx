@@ -1,3 +1,4 @@
+import { ButtonProps } from "@/types"
 import clsx from "clsx"
 
 export const Button: React.FC<ButtonProps> = ({ children, variant = "default", className, ...props }) => {

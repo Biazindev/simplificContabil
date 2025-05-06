@@ -1,3 +1,4 @@
+import { CardProps } from "@/types"
 
 export const Card: React.FC<CardProps> = ({ children, className = "" }) => {
     return (

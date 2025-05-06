@@ -1,5 +1,6 @@
     import React, { useState } from "react"
     import * as S from "./style"
+import { PedidoEntrega, ProdutoPedido } from "@/types"
 
     const PedidosEntrega: React.FC = () => {
         const [pedidos, setPedidos] = useState<PedidoEntrega[]>([
@@ -142,7 +143,7 @@
                 <h2>📦 Pedidos Para Entrega</h2>
                 <S.PedidosContainer>
                     {pedidos.map((pedido) => {
-                        const total = pedido.produtos.reduce((acc, p) => acc + p.valor * p.quantidade, 0);
+                        const total = pedido.produtos.reduce((acc: number, p: { valor: number; quantidade: number }) => acc + p.valor * p.quantidade, 0);
                         return (
                             <S.PedidoCard key={pedido.id}>
                                 <h3>📦 Pedido #{pedido.id} - {pedido.cliente}</h3>

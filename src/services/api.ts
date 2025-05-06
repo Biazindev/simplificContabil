@@ -234,7 +234,7 @@ export const api = createApi({
     
     deleteCliente: builder.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
-        url: `/clientes/deletar/${id}`,
+        url: `/clientes/${id}`,
         method: 'DELETE'
       }),
       invalidatesTags: ['Cliente']
