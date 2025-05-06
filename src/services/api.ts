@@ -92,11 +92,13 @@ export interface ClienteProps {
   endereco?: Endereco; dataNascimento?: string; razaoSocial?: string;
   pessoaFisica?: PessoaFisica; pessoaJuridica?: PessoaJuridica
 }
+
 export interface CreateClienteRequest {
-  tipoPessoa: 'FISICA' | 'JURIDICA' | undefined | null
-  pessoaFisica: PessoaFisica | null;
-  pessoaJuridica: PessoaJuridica | null;
+  tipoPessoa: 'FISICA' | 'JURIDICA';
+  pessoaFisica?: PessoaFisica | null;
+  pessoaJuridica?: PessoaJuridica | null;
 }
+
 
 
 export type ProdutoProps = {
@@ -270,13 +272,17 @@ export const api = createApi({
       invalidatesTags: ['Cliente']
     }),
 
-    updateCliente: builder.mutation<void, { id: number; pessoaFisica: PessoaFisica }>({
-      query: ({ id, pessoaFisica }) => ({
-        url: `/clientes/${id}`, 
+    updateCliente: builder.mutation<void, { 
+      id: number; 
+      pessoaFisica?: PessoaFisica | null; 
+      pessoaJuridica?: PessoaJuridica | null; 
+    }>({
+      query: ({ id, pessoaFisica, pessoaJuridica }) => ({
+        url: `/clientes/${id}`,
         method: 'PUT',
         body: {
-          pessoaFisica,
-          pessoaJuridica: null,
+          pessoaFisica: pessoaFisica ?? null,
+          pessoaJuridica: pessoaJuridica ?? null
         },
       }),
     }),
