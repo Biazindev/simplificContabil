@@ -14,12 +14,8 @@ import {
   CreateClienteRequest,
   PessoaFisica,
   Endereco,
-  Atividade,
-  Socio,
-  SimplesNacional
 } from '../../services/api'
 
-// Atualize a interface ClienteForm
 interface ClienteForm {
   pessoaFisica: (PessoaFisica & { endereco: Endereco }) | null
   pessoaJuridica: (PessoaJuridica & { endereco: Endereco; email?: string }) | null
@@ -60,6 +56,15 @@ function parseEndereco(enderecoStr: string): Endereco {
   }
 }
 
+const toDDMMYYYY = (date: string | Date): string => {
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+
 const Cliente = () => {
   const [documentoBusca, setDocumentoBusca] = useState('')
   const [form, setForm] = useState<ClienteForm | null>(null)
@@ -84,7 +89,6 @@ const Cliente = () => {
   const [addCliente] = useAddClienteMutation()
   const [updateCliente] = useUpdateClienteMutation()
 
-  // Atualize o useEffect que lida com os dados do cliente
   useEffect(() => {
     if (cliente) {
       console.log('Dados recebidos da API:', cliente);
@@ -112,8 +116,8 @@ const Cliente = () => {
               logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
             },
             simples: cliente.pessoaJuridica.simples || {
+              mei: false,
               optante: false,
-              dataOpcao: '',
               dataExclusao: null,
               ultimaAtualizacao: null
             }
@@ -125,13 +129,6 @@ const Cliente = () => {
       setErroBusca(null);
     }
   }, [cliente]);
-  
-
-  useEffect(() => {
-    if (form) {
-      console.log("🔥 Form realmente atualizado:", form)
-    }
-  }, [form])
 
   const handleBuscaDocumento = async () => {
     if (!documentoBusca.trim()) {
@@ -187,7 +184,6 @@ const Cliente = () => {
           capitalSocial: 0,
           simples: {
             optante: false,
-            dataOpcao: '',
             dataExclusao: null,
             ultimaAtualizacao: null
           },
@@ -272,83 +268,139 @@ const Cliente = () => {
     }
   }
 
-
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
+    e.preventDefault();
+  
     if (!form) {
-      console.error("Formulário vazio")
-      return
+      console.error("Formulário vazio");
+      return;
     }
-
-    const isCPF = form.pessoaFisica?.cpf ? true : false
-    const isCNPJ = form.pessoaJuridica?.cnpj ? true : false
-
+  
+    const isCPF = !!form.pessoaFisica?.cpf;
+    const isCNPJ = !!form.pessoaJuridica?.cnpj;
+  
     if (!isCPF && !isCNPJ) {
-      console.error("Documento inválido")
-      return
+      console.error("Documento inválido");
+      return;
     }
-
+  
     try {
-      const clientePayload: CreateClienteRequest = {
-        tipoPessoa: isCPF ? 'FISICA' : 'JURIDICA',
-        pessoaFisica: isCPF && form.pessoaFisica ? {
-          nome: form.pessoaFisica.nome,
-          cpf: form.pessoaFisica.cpf,
-          email: form.pessoaFisica.email,
-          telefone: form.pessoaFisica.telefone,
-          dataNascimento: formatDateToBr(form.pessoaFisica.dataNascimento),
-          endereco: form.pessoaFisica.endereco
-        } : null,
-        pessoaJuridica: isCNPJ && form.pessoaJuridica ? {
-          cnpj: form.pessoaJuridica.cnpj,
-          razaoSocial: form.pessoaJuridica.razaoSocial,
-          nomeFantasia: form.pessoaJuridica.nomeFantasia,
-          situacao: form.pessoaJuridica.situacao,
-          tipo: form.pessoaJuridica.tipo,
-          naturezaJuridica: form.pessoaJuridica.naturezaJuridica,
-          porte: form.pessoaJuridica.porte,
-          dataAbertura: form.pessoaJuridica.dataAbertura,
-          ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao || null,
-          atividadesPrincipais: form.pessoaJuridica.atividadesPrincipais,
-          atividadesSecundarias: form.pessoaJuridica.atividadesSecundarias,
-          socios: form.pessoaJuridica.socios,
-          capitalSocial: form.pessoaJuridica.capitalSocial,
-          simples: form.pessoaJuridica.simples,
-          endereco: form.pessoaJuridica.endereco,
-          telefone: form.pessoaJuridica.telefone,
-          inscricaoEstadual: form.pessoaJuridica.inscricaoEstadual,
-          email: form.pessoaJuridica.email || ''
-        } : null
-      }
-
-      let result
+      let result;
+  
       if (documentoJaCadastrado && cliente?.id) {
-        result = await updateCliente({
-          id: cliente.id,
-          ...clientePayload
-        }).unwrap()
+        const clientePayload: CreateClienteRequest = {
+          nome: form.pessoaFisica?.nome,
+          cpf: form.pessoaFisica?.cpf,
+          email: form.pessoaFisica?.email,
+          telefone: form.pessoaFisica?.telefone,
+          // Verificando se dataNascimento existe antes de passar para a função toDDMMYYYY
+          dataNascimento: form.pessoaFisica?.dataNascimento ? form.pessoaFisica.dataNascimento : null,
+          endereco: form.pessoaFisica?.endereco,
+          pessoaJuridica: isCNPJ && form.pessoaJuridica ? {
+            cnpj: form.pessoaJuridica.cnpj,
+            razaoSocial: form.pessoaJuridica.razaoSocial,
+            nomeFantasia: form.pessoaJuridica.nomeFantasia,
+            situacao: form.pessoaJuridica.situacao,
+            tipo: form.pessoaJuridica.tipo,
+            naturezaJuridica: form.pessoaJuridica.naturezaJuridica,
+            porte: form.pessoaJuridica.porte,
+            dataAbertura: toDDMMYYYY(form.pessoaJuridica.dataAbertura), 
+            ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao ? toDDMMYYYY(form.pessoaJuridica.ultimaAtualizacao) : null, // Ajuste aqui
+            atividadesPrincipais: form.pessoaJuridica.atividadesPrincipais,
+            atividadesSecundarias: form.pessoaJuridica.atividadesSecundarias,
+            socios: form.pessoaJuridica.socios,
+            endereco: form.pessoaJuridica.endereco,
+            simples: form.pessoaJuridica.simples
+              ? {
+                  optante: form.pessoaJuridica.simples.optante,
+                  mei: form.pessoaJuridica.simples.mei,
+                  dataExclusao: form.pessoaJuridica.simples.dataExclusao ? toDDMMYYYY(form.pessoaJuridica.simples.dataExclusao) : null, // Ajuste aqui
+                  ultimaAtualizacao: form.pessoaJuridica.simples.ultimaAtualizacao ? toDDMMYYYY(form.pessoaJuridica.simples.ultimaAtualizacao) : null // Ajuste aqui
+                }
+              : {
+                  optante: false,
+                  mei: false,
+                  dataExclusao: null,
+                  ultimaAtualizacao: null
+                },
+        } : null
+      };
+      
+      result = await updateCliente({
+        id: cliente.id,
+        ...clientePayload
+      }).unwrap()
+      
       } else {
-        if (isCPF) {
-          result = await addPessoaFisica(clientePayload).unwrap()
+        if (isCPF && form.pessoaFisica) {
+          const payload: CreateClienteRequest = {
+            nome: form.pessoaFisica.nome,
+            cpf: form.pessoaFisica.cpf,
+            email: form.pessoaFisica.email,
+            telefone: form.pessoaFisica.telefone,
+            dataNascimento: form.pessoaFisica.dataNascimento, 
+            endereco: form.pessoaFisica.endereco
+          };
+  
+          result = await addPessoaFisica(payload).unwrap();
+  
+        } else if (isCNPJ && form.pessoaJuridica) {
+          const payload: CreateClienteRequest = {
+            pessoaJuridica: {
+              cnpj: form.pessoaJuridica.cnpj,
+              razaoSocial: form.pessoaJuridica.razaoSocial,
+              nomeFantasia: form.pessoaJuridica.nomeFantasia,
+              situacao: form.pessoaJuridica.situacao,
+              tipo: form.pessoaJuridica.tipo,
+              naturezaJuridica: form.pessoaJuridica.naturezaJuridica,
+              porte: form.pessoaJuridica.porte,
+              dataAbertura: toDDMMYYYY(form.pessoaJuridica.dataAbertura), // Ajuste aqui
+              ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao ? toDDMMYYYY(form.pessoaJuridica.ultimaAtualizacao) : null, // Ajuste aqui
+              atividadesPrincipais: form.pessoaJuridica.atividadesPrincipais,
+              atividadesSecundarias: form.pessoaJuridica.atividadesSecundarias,
+              socios: form.pessoaJuridica.socios,
+              endereco: form.pessoaJuridica.endereco,
+              simples: form.pessoaJuridica.simples
+                ? {
+                    optante: form.pessoaJuridica.simples.optante,
+                    mei: form.pessoaJuridica.simples.mei,
+                    dataExclusao: form.pessoaJuridica.simples.dataExclusao ? toDDMMYYYY(form.pessoaJuridica.simples.dataExclusao) : null, // Ajuste aqui
+                    ultimaAtualizacao: form.pessoaJuridica.simples.ultimaAtualizacao ? toDDMMYYYY(form.pessoaJuridica.simples.ultimaAtualizacao) : null // Ajuste aqui
+                  }
+                : {
+                    optante: false,
+                    mei: false,
+                    dataExclusao: null,
+                    ultimaAtualizacao: null
+                  },
+              telefone: form.pessoaJuridica.telefone,
+              inscricaoEstadual: form.pessoaJuridica.inscricaoEstadual,
+              capitalSocial: form.pessoaJuridica.capitalSocial,
+              email: form.pessoaJuridica.email || ''
+            }
+          };
+  
+          result = await addPessoaJuridica(payload).unwrap();
         } else {
-          result = await addPessoaJuridica(clientePayload).unwrap()
+          console.error("Payload inválido");
+          return;
         }
       }
-
-      console.log('Cliente salvo com sucesso:', result)
-      setDocumentoBusca('')
-      setDocumentoJaCadastrado(false)
-      setErroBusca(null)
-
-      dispatch(setClienteSelecionado(result))
-      localStorage.setItem('clienteSelecionado', JSON.stringify(result))
-      navigate('/produtos')
+  
+      console.log('Cliente salvo com sucesso:', result);
+      setDocumentoBusca('');
+      setDocumentoJaCadastrado(false);
+      setErroBusca(null);
+  
+      dispatch(setClienteSelecionado(result));
+      localStorage.setItem('clienteSelecionado', JSON.stringify(result));
+      navigate('/produtos');
+  
     } catch (error) {
-      console.error('Erro ao salvar cliente:', error)
+      console.error('Erro ao salvar cliente:', error);
     }
   }
-
+  
   return (
     <S.Container>
       <div>
@@ -404,9 +456,9 @@ const Cliente = () => {
                       capitalSocial: 0,
                       simples: {
                         optante: false,
-                        dataOpcao: '',
                         dataExclusao: null,
-                        ultimaAtualizacao: null
+                        ultimaAtualizacao: null,
+                        mei: true 
                       },
                       endereco: {
                         logradouro: '',

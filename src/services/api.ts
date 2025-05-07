@@ -33,7 +33,6 @@ export interface Endereco {
 
 
 export interface PessoaJuridica {
-  email: string;
   cnpj: string;
   razaoSocial: string;
   nomeFantasia: string;
@@ -51,7 +50,9 @@ export interface PessoaJuridica {
   telefone: string;
   inscricaoEstadual: string;
   capitalSocial: number;
+  email: string;
 }
+
 
 
 export interface Atividade {
@@ -65,18 +66,17 @@ export interface Socio {
   cpf: string;
 }
 
-export interface Simples {
-  simples: boolean;
-  mei: boolean;
-}
-
 export interface SimplesNacional {
   optante: boolean;
-  dataOpcao?: string; 
+  mei?: boolean;
   dataExclusao?: string | null;
   ultimaAtualizacao?: string | null;
 }
 
+
+export interface Simples {
+  simples: boolean;
+}
 
 export interface Endereco {
   cep: string;
@@ -97,7 +97,7 @@ export interface ClienteProps {
 }
 
 export interface CreateClienteRequest {
-  tipoPessoa: 'FISICA' | 'JURIDICA';
+  tipoPessoa?: 'FISICA' | 'JURIDICA';
   pessoaFisica?: PessoaFisica | null;
   pessoaJuridica?: PessoaJuridica | null;
 }
