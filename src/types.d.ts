@@ -110,6 +110,7 @@ interface PessoaFisica {
     endereco(endereco: any): unknown
     cpf: any
     id?: any
+    tipoPessoa?: 'FISICA' | 'JURIDICA';
     pessoaFisica?: PessoaFisica;
     pessoaJuridica?: PessoaJuridica;
   }
@@ -144,7 +145,6 @@ interface ClienteProps {
     id: number;
     pessoaFisica: PessoaFisica;
     pessoaJuridica?: PessoaJuridica;
-    tipoPessoa: 'FISICA' | 'JURIDICA';
   }
   
   type ProdutoProps = {
@@ -171,16 +171,6 @@ interface ClienteProps {
     dataVenda: string;
   }
 
-  interface ResponseData {
-    status: number;
-    data: {
-        cliente: {
-            pessoaFisica: any
-            pessoaJuridica: any
-        }
-    }
-}
-
 export interface ResponseData {
   status: number;
   data: {
@@ -200,17 +190,6 @@ export interface Endereco {
   uf: string
   complemento?: string
 }
-
-interface PessoaFisica {
-  id?: number
-  nome: string
-  cpf: string
-  email: string
-  telefone: string
-  dataNascimento: string
-  endereco: Endereco
-}
-
 interface ClienteForm {
   pessoaFisica: PessoaFisica | null
   pessoaJuridica: PessoaJuridica | null

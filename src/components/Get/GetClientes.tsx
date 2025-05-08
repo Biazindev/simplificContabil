@@ -44,36 +44,56 @@ const GetClientes = () => {
             </tr>
           </thead>
           <tbody>
-            {clientes.map((cliente) => (
-              <tr key={cliente.id}>
-                <td style={{ padding: '8px' }}>{cliente.id}</td>
-                <td style={{ padding: '8px' }}>{cliente.nome || 'N/A'}</td>
-                <td style={{ padding: '8px' }}>{cliente.email || 'N/A'}</td>
-                <td style={{ padding: '8px' }}>
-                  {cliente.pessoaFisica?.telefone ||
-                   cliente.pessoaJuridica?.telefone || 'N/A'}
-                </td>
-                <td style={{ padding: '8px' }}>
-                  {cliente.pessoaFisica?.cpf ||
-                   cliente.pessoaJuridica?.cnpj || 'N/A'}
-                </td>
-                <td style={{ padding: '8px' }}>
-                  <button
-                    onClick={() => handleDelete(cliente.id)}
-                    style={{
-                      padding: '4px 8px',
-                      backgroundColor: 'red',
-                      color: 'white',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Excluir
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {clientes.map((cliente) => {
+              if (cliente.tipoPessoa === 'FISICA' && cliente.pessoaFisica) {
+                const { nome, email, telefone, cpf } = cliente.pessoaFisica;
+                return (
+                  <tr key={cliente.id}>
+                    <td>{cliente.id}</td>
+                    <td>{nome}</td>
+                    <td>{email}</td>
+                    <td>{telefone}</td>
+                    <td>{cpf}</td>
+                    <td>
+                      <button
+                        onClick={() => handleDelete(cliente.id)}
+                      >
+                        Excluir
+                      </button>
+                    </td>
+                  </tr>
+                );
+              }
+
+              if (cliente.tipoPessoa === 'JURIDICA' && cliente.pessoaJuridica) {
+                const {
+                  razaoSocial,
+                  email,
+                  telefone,
+                  cnpj,
+                } = cliente.pessoaJuridica;
+                return (
+                  <tr key={cliente.id}>
+                    <td>{cliente.id}</td>
+                    <td>{razaoSocial}</td>
+                    <td>{email}</td>
+                    <td>{telefone}</td>
+                    <td>{cnpj}</td>
+                    <td>
+                      <button
+                        onClick={() => handleDelete(cliente.id)}
+                      >
+                        Excluir
+                      </button>
+                    </td>
+                  </tr>
+                );
+              }
+
+              return null; // fallback se dados inválidos
+            })}
           </tbody>
+
         </table>
       ) : (
         <p>Não há clientes cadastrados.</p>

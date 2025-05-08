@@ -47,7 +47,7 @@ export interface PessoaJuridica {
   socios: Socio[];
   endereco: Endereco;
   simples: SimplesNacional;
-  telefone: string;
+  telefone?: string;
   inscricaoEstadual: string;
   capitalSocial: number;
   email: string;
@@ -90,6 +90,7 @@ export interface Endereco {
 
 
 export interface ClienteProps {
+  tipoPessoa: string;
   cliente: void | ClienteProps;
   id: number; nome: string; cpf?: string; cnpj?: string; email?: string; telefone?: string;
   endereco?: Endereco; dataNascimento?: string; razaoSocial?: string;
@@ -123,12 +124,15 @@ const baseQuery = fetchBaseQuery({
   baseUrl: 'https://api.biazinsistemas.com',
   credentials: 'include',             
   prepareHeaders: (headers) => {
-    const token = localStorage.getItem('ACCESS_TOKEN')
+    const token = localStorage.getItem('ACCESS_TOKEN');
     if (token) {
-      headers.set('Authorization', `Bearer ${token}`)
+      headers.set('Authorization', `Bearer ${token}`);
     }
-    return headers
-  },
+      headers.set('SIMPLIFICA-API-KEY', 'biaza');
+    
+    return headers;
+  }
+  
 })
 
 export const baseQueryWithReauth: BaseQueryFn<
@@ -253,7 +257,7 @@ export const api = createApi({
       query: () => '/clientes',
       providesTags: ['Cliente']
     }),
-    getClienteByDocumento: builder.query<{
+    lazyGetClienteByDocumento: builder.query<{
       id: number;
       tipoPessoa: 'FISICA' | 'JURIDICA';
       pessoaFisica: {
@@ -424,7 +428,6 @@ export const {
   useUpdateVendaMutation,
   useDeleteVendaMutation,
   useGetClientesQuery,
-  useGetClienteByDocumentoQuery,
   useAddClienteMutation,
   useUpdateClienteMutation,
   useDeleteClienteMutation,
@@ -442,7 +445,8 @@ export const {
   useDeleteClientePjMutation,
   useLazyGetClienteIdByCpfQuery,
   useLazyGetClienteByIdQuery,
-  useGetClienteByIdQuery
+  useGetClienteByIdQuery,
+  useLazyGetClienteByDocumentoQuery,
 } = api
 
 export default api

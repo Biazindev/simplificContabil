@@ -5,11 +5,8 @@ import { useDispatch } from 'react-redux'
 import { setClienteSelecionado } from '../../store/reducers/ClienteSlice'
 import {
   useGetClienteByDocumentoQuery,
-  useGetClienteByIdQuery,
   useAddClienteMutation,
   useUpdateClienteMutation,
-  useAddClientePfMutation,
-  useAddClientePjMutation,
   PessoaJuridica,
   CreateClienteRequest,
   PessoaFisica,
@@ -70,33 +67,27 @@ const Cliente = () => {
   const [form, setForm] = useState<ClienteForm | null>(null)
   const [documentoJaCadastrado, setDocumentoJaCadastrado] = useState(false)
   const [erroBusca, setErroBusca] = useState<string | null>(null)
-  const [clienteId, setClienteId] = useState<string | null>(null)
+  const [clienteId] = useState<string | null>(null)
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
   const [buscaPorId, setBuscaPorId] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const [addPessoaFisica] = useAddClientePfMutation()
-  const [addPessoaJuridica] = useAddClientePjMutation()
+  const [addCliente] = useAddClienteMutation()
+  const [getClienteByDocumento, { data: cliente, error }] = useGetClienteByDocumentoQuery();
+  const [updateCliente] = useUpdateClienteMutation();
 
-  const { data: cliente } = useGetClienteByDocumentoQuery(documentoBusca, {
-    skip: !documentoBusca || buscaPorId,
-  })
-
-  const { data: clientePorId } = useGetClienteByIdQuery(clienteId!, {
+  const { data: clientePorId } = useGetClienteByDocumentoQuery(clienteId!, {
     skip: !buscaPorId || !clienteId,
   })
 
-  const [addCliente] = useAddClienteMutation()
-  const [updateCliente] = useUpdateClienteMutation()
 
   useEffect(() => {
     if (cliente) {
-      console.log('Dados recebidos da API:', cliente);
       if (cliente.pessoaFisica) {
         const dataNascimento = cliente.pessoaFisica.dataNascimento.includes('/')
           ? cliente.pessoaFisica.dataNascimento.split('/').reverse().join('-')
           : cliente.pessoaFisica.dataNascimento;
-  
+
         setForm({
           pessoaFisica: {
             ...cliente.pessoaFisica,
@@ -124,7 +115,7 @@ const Cliente = () => {
           }
         });
       }
-  
+
       setDocumentoJaCadastrado(true);
       setErroBusca(null);
     }
@@ -135,21 +126,22 @@ const Cliente = () => {
       setErroBusca('Digite um CPF/CNPJ');
       return;
     }
-
+  
     try {
-      if (cliente && cliente.id) {
+      const response = await getClienteByDocumento(documentoBusca).unwrap();
+  
+      if (response?.id) {
+        cliente(response);
         setDocumentoJaCadastrado(true);
         setMostrarConfirmacao(false);
         setErroBusca(null);
-        // AQUI você NÃO precisa chamar setClienteId nem setBuscaPorId
-        // O useEffect com [cliente] vai preencher tudo automaticamente
       } else {
         throw new Error('Cliente não encontrado');
       }
     } catch (error: any) {
       const mensagemBackend = error?.data?.message || 'Cliente não encontrado. Preencha os dados.';
       setErroBusca(mensagemBackend);
-
+  
       const isCPF = documentoBusca.replace(/\D/g, '').length === 11;
       setForm({
         pessoaFisica: isCPF ? {
@@ -203,8 +195,8 @@ const Cliente = () => {
       });
       setDocumentoJaCadastrado(false);
     }
-  };
-
+  }
+  
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     campo: string,
@@ -270,32 +262,33 @@ const Cliente = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!form) {
       console.error("Formulário vazio");
       return;
     }
-  
+
     const isCPF = !!form.pessoaFisica?.cpf;
     const isCNPJ = !!form.pessoaJuridica?.cnpj;
-  
+
     if (!isCPF && !isCNPJ) {
       console.error("Documento inválido");
       return;
     }
-  
+
     try {
       let result;
-  
+
       if (documentoJaCadastrado && cliente?.id) {
         const clientePayload: CreateClienteRequest = {
-          nome: form.pessoaFisica?.nome,
-          cpf: form.pessoaFisica?.cpf,
-          email: form.pessoaFisica?.email,
-          telefone: form.pessoaFisica?.telefone,
-          // Verificando se dataNascimento existe antes de passar para a função toDDMMYYYY
-          dataNascimento: form.pessoaFisica?.dataNascimento ? form.pessoaFisica.dataNascimento : null,
-          endereco: form.pessoaFisica?.endereco,
+          pessoaFisica: isCPF && form.pessoaFisica ? {
+            nome: form.pessoaFisica.nome,
+            cpf: form.pessoaFisica.cpf,
+            email: form.pessoaFisica.email,
+            telefone: form.pessoaFisica.telefone,
+            dataNascimento: form.pessoaFisica.dataNascimento || '',
+            endereco: form.pessoaFisica.endereco
+          } : null,
           pessoaJuridica: isCNPJ && form.pessoaJuridica ? {
             cnpj: form.pessoaJuridica.cnpj,
             razaoSocial: form.pessoaJuridica.razaoSocial,
@@ -304,46 +297,49 @@ const Cliente = () => {
             tipo: form.pessoaJuridica.tipo,
             naturezaJuridica: form.pessoaJuridica.naturezaJuridica,
             porte: form.pessoaJuridica.porte,
-            dataAbertura: toDDMMYYYY(form.pessoaJuridica.dataAbertura), 
-            ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao ? toDDMMYYYY(form.pessoaJuridica.ultimaAtualizacao) : null, // Ajuste aqui
+            dataAbertura: formatDateToBr(form.pessoaJuridica.dataAbertura),
+            ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao
+              ? formatDateToBr(form.pessoaJuridica.ultimaAtualizacao)
+              : null,
             atividadesPrincipais: form.pessoaJuridica.atividadesPrincipais,
             atividadesSecundarias: form.pessoaJuridica.atividadesSecundarias,
             socios: form.pessoaJuridica.socios,
             endereco: form.pessoaJuridica.endereco,
-            simples: form.pessoaJuridica.simples
-              ? {
-                  optante: form.pessoaJuridica.simples.optante,
-                  mei: form.pessoaJuridica.simples.mei,
-                  dataExclusao: form.pessoaJuridica.simples.dataExclusao ? toDDMMYYYY(form.pessoaJuridica.simples.dataExclusao) : null, // Ajuste aqui
-                  ultimaAtualizacao: form.pessoaJuridica.simples.ultimaAtualizacao ? toDDMMYYYY(form.pessoaJuridica.simples.ultimaAtualizacao) : null // Ajuste aqui
-                }
-              : {
-                  optante: false,
-                  mei: false,
-                  dataExclusao: null,
-                  ultimaAtualizacao: null
-                },
-        } : null
-      };
-      
-      result = await updateCliente({
-        id: cliente.id,
-        ...clientePayload
-      }).unwrap()
-      
+            telefone: form.pessoaJuridica.telefone,
+            email: form.pessoaJuridica.email,
+            inscricaoEstadual: form.pessoaJuridica.inscricaoEstadual,
+            capitalSocial: form.pessoaJuridica.capitalSocial,
+            simples: {
+              optante: form.pessoaJuridica.simples?.optante ?? false,
+              dataExclusao: form.pessoaJuridica.simples?.dataExclusao
+                ? formatDateToBr(form.pessoaJuridica.simples.dataExclusao)
+                : null,
+              ultimaAtualizacao: form.pessoaJuridica.simples?.ultimaAtualizacao
+                ? formatDateToBr(form.pessoaJuridica.simples.ultimaAtualizacao)
+                : null
+            }
+          } : null
+        };
+
+        result = await updateCliente({
+          id: cliente.id,
+          ...clientePayload
+        }).unwrap();
+
       } else {
         if (isCPF && form.pessoaFisica) {
           const payload: CreateClienteRequest = {
-            nome: form.pessoaFisica.nome,
-            cpf: form.pessoaFisica.cpf,
-            email: form.pessoaFisica.email,
-            telefone: form.pessoaFisica.telefone,
-            dataNascimento: form.pessoaFisica.dataNascimento, 
-            endereco: form.pessoaFisica.endereco
+            pessoaFisica: {
+              nome: form.pessoaFisica.nome,
+              cpf: form.pessoaFisica.cpf,
+              email: form.pessoaFisica.email,
+              telefone: form.pessoaFisica.telefone,
+              dataNascimento: form.pessoaFisica.dataNascimento,
+              endereco: form.pessoaFisica.endereco
+            }
           };
-  
-          result = await addPessoaFisica(payload).unwrap();
-  
+          result = await addCliente(payload).unwrap();
+
         } else if (isCNPJ && form.pessoaJuridica) {
           const payload: CreateClienteRequest = {
             pessoaJuridica: {
@@ -354,53 +350,68 @@ const Cliente = () => {
               tipo: form.pessoaJuridica.tipo,
               naturezaJuridica: form.pessoaJuridica.naturezaJuridica,
               porte: form.pessoaJuridica.porte,
-              dataAbertura: toDDMMYYYY(form.pessoaJuridica.dataAbertura), // Ajuste aqui
-              ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao ? toDDMMYYYY(form.pessoaJuridica.ultimaAtualizacao) : null, // Ajuste aqui
+              dataAbertura: formatDateToBr(form.pessoaJuridica.dataAbertura),
+              ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao
+                ? formatDateToBr(form.pessoaJuridica.ultimaAtualizacao)
+                : null,
               atividadesPrincipais: form.pessoaJuridica.atividadesPrincipais,
               atividadesSecundarias: form.pessoaJuridica.atividadesSecundarias,
               socios: form.pessoaJuridica.socios,
               endereco: form.pessoaJuridica.endereco,
-              simples: form.pessoaJuridica.simples
-                ? {
-                    optante: form.pessoaJuridica.simples.optante,
-                    mei: form.pessoaJuridica.simples.mei,
-                    dataExclusao: form.pessoaJuridica.simples.dataExclusao ? toDDMMYYYY(form.pessoaJuridica.simples.dataExclusao) : null, // Ajuste aqui
-                    ultimaAtualizacao: form.pessoaJuridica.simples.ultimaAtualizacao ? toDDMMYYYY(form.pessoaJuridica.simples.ultimaAtualizacao) : null // Ajuste aqui
-                  }
-                : {
-                    optante: false,
-                    mei: false,
-                    dataExclusao: null,
-                    ultimaAtualizacao: null
-                  },
               telefone: form.pessoaJuridica.telefone,
+              email: form.pessoaJuridica.email || '',
               inscricaoEstadual: form.pessoaJuridica.inscricaoEstadual,
               capitalSocial: form.pessoaJuridica.capitalSocial,
-              email: form.pessoaJuridica.email || ''
+              simples: {
+                optante: form.pessoaJuridica.simples?.optante ?? false,
+                dataExclusao: form.pessoaJuridica.simples?.dataExclusao
+                  ? formatDateToBr(form.pessoaJuridica.simples.dataExclusao)
+                  : null,
+                ultimaAtualizacao: form.pessoaJuridica.simples?.ultimaAtualizacao
+                  ? formatDateToBr(form.pessoaJuridica.simples.ultimaAtualizacao)
+                  : null
+              }
             }
           };
-  
-          result = await addPessoaJuridica(payload).unwrap();
+          result = await addCliente(payload).unwrap();
+
+          console.log('Cliente salvo com sucesso:', result);
+          setDocumentoBusca('');
+          setDocumentoJaCadastrado(false);
+          setErroBusca(null);
+
+          const clienteFormatado = {
+            id: result.id,
+            tipoPessoa: result.tipoPessoa,
+            pessoaFisica: result.pessoaFisica ?? null,
+            pessoaJuridica: result.pessoaJuridica ?? null
+          };
+
+          dispatch(setClienteSelecionado(clienteFormatado));
+          localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
+
+          navigate('/produtos');
+          console.log('✅ Resposta do backend:', clienteFormatado);
+
         } else {
           console.error("Payload inválido");
           return;
         }
       }
-  
+
       console.log('Cliente salvo com sucesso:', result);
       setDocumentoBusca('');
       setDocumentoJaCadastrado(false);
       setErroBusca(null);
-  
+
       dispatch(setClienteSelecionado(result));
       localStorage.setItem('clienteSelecionado', JSON.stringify(result));
       navigate('/produtos');
-  
+      console.log('✅ Resposta do backend:', result);
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
     }
   }
-  
   return (
     <S.Container>
       <div>
@@ -416,66 +427,66 @@ const Cliente = () => {
               onChange={(e) => {
                 const valor = e.target.value.replace(/\D/g, '')
                 if (!documentoJaCadastrado) {
-                setDocumentoBusca(valor)
-                if (valor.length === 11) {
-                  setForm({
-                    pessoaJuridica: null,
-                    pessoaFisica: {
-                      cpf: valor,
-                      nome: '',
-                      email: '',
-                      telefone: '',
-                      dataNascimento: '',
-                      endereco: {
-                        logradouro: '',
-                        numero: '',
-                        bairro: '',
-                        municipio: '',
-                        uf: '',
-                        cep: '',
-                        complemento: '',
-                      },
-                    }
-                  })
-                } else if (valor.length === 14) {
-                  setForm({
-                    pessoaFisica: null,
-                    pessoaJuridica: {
-                      cnpj: valor,
-                      razaoSocial: '',
-                      nomeFantasia: '',
-                      dataAbertura: '',
-                      situacao: '',
-                      tipo: '',
-                      porte: '',
-                      inscricaoEstadual: '',
-                      naturezaJuridica: '',
-                      atividadesPrincipais: [],
-                      atividadesSecundarias: [],
-                      socios: [],
-                      capitalSocial: 0,
-                      simples: {
-                        optante: false,
-                        dataExclusao: null,
-                        ultimaAtualizacao: null,
-                        mei: true 
-                      },
-                      endereco: {
-                        logradouro: '',
-                        numero: '',
-                        bairro: '',
-                        municipio: '',
-                        uf: '',
-                        cep: '',
-                        complemento: '',
-                      },
-                      telefone: '',
-                      email: '',
-                      ultimaAtualizacao: null
-                    }
-                  })
+                  setDocumentoBusca(valor)
+                  if (valor.length === 11) {
+                    setForm({
+                      pessoaJuridica: null,
+                      pessoaFisica: {
+                        cpf: valor,
+                        nome: '',
+                        email: '',
+                        telefone: '',
+                        dataNascimento: '',
+                        endereco: {
+                          logradouro: '',
+                          numero: '',
+                          bairro: '',
+                          municipio: '',
+                          uf: '',
+                          cep: '',
+                          complemento: '',
+                        },
+                      }
+                    })
+                  } else if (valor.length === 14) {
+                    setForm({
+                      pessoaFisica: null,
+                      pessoaJuridica: {
+                        cnpj: valor,
+                        razaoSocial: '',
+                        nomeFantasia: '',
+                        dataAbertura: '',
+                        situacao: '',
+                        tipo: '',
+                        porte: '',
+                        inscricaoEstadual: '',
+                        naturezaJuridica: '',
+                        atividadesPrincipais: [],
+                        atividadesSecundarias: [],
+                        socios: [],
+                        capitalSocial: 0,
+                        simples: {
+                          optante: false,
+                          dataExclusao: null,
+                          ultimaAtualizacao: null,
+                          mei: true
+                        },
+                        endereco: {
+                          logradouro: '',
+                          numero: '',
+                          bairro: '',
+                          municipio: '',
+                          uf: '',
+                          cep: '',
+                          complemento: '',
+                        },
+                        telefone: '',
+                        email: '',
+                        ultimaAtualizacao: null
+                      }
+                    })
+                  }
                 }
-              }
               }}
             />
             <S.Button type="button" onClick={handleBuscaDocumento}>
@@ -627,6 +638,36 @@ const Cliente = () => {
                   value={form.pessoaJuridica.email || ''}
                   onChange={(e) => handleChange(e, 'email', 'cliente')}
                 />
+                <label>
+                  MEI:
+                  <input
+                    type="checkbox"
+                    name="mei"
+                    checked={form.pessoaJuridica.simples?.optante || false}
+                    onChange={(e) =>
+                      setForm((prev) => {
+                        if (!prev || !prev.pessoaJuridica) return prev;
+                        const prevSimples = prev.pessoaJuridica.simples || {
+                          optante: false,
+                          dataExclusao: null,
+                          ultimaAtualizacao: null
+                        }
+                        return {
+                          ...prev,
+                          pessoaFisica: prev.pessoaFisica ?? null,
+                          pessoaJuridica: {
+                            ...prev.pessoaJuridica,
+                            simples: {
+                              ...prevSimples,
+                              mei: e.target.checked
+                            }
+                          }
+                        };
+                      })
+                    }
+                  />
+                  {form.pessoaJuridica.simples?.mei ? 'Sim' : 'Não'}
+                </label>
                 <S.Input
                   type="text"
                   name="telefone"
