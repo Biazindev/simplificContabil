@@ -209,7 +209,7 @@ export const api = createApi({
       providesTags: ['Produto']
     }),
     getProdutosByName: builder.query<ProdutoProps[], string>({
-      query: (nome) => `/produtos/buscar?nome=${encodeURIComponent(nome)}`,
+      query: (nome) => `/produtos/buscar/nome?nome=${encodeURIComponent(nome)}`,
       providesTags: ['Produto']
     }),
     searchProdutos: builder.query<ProdutoProps[], string>({
