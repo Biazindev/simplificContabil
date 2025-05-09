@@ -5,6 +5,7 @@ import {
   useGetProdutosByNameQuery
 } from '../../services/api'
 
+import { FaArrowRight } from "react-icons/fa"
 import * as S from './styles'
 
 const parseCurrency = (value: string): number => {
@@ -134,163 +135,178 @@ const Produtos = () => {
 
   return (
     <S.Container>
-      <S.Title>Buscar Produto</S.Title>
-      <S.Input
-        type="text"
-        placeholder="Digite o nome do produto"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      {produtosFiltrados && produtosFiltrados.length > 0 && (
-        <S.SearchResults>
-          {produtosFiltrados.map((produto) => (
-            <div key={produto.id}>
-              {produto.nome} - R$ {produto.precoUnitario.toFixed(2)}
-              <S.Input
-                type="number"
-                min={1}
-                placeholder="Qtd"
-                value={quantidadesTemp[produto.id] || 1}
-                onChange={(e) =>
-                  setQuantidadesTemp((prev) => ({
-                    ...prev,
-                    [produto.id]: Number(e.target.value)
-                  }))
-                }
-                style={{ width: '60px', marginLeft: '10px' }}
-              />
-              <S.Button
-                type="button"
-                onClick={() => adicionarProduto(produto, quantidadesTemp[produto.id] || 1)}
-              >
-                Adicionar
-              </S.Button>
-            </div>
-          ))}
-        </S.SearchResults>
-      )}
-
-      <S.Title>Produtos Selecionados</S.Title>
-      {produtosSelecionados.length > 0 ? (
-        <S.Table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Quantidade</th>
-              <th>Preço Unitário</th>
-              <th>Total</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {produtosSelecionados.map((produto) => (
-              <tr key={produto.id}>
-                <td>{produto.nome}</td>
-                <td>
+      <S.TopBar>
+        <div>
+          <S.Title>Buscar Produto</S.Title>
+        </div>
+        <div>
+          {!mostrarFormulario && (
+            <S.Button onClick={() => setMostrarFormulario(true)}>
+              Cadastrar Novo Produto
+            </S.Button>
+          )}
+        </div>
+      </S.TopBar>
+      <S.GridContent>
+        <div>
+          <S.Input
+            type="text"
+            placeholder="Digite o nome do produto"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {produtosFiltrados && produtosFiltrados.length > 0 && (
+            <S.SearchResults>
+              {produtosFiltrados.map((produto) => (
+                <div key={produto.id}>
+                  {produto.nome} - R$ {produto.precoUnitario.toFixed(2)}
                   <S.Input
                     type="number"
                     min={1}
-                    value={produto.quantidade}
+                    placeholder="Qtd"
+                    value={quantidadesTemp[produto.id] || 1}
                     onChange={(e) =>
-                      handleAtualizarQuantidade(produto.id, Number(e.target.value))
+                      setQuantidadesTemp((prev) => ({
+                        ...prev,
+                        [produto.id]: Number(e.target.value)
+                      }))
                     }
-                    style={{ width: '60px' }}
+                    style={{ width: '60px', marginLeft: '10px' }}
                   />
-                </td>
-                <td>{produto.precoUnitario.toFixed(2)}</td>
-                <td>{(produto.quantidade * produto.precoUnitario).toFixed(2)}</td>
-                <td>
-                  <S.Button onClick={() => handleDeletarProdutoSelecionado(produto.id)}>
-                    Remover
+                  <S.Button
+                    type="button"
+                    onClick={() => adicionarProduto(produto, quantidadesTemp[produto.id] || 1)}
+                  >
+                    <FaArrowRight />
                   </S.Button>
-                </td>
-              </tr>
-            ))}
-            <tr>
-              <td colSpan={3}><strong>Total Geral</strong></td>
-              <td colSpan={2}><strong>R$ {totalGeral.toFixed(2)}</strong></td>
-            </tr>
-          </tbody>
-        </S.Table>
-      ) : (
-        <p>Nenhum produto selecionado ainda.</p>
-      )}
+                </div>
+              ))}
+            </S.SearchResults>
+          )}
+        </div>
 
-      {!mostrarFormulario ? (
-        <S.Button onClick={() => setMostrarFormulario(true)}>Cadastrar Novo Produto</S.Button>
-      ) : (
-        <>
-          <S.Title>Cadastrar Novo Produto</S.Title>
-          <S.Form onSubmit={handleSubmit}>
-            <S.Label htmlFor="nome">Nome</S.Label>
-            <S.Input
-              type="text"
-              name="nome"
-              placeholder="Nome"
-              value={produto.nome}
-              onChange={handleChange}
-              required
-            />
-            <S.Label htmlFor="descricao">Descrição</S.Label>
-            <S.TextArea
-              name="descricao"
-              placeholder="Descrição"
-              value={produto.descricao}
-              onChange={handleChange}
-              required
-            />
-            <S.Label htmlFor="precoUnitario">Preço Unitário</S.Label>
-            <S.Input
-              type="number"
-              name="precoUnitario"
-              placeholder="Preço Unitário"
-              value={produto.precoUnitario}
-              onChange={handleChange}
-              required
-            />
-            <S.Label htmlFor="ncm">NCM</S.Label>
-            <S.Input
-              type="text"
-              name="ncm"
-              placeholder="NCM"
-              value={produto.ncm}
-              onChange={handleChange}
-              required
-            />
-            <S.Label htmlFor="quantidade">Quantidade</S.Label>
-            <S.Input
-              type="number"
-              name="quantidade"
-              placeholder="Quantidade"
-              value={produto.quantidade}
-              onChange={handleChange}
-              required
-            />
-            <S.Label htmlFor="observacao">Observação</S.Label>
-            <S.TextArea
-              name="observacao"
-              placeholder="Observação"
-              value={produto.observacao ?? ''}
-              onChange={handleChange}
-            />
-            <S.Label>
-              Ativo:
+        {mostrarFormulario && (
+          <div>
+            <S.Form onSubmit={handleSubmit}>
+              <S.Label htmlFor="nome">Nome</S.Label>
               <S.Input
-                type="checkbox"
-                name="ativo"
-                checked={produto.ativo}
+                type="text"
+                name="nome"
+                placeholder="Nome"
+                value={produto.nome}
+                onChange={handleChange}
+                required
+              />
+              <S.Label htmlFor="descricao">Descrição</S.Label>
+              <S.TextArea
+                name="descricao"
+                placeholder="Descrição"
+                value={produto.descricao}
+                onChange={handleChange}
+                required
+              />
+              <S.Label htmlFor="precoUnitario">Preço Unitário</S.Label>
+              <S.Input
+                type="number"
+                name="precoUnitario"
+                placeholder="Preço Unitário"
+                value={produto.precoUnitario}
+                onChange={handleChange}
+                required
+              />
+              <S.Label htmlFor="ncm">NCM</S.Label>
+              <S.Input
+                type="text"
+                name="ncm"
+                placeholder="NCM"
+                value={produto.ncm}
+                onChange={handleChange}
+                required
+              />
+              <S.Label htmlFor="quantidade">Quantidade</S.Label>
+              <S.Input
+                type="number"
+                name="quantidade"
+                placeholder="Quantidade"
+                value={produto.quantidade}
+                onChange={handleChange}
+                required
+              />
+              <S.Label htmlFor="observacao">Observação</S.Label>
+              <S.TextArea
+                name="observacao"
+                placeholder="Observação"
+                value={produto.observacao ?? ''}
                 onChange={handleChange}
               />
-            </S.Label>
-            <S.Label>
-              Imagem:
-              <S.Input type="file" accept="image/*" onChange={handleImageChange} />
-            </S.Label>
-            {produto.imagem && <S.ImgPreview src={produto.imagem} alt="Preview" />}
-            <S.Button type="submit">Cadastrar</S.Button>
-          </S.Form>
-        </>
-      )}
+              <S.Label>
+                Ativo:
+                <S.Input
+                  type="checkbox"
+                  name="ativo"
+                  checked={produto.ativo}
+                  onChange={handleChange}
+                />
+              </S.Label>
+              <S.Label>
+                Imagem:
+                <S.Input type="file" accept="image/*" onChange={handleImageChange} />
+              </S.Label>
+              {produto.imagem && <S.ImgPreview src={produto.imagem} alt="Preview" />}
+              <S.Button type="submit">Cadastrar</S.Button>
+            </S.Form>
+          </div>
+        )}
+      </S.GridContent>
+
+      <S.FullWidth>
+        {produtosSelecionados.length > 0 ? (
+          <S.Table>
+            <S.Table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Quantidade</th>
+                  <th>Preço Unitário</th>
+                  <th>Total</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {produtosSelecionados.map((produto) => (
+                  <tr key={produto.id}>
+                    <td>{produto.nome}</td>
+                    <td>
+                      <S.Input
+                        type="number"
+                        min={1}
+                        value={produto.quantidade}
+                        onChange={(e) =>
+                          handleAtualizarQuantidade(produto.id, Number(e.target.value))
+                        }
+                        style={{ width: '60px' }}
+                      />
+                    </td>
+                    <td>{produto.precoUnitario.toFixed(2)}</td>
+                    <td>{(produto.quantidade * produto.precoUnitario).toFixed(2)}</td>
+                    <td>
+                      <S.Button onClick={() => handleDeletarProdutoSelecionado(produto.id)}>
+                        Remover
+                      </S.Button>
+                    </td>
+                  </tr>
+                ))}
+                <tr>
+                  <td colSpan={3}><strong>Total Geral</strong></td>
+                  <td colSpan={2}><strong>R$ {totalGeral.toFixed(2)}</strong></td>
+                </tr>
+              </tbody>
+            </S.Table>
+          </S.Table>
+        ) : (
+          <p>Nenhum produto selecionado ainda.</p>
+        )}
+      </S.FullWidth>
     </S.Container>
   )
 }
