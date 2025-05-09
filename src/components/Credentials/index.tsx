@@ -6,23 +6,30 @@ import {
     useLoginMutation,
     useForgotPasswordMutation
 } from '../../services/api'
+import { useDispatch } from 'react-redux'
+import { loginSuccess } from '../../store/reducers/authSlice'
 
 const Credentials = () => {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [mensagem, setMensagem] = useState<string | null>(null)
     const [forgotMessage, setForgotMessage] = useState<string | null>(null)
-    const navigate = useNavigate()
 
-    const [login, { isLoading: isLoggingIn, error: loginError }] = useLoginMutation()
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+    const [login, { isLoading: isLoggingIn }] = useLoginMutation()
     const [forgotPassword, { isLoading: isSendingReset }] = useForgotPasswordMutation()
 
     const handleLogin = async () => {
-        setMensagem(null)
+        setMensagem(null);
         try {
             const response = await login({ username, password }).unwrap()
             console.log('Resposta da API de login:', response)
+
             localStorage.setItem('ACCESS_TOKEN', response.accessToken)
+
+            dispatch(loginSuccess())
+
             alert('Login bem-sucedido!')
             navigate('/dashboard')
         } catch (err: any) {
@@ -33,12 +40,10 @@ const Credentials = () => {
             }
         }
     }
-    
-    
 
     const handleForgot = async () => {
         if (!username) {
-            setForgotMessage('Digite seu usuário ou e-mail acima para receber o link.')
+            setForgotMessage('Digite seu usuário ou e-mail acima para receber o link.');
             return
         }
         setForgotMessage(null)
@@ -97,7 +102,6 @@ const Credentials = () => {
                         {isSendingReset ? 'Enviando link…' : 'Esqueci a Senha'}
                     </button>
                     {forgotMessage && <p>{forgotMessage}</p>}
-
                 </div>
             </Login>
         </Container>

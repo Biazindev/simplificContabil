@@ -3,9 +3,11 @@ import api from '../../services/api'
 
 import cart from './cart'
 import cliente from './ClienteSlice'
+import authReducer from './authSlice'
 
 export const store = configureStore({
     reducer: {
+        auth: authReducer,
         cart: cart,
         cliente,
         [api.reducerPath]: api.reducer
