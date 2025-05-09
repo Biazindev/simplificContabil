@@ -65,6 +65,10 @@ export const Title = styled.h2`
   text-align: center;
 `;
 
+    export const Total = styled.div`
+    margin:0 auto;
+    `
+
 export const Form = styled.form`
   background-color: #ffffff;
   padding: 24px;

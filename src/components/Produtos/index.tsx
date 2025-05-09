@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   useAddProdutoMutation,
   useDeleteProdutoMutation,
@@ -46,6 +46,17 @@ const Produtos = () => {
     observacao: '',
     imagem: null
   })
+
+  // Lê o cliente do localStorage
+  const [cliente, setCliente] = useState<any>(null)
+
+  useEffect(() => {
+    const clienteString = localStorage.getItem('clienteSelecionado')
+    if (clienteString) {
+      const clienteParsed = JSON.parse(clienteString)
+      setCliente(clienteParsed)
+    }
+  }, [])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -137,7 +148,18 @@ const Produtos = () => {
     <S.Container>
       <S.TopBar>
         <div>
-          <S.Title>Buscar Produto</S.Title>
+          <S.Title>
+            Buscar Produto
+            {cliente && cliente.pessoaFisica ? (
+              <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
+                Cliente: {cliente.pessoaFisica.nome}
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
+                Cliente: Não encontrado
+              </span>
+            )}
+          </S.Title>
         </div>
         <div>
           {!mostrarFormulario && (
@@ -147,6 +169,7 @@ const Produtos = () => {
           )}
         </div>
       </S.TopBar>
+
       <S.GridContent>
         <div>
           <S.Input
@@ -262,50 +285,45 @@ const Produtos = () => {
       <S.FullWidth>
         {produtosSelecionados.length > 0 ? (
           <S.Table>
-            <S.Table>
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Quantidade</th>
-                  <th>Preço Unitário</th>
-                  <th>Total</th>
-                  <th>Ações</th>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Quantidade</th>
+                <th>Preço Unitário</th>
+                <th>Total</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {produtosSelecionados.map((produto) => (
+                <tr key={produto.id}>
+                  <td>{produto.nome}</td>
+                  <td>
+                    <S.Input
+                      type="number"
+                      min={1}
+                      value={produto.quantidade}
+                      onChange={(e) =>
+                        handleAtualizarQuantidade(produto.id, Number(e.target.value))
+                      }
+                      style={{ width: '60px' }}
+                    />
+                  </td>
+                  <td>{produto.precoUnitario.toFixed(2)}</td>
+                  <td>{(produto.quantidade * produto.precoUnitario).toFixed(2)}</td>
+                  <td>
+                    <S.Button onClick={() => handleDeletarProdutoSelecionado(produto.id)}>
+                      Remover
+                    </S.Button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {produtosSelecionados.map((produto) => (
-                  <tr key={produto.id}>
-                    <td>{produto.nome}</td>
-                    <td>
-                      <S.Input
-                        type="number"
-                        min={1}
-                        value={produto.quantidade}
-                        onChange={(e) =>
-                          handleAtualizarQuantidade(produto.id, Number(e.target.value))
-                        }
-                        style={{ width: '60px' }}
-                      />
-                    </td>
-                    <td>{produto.precoUnitario.toFixed(2)}</td>
-                    <td>{(produto.quantidade * produto.precoUnitario).toFixed(2)}</td>
-                    <td>
-                      <S.Button onClick={() => handleDeletarProdutoSelecionado(produto.id)}>
-                        Remover
-                      </S.Button>
-                    </td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan={3}><strong>Total Geral</strong></td>
-                  <td colSpan={2}><strong>R$ {totalGeral.toFixed(2)}</strong></td>
-                </tr>
-              </tbody>
-            </S.Table>
+              ))}
+            </tbody>
           </S.Table>
         ) : (
-          <p>Nenhum produto selecionado ainda.</p>
+          <p>Nenhum produto selecionado.</p>
         )}
+        <S.Total>Subtotal: R$ {totalGeral.toFixed(2)}</S.Total>
       </S.FullWidth>
     </S.Container>
   )
