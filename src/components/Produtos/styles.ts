@@ -147,3 +147,7 @@ export const Button = styled.button`
     cursor: not-allowed;
   }
 `
+
+export const SearchResults = styled.div`
+  margin: 0 auto;
+`

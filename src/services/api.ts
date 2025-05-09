@@ -208,6 +208,10 @@ export const api = createApi({
       query: () => '/produtos',
       providesTags: ['Produto']
     }),
+    getProdutosByName: builder.query<ProdutoProps[], string>({
+      query: (nome) => `/produtos/buscar?nome=${encodeURIComponent(nome)}`,
+      providesTags: ['Produto']
+    }),
     searchProdutos: builder.query<ProdutoProps[], string>({
       query: (searchTerm) => `/produtos?search=${searchTerm}`,
       providesTags: ['Produto']
@@ -371,6 +375,7 @@ export const api = createApi({
 export const {
   useLoginMutation,
   useGetProdutosQuery,
+  useGetProdutosByNameQuery,
   useAddProdutoMutation,
   useUpdateProdutoMutation,
   useDeleteProdutoMutation,

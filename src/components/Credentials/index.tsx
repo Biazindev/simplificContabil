@@ -9,6 +9,7 @@ import {
 import { useDispatch } from 'react-redux'
 import { loginSuccess } from '../../store/reducers/authSlice'
 
+
 const Credentials = () => {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
@@ -28,7 +29,7 @@ const Credentials = () => {
 
             localStorage.setItem('ACCESS_TOKEN', response.accessToken)
 
-            dispatch(loginSuccess())
+            dispatch(loginSuccess(response.accessToken))
 
             alert('Login bem-sucedido!')
             navigate('/dashboard')
