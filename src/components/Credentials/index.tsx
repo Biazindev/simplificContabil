@@ -22,7 +22,7 @@ const Credentials = () => {
         try {
             const response = await login({ username, password }).unwrap()
             console.log('Resposta da API de login:', response)
-            localStorage.setItem('token', response.accessToken)
+            localStorage.setItem('ACCESS_TOKEN', response.accessToken)
             alert('Login bem-sucedido!')
             navigate('/dashboard')
         } catch (err: any) {

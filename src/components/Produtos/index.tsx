@@ -16,7 +16,7 @@ interface ProdutoProps {
   ativo: boolean
   quantidade: number
   observacao: string | null
-  dataCadastro: number[]
+  dataDeVencimento: string;
   imagem: string | null
 }
 
@@ -49,7 +49,7 @@ const Produtos = () => {
   const [postProduto] = useAddProdutoMutation()
   const [deleteProduto] = useDeleteProdutoMutation()
 
-  const [produto, setProduto] = useState<Omit<ProdutoProps, 'id' | 'dataCadastro'>>({
+  const [produto, setProduto] = useState<Omit<ProdutoProps, 'id' | 'dataDeVencimento'>>({
     nome: '',
     descricao: '',
     precoUnitario: 0,
@@ -69,13 +69,13 @@ const Produtos = () => {
       const parsed = parseCurrency(value)
       setProduto((prev) => ({ ...prev, precoUnitario: parsed }))
     } else {
-        setProduto((prev) => ({
-          ...prev,
-          [name]:
-            name === 'quantidade'
-              ? Number(value)
-              : value
-        }))
+      setProduto((prev) => ({
+        ...prev,
+        [name]:
+          name === 'quantidade'
+            ? Number(value)
+            : value
+      }))
     }
   }
 
@@ -95,13 +95,14 @@ const Produtos = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-  
+
     const novoProduto = {
       ...produto,
-      dataCadastro: getDataCadastro(),
+      dataVencimento: new Date().toISOString().split('.')[0], // remove milissegundos
       observacao: produto.observacao || null
     }
-  
+
+
     try {
       const response = await postProduto(novoProduto).unwrap()
       alert('Produto cadastrado com sucesso!')
@@ -125,12 +126,12 @@ const Produtos = () => {
         alert(error.data)
         return
       }
-  
+
       console.error('Erro ao cadastrar produto:', error)
       alert('Erro ao cadastrar produto.')
     }
   }
-  
+
 
   const handleEditar = (id: number) => {
     console.log('Editar produto ID:', id)
@@ -139,7 +140,7 @@ const Produtos = () => {
   const handleDeletar = async (id: number) => {
     const confirmar = window.confirm(`Tem certeza que deseja excluir o produto ID ${id}?`)
     if (!confirmar) return
-  
+
     try {
       await deleteProduto(id).unwrap()
       alert('Produto excluído com sucesso!')
@@ -148,7 +149,7 @@ const Produtos = () => {
       alert('Erro ao excluir produto.')
     }
   }
-  
+
 
   return (
     <S.Container>
@@ -207,13 +208,13 @@ const Produtos = () => {
         />
         <S.Label>
           <div>
-          Ativo:
-          <S.Input
-            type="checkbox"
-            name="ativo"
-            checked={produto.ativo}
-            onChange={handleChange}
-          />
+            Ativo:
+            <S.Input
+              type="checkbox"
+              name="ativo"
+              checked={produto.ativo}
+              onChange={handleChange}
+            />
           </div>
         </S.Label>
 
@@ -229,44 +230,57 @@ const Produtos = () => {
       <S.Title>Lista de Produtos</S.Title>
       {isLoading && <p>Carregando produtos...</p>}
 
-      {Array.isArray(data) && data.length > 0 ? (
-        <S.Table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nome</th>
-              <th>Descrição</th>
-              <th>Quantidade</th>
-              <th>Ativo</th>
-              <th>Data de Cadastro</th>
-              <th>Preço (R$)</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((produto) => {
-              const [ano, mes, dia, hora, minuto, segundo] = produto.dataCadastro
-              const dataFormatada = new Date(ano, mes - 1, dia, hora, minuto, segundo).toLocaleString('pt-BR')              
-              return (
-                <tr key={produto.id}>
-                  <td>{produto.id}</td>
-                  <td>{produto.nome}</td>
-                  <td>{produto.descricao}</td>
-                  <td>{produto.quantidade}</td>
-                  <td>{produto.ativo ? 'Sim' : 'Não'}</td>
-                  <td>{dataFormatada}</td>
-                  <td>{produto.precoUnitario != null ? produto.precoUnitario.toFixed(2) : '0,00'}</td>
-                  <td>
-                  <button>Editar</button>
-                  <button onClick={() => handleDeletar(produto.id)}>Excluir</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </S.Table>
+      {Array.isArray(data) ? (
+        data.length > 0 ? (
+          <S.Table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Quantidade</th>
+                <th>Ativo</th>
+                <th>Data de Vencimento</th>
+                <th>Preço (R$)</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((produto) => {
+                const formatarData = (iso: string | null | undefined): string => {
+                  if (!iso) return '—'
+                  const date = new Date(iso)
+                  return isNaN(date.getTime()) ? '—' : date.toLocaleDateString('pt-BR')
+                }
+                return (
+                  <tr key={produto.id}>
+                    <td>{produto.id}</td>
+                    <td>{produto.nome}</td>
+                    <td>{produto.descricao}</td>
+                    <td>{produto.quantidade}</td>
+                    <td>{produto.ativo ? 'Sim' : 'Não'}</td>
+                    <td>{formatarData(produto.dataDeVencimento)}</td>
+                    <td>{produto.precoUnitario?.toFixed(2) ?? '0,00'}</td>
+                    <td>
+                      <button>Editar</button>
+                      <button onClick={() => handleDeletar(produto.id)}>Excluir</button>
+                    </td>
+                  </tr>
+                )
+              })}
+
+
+            </tbody>
+          </S.Table>
+        ) : (
+          <p>Nenhum produto encontrado.</p>
+        )
+      ) : isLoading ? (
+        <p>Carregando produtos...</p>
+      ) : error ? (
+        <p>Erro ao carregar produtos.</p>
       ) : (
-        <p>Nenhum produto encontrado.</p>
+        <p>Não foi possível carregar os dados.</p>
       )}
     </S.Container>
   )

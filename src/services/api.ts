@@ -107,7 +107,7 @@ export interface CreateClienteRequest {
 
 export type ProdutoProps = {
   mensagem: string; id: number; nome: string; descricao: string;
-  precoUnitario: number; ncm: string; ativo: boolean; dataCadastro: number[];
+  precoUnitario: number; ncm: string; ativo: boolean; dataDeVencimento: string;
   imagem: string | null; quantidade: number; observacao: string | null
 }
 export type VendaProps = {
@@ -122,17 +122,17 @@ const mutex = new Mutex()
 
 const baseQuery = fetchBaseQuery({
   baseUrl: 'https://api.biazinsistemas.com',
-  credentials: 'include',             
+  credentials: 'include',
   prepareHeaders: (headers) => {
     const token = localStorage.getItem('ACCESS_TOKEN');
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
-      headers.set('SIMPLIFICA-API-KEY', 'biaza');
-    
+    headers.set('SIMPLIFICA-API-KEY', 'biaza');
+
     return headers;
   }
-  
+
 })
 
 export const baseQueryWithReauth: BaseQueryFn<
@@ -257,61 +257,10 @@ export const api = createApi({
       query: () => '/clientes',
       providesTags: ['Cliente']
     }),
-    lazyGetClienteByDocumento: builder.query<{
-      id: number;
-      tipoPessoa: 'FISICA' | 'JURIDICA';
-      pessoaFisica: {
-        endereco: { logradouro: string; numero: string; bairro: string; municipio: string; uf: string; cep: string; complemento: string; };
-        nome: string;
-        cpf: string;
-        email: string;
-        telefone: string;
-        dataNascimento: string;
-      } | null;
-      pessoaJuridica: {
-        porte: string;
-        dataAbertura: string;
-        ultimaAtualizacao: null;
-        socios: never[];
-        inscricaoEstadual: string;
-        telefone: string;
-        email: string;
-        endereco: { logradouro: string; numero: string; bairro: string; municipio: string; uf: string; cep: string; complemento: string; };
-        cnpj: string;
-        razaoSocial: string;
-        nomeFantasia: string;
-        situacao: string;
-        tipo: string;
-        naturezaJuridica: string;
-        atividadesPrincipais: {
-          codigo: string;
-          descricao: string;
-        }[];
-        atividadesSecundarias: {
-          codigo: string;
-          descricao: string;
-        }[];
-        capitalSocial: number;
-        simples: {
-          ultimaAtualizacao: null;
-          optante: boolean;
-          dataOpcao?: string;
-          dataExclusao?: string;
-        };
-      } | null;
-      endereco: {
-        cep: string;
-        bairro: string;
-        municipio: string;
-        logradouro: string;
-        numero: string;
-        uf: string;
-        complemento?: string;
-      } | null;
-    }, string>({
+    getClienteByDocumento: builder.query<ClienteProps, string>({
       query: (documento) => `/clientes/buscar-documento?documento=${documento}`,
     }),
-        
+
     addCliente: builder.mutation<ClienteProps, CreateClienteRequest>({
       query: (cliente) => ({
         url: '/clientes',
@@ -321,10 +270,10 @@ export const api = createApi({
       invalidatesTags: ['Cliente']
     }),
 
-    updateCliente: builder.mutation<void, { 
-      id: number; 
-      pessoaFisica?: PessoaFisica | null; 
-      pessoaJuridica?: PessoaJuridica | null; 
+    updateCliente: builder.mutation<void, {
+      id: number;
+      pessoaFisica?: PessoaFisica | null;
+      pessoaJuridica?: PessoaJuridica | null;
     }>({
       query: ({ id, pessoaFisica, pessoaJuridica }) => ({
         url: `/clientes/${id}`,
@@ -335,7 +284,7 @@ export const api = createApi({
         },
       }),
     }),
-    
+
     deleteCliente: builder.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
         url: `/clientes/${id}`,
@@ -347,7 +296,7 @@ export const api = createApi({
     getClienteIdByCpf: builder.query<{ id: string }, string>({
       query: (cpf) => `/clientes/cpf/${cpf}`,
     }),
-    
+
     getClienteById: builder.query<any, string>({
       query: (id) => `/clientes/${id}`,
     }),
