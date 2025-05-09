@@ -2,16 +2,15 @@ import React, { useEffect, useState } from 'react'
 import * as S from '../Clientes/styles'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { format, parseISO } from 'date-fns'
 import { setClienteSelecionado } from '../../store/reducers/ClienteSlice'
 import {
-  useLazyGetClienteByDocumentoQuery,
   useAddClienteMutation,
   useUpdateClienteMutation,
   PessoaJuridica,
   CreateClienteRequest,
   PessoaFisica,
   Endereco,
+  useLazyGetClienteByDocumentoQuery,
 } from '../../services/api'
 
 interface ClienteForm {
@@ -63,174 +62,154 @@ const toDDMMYYYY = (date: string | Date): string => {
 }
 
 
+
 const Cliente = () => {
-  const [documentoBusca, setDocumentoBusca] = useState('')
-  const [form, setForm] = useState<ClienteForm | null>(null)
-  const [documentoJaCadastrado, setDocumentoJaCadastrado] = useState(false)
-  const [erroBusca, setErroBusca] = useState<string | null>(null)
-  const [clienteId, setClienteId] = useState<string>('')
-  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
-  const [buscaPorId, setBuscaPorId] = useState(false)
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const [addCliente] = useAddClienteMutation()
+  const [documentoBusca, setDocumentoBusca] = useState('');
+  const [form, setForm] = useState<ClienteForm | null>(null);
+  const [documentoJaCadastrado, setDocumentoJaCadastrado] = useState(false);
+  const [erroBusca, setErroBusca] = useState<string | null>(null);
+  const [clienteId] = useState<string | null>(null);
+  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
+  const [buscaPorId, setBuscaPorId] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [addCliente] = useAddClienteMutation();
+  const [trigger, result] = useLazyGetClienteByDocumentoQuery();
   const [updateCliente] = useUpdateClienteMutation()
-  const [triggerBuscaCliente, clienteResult] = useLazyGetClienteByDocumentoQuery()
-  const [triggerBuscaPorId] = useLazyGetClienteByDocumentoQuery()
-  const cliente = clienteResult.data
-  const error = clienteResult.error
 
+  const cliente = result.data;
 
 
   useEffect(() => {
-    if (buscaPorId && clienteId) {
-      triggerBuscaPorId(clienteId)
-        .unwrap()
-        .then((cliente: any) => {
-          if (cliente?.pessoaFisica) {
-         
-            const dataNascimento = cliente.pessoaFisica.dataNascimento.includes('/')
-              ? cliente.pessoaFisica.dataNascimento.split('/').reverse().join('-')
-              : cliente.pessoaFisica.dataNascimento
+  if (cliente) {
+    if (cliente.pessoaFisica) {
+      const dataNascimento = cliente.pessoaFisica.dataNascimento.includes('/')
+        ? cliente.pessoaFisica.dataNascimento.split('/').reverse().join('-')
+        : cliente.pessoaFisica.dataNascimento;
 
-            setForm({
-              pessoaFisica: {
-                ...cliente.pessoaFisica,
-                dataNascimento,
-                endereco: cliente.pessoaFisica.endereco || {
-                  logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
-                }
-              },
-              pessoaJuridica: null
-            })
-          } else if (cliente?.pessoaJuridica) {
-            setForm({
-              pessoaFisica: null,
-              pessoaJuridica: {
-                ...cliente.pessoaJuridica,
-                endereco: cliente.pessoaJuridica.endereco || {
-                  logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
-                },
-                simples: cliente.pessoaJuridica.simples || {
-                  mei: false,
-                  optante: false,
-                  dataExclusao: null,
-                  ultimaAtualizacao: null
-                }
-              }
-            })
+      setForm({
+        pessoaFisica: {
+          ...cliente.pessoaFisica,
+          dataNascimento,
+          endereco: cliente.pessoaFisica.endereco || {
+            logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
           }
-
-          setDocumentoJaCadastrado(true)
-          setErroBusca(null)
-        })
-        .catch((err: any) => {
-          console.error('❌ Erro ao buscar cliente por ID:', err)
-        })
-    }
-  }, [buscaPorId, clienteId, triggerBuscaPorId])
-
-  useEffect(() => {
-    if (cliente) {
-      if (cliente.pessoaFisica) {
-        const dataNascimento = cliente.pessoaFisica.dataNascimento.includes('/')
-          ? cliente.pessoaFisica.dataNascimento.split('/').reverse().join('-')
-          : cliente.pessoaFisica.dataNascimento
-
-        setForm({
-          pessoaFisica: {
-            ...cliente.pessoaFisica,
-            dataNascimento,
-            endereco: cliente.pessoaFisica.endereco || {
-              logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
-            }
+        },
+        pessoaJuridica: null
+      });
+    } else if (cliente.pessoaJuridica) {
+      setForm({
+        pessoaFisica: null,
+        pessoaJuridica: {
+          ...cliente.pessoaJuridica,
+          endereco: cliente.pessoaJuridica.endereco || {
+            logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
           },
-          pessoaJuridica: null
-        })
-      } else if (cliente.pessoaJuridica) {
-        setForm({
-          pessoaFisica: null,
-          pessoaJuridica: {
-            ...cliente.pessoaJuridica,
-            endereco: cliente.pessoaJuridica.endereco || {
-              logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
-            },
-            simples: cliente.pessoaJuridica.simples || {
-              mei: false,
-              optante: false,
-              dataExclusao: null,
-              ultimaAtualizacao: null
-            }
+          simples: cliente.pessoaJuridica.simples || {
+            mei: false,
+            optante: false,
+            dataExclusao: null,
+            ultimaAtualizacao: null
           }
-        })
-      }
-
-      setDocumentoJaCadastrado(true)
-      setErroBusca(null)
+        }
+      });
     }
-  }, [cliente])
+
+    setDocumentoJaCadastrado(true);
+    setErroBusca(null);
+  }
+}, [cliente]);
+useEffect(() => {
+  const cleaned = documentoBusca.replace(/\D/g, '');
+  if (cleaned.length === 11 || cleaned.length === 14) {
+    const delayDebounce = setTimeout(() => {
+      handleBuscaDocumento();
+    }, 500); 
+
+    return () => clearTimeout(delayDebounce);
+  }
+}, [documentoBusca]);
 
   const handleBuscaDocumento = async () => {
     if (!documentoBusca.trim()) {
-      setErroBusca('Digite um CPF/CNPJ')
-      return
+      setErroBusca('Digite um CPF/CNPJ');
+      return;
     }
-
+  
     try {
-      const response = await triggerBuscaCliente(documentoBusca).unwrap()
-
+      const response = await trigger(documentoBusca).unwrap();
+  
       if (response?.id) {
-        setClienteId(response.id.toString())
-        setDocumentoJaCadastrado(true)
-        setMostrarConfirmacao(true)
-        setErroBusca(null)
-        
+        setDocumentoJaCadastrado(true);
+        setMostrarConfirmacao(false);
+        setErroBusca(null);
+  
         if (response.pessoaFisica) {
+          const {
+            nome, cpf, email, telefone, dataNascimento, endereco
+          } = response.pessoaFisica;
+  
           setForm({
             pessoaFisica: {
-              ...response.pessoaFisica,
-              dataNascimento: response.pessoaFisica.dataNascimento.includes('/')
-                ? response.pessoaFisica.dataNascimento.split('/').reverse().join('-')
-                : response.pessoaFisica.dataNascimento,
-              endereco: response.pessoaFisica.endereco || {
+              nome,
+              cpf,
+              email,
+              telefone,
+              dataNascimento: dataNascimento.includes('/')
+                ? dataNascimento.split('/').reverse().join('-')
+                : dataNascimento,
+              endereco: endereco ?? {
                 logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
               }
             },
             pessoaJuridica: null
-          })
+          });
         } else if (response.pessoaJuridica) {
+          const {
+            cnpj, razaoSocial, nomeFantasia, situacao, tipo, naturezaJuridica,
+            porte, dataAbertura, ultimaAtualizacao, atividadesPrincipais, atividadesSecundarias,
+            socios, capitalSocial, simples, endereco, telefone, inscricaoEstadual, email
+          } = response.pessoaJuridica;
+  
           setForm({
             pessoaFisica: null,
             pessoaJuridica: {
-              ...response.pessoaJuridica,
-              endereco: response.pessoaJuridica.endereco || {
-                logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
-              },
-              simples: response.pessoaJuridica.simples || {
-                mei: false,
+              cnpj,
+              razaoSocial,
+              nomeFantasia,
+              situacao,
+              tipo,
+              naturezaJuridica,
+              porte,
+              dataAbertura,
+              ultimaAtualizacao,
+              atividadesPrincipais,
+              atividadesSecundarias,
+              socios,
+              capitalSocial,
+              simples: simples ?? {
                 optante: false,
                 dataExclusao: null,
-                ultimaAtualizacao: null
-              }
+                ultimaAtualizacao: null,
+              },
+              endereco: endereco ?? {
+                logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
+              },
+              telefone,
+              inscricaoEstadual,
+              email
             }
-          })
+          });
         }
       } else {
-        throw new Error('Cliente não encontrado')
+        throw new Error('Cliente não encontrado');
       }
-    } catch (err) {
-      let errorMessage = 'Cliente não encontrado. Preencha os dados.'
-      
-      if (typeof err === 'object' && err !== null && 'data' in err) {
-        const apiError = err as { data?: { message?: string } }
-        errorMessage = apiError.data?.message || errorMessage
-      } else if (err instanceof Error) {
-        errorMessage = err.message
-      }
-
-      setErroBusca(errorMessage)
-
-      const isCPF = documentoBusca.replace(/\D/g, '').length === 11
+    } catch (error: any) {
+      const mensagemBackend = error?.data?.message || 'Cliente não encontrado. Preencha os dados.';
+      setErroBusca(mensagemBackend);
+  
+      const isCPF = documentoBusca.replace(/\D/g, '').length === 11;
+  
       setForm({
         pessoaFisica: isCPF ? {
           nome: '',
@@ -265,7 +244,7 @@ const Cliente = () => {
           simples: {
             optante: false,
             dataExclusao: null,
-            ultimaAtualizacao: null,
+            ultimaAtualizacao: null
           },
           endereco: {
             logradouro: '',
@@ -278,13 +257,14 @@ const Cliente = () => {
           },
           telefone: '',
           inscricaoEstadual: '',
-          email: '',
-        } : null,
-      })
-      setDocumentoJaCadastrado(false)
+          email: ''
+        } : null
+      });
+  
+      setDocumentoJaCadastrado(false);
     }
-  }
-
+  };
+  
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     campo: string,
@@ -347,49 +327,34 @@ const Cliente = () => {
       }
     }
   }
-  const formatDateToBr = (dateStr: string) => {
-    try {
-      const parts = dateStr.includes('-') ? dateStr.split('-') : dateStr.split('/')
-      const [year, month, day] =
-        dateStr.includes('-') ? parts : [parts[2], parts[1], parts[0]]
-      const parsedDate = new Date(+year, +month - 1, +day)
-      return format(parsedDate, 'dd/MM/yyyy')
-    } catch {
-      return dateStr
-    }
-  }
-  
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!form) {
-      console.error("Formulário vazio")
-      return
+      console.error("Formulário vazio");
+      return;
     }
 
-    const isCPF = !!form.pessoaFisica?.cpf
-    const isCNPJ = !!form.pessoaJuridica?.cnpj
+    const isCPF = !!form.pessoaFisica?.cpf;
+    const isCNPJ = !!form.pessoaJuridica?.cnpj;
 
     if (!isCPF && !isCNPJ) {
-      console.error("Documento inválido")
-      return
+      console.error("Documento inválido");
+      return;
     }
 
     try {
-      let result
+      let result;
 
-      if (documentoJaCadastrado && clienteId) {
+      if (documentoJaCadastrado && cliente?.id) {
         const clientePayload: CreateClienteRequest = {
-          
           pessoaFisica: isCPF && form.pessoaFisica ? {
             nome: form.pessoaFisica.nome,
             cpf: form.pessoaFisica.cpf,
             email: form.pessoaFisica.email,
             telefone: form.pessoaFisica.telefone,
-            dataNascimento: form.pessoaFisica.dataNascimento
-            ? formatDateToBr(form.pessoaFisica.dataNascimento)
-            : '',
+            dataNascimento: form.pessoaFisica.dataNascimento || '',
             endereco: form.pessoaFisica.endereco
           } : null,
           pessoaJuridica: isCNPJ && form.pessoaJuridica ? {
@@ -422,12 +387,12 @@ const Cliente = () => {
                 : null
             }
           } : null
-        }
+        };
 
         result = await updateCliente({
-          id: parseInt(clienteId),
+          id: cliente.id,
           ...clientePayload
-        }).unwrap()
+        }).unwrap();
 
       } else {
         if (isCPF && form.pessoaFisica) {
@@ -440,8 +405,8 @@ const Cliente = () => {
               dataNascimento: form.pessoaFisica.dataNascimento,
               endereco: form.pessoaFisica.endereco
             }
-          }
-          result = await addCliente(payload).unwrap()
+          };
+          result = await addCliente(payload).unwrap();
 
         } else if (isCNPJ && form.pessoaJuridica) {
           const payload: CreateClienteRequest = {
@@ -475,35 +440,52 @@ const Cliente = () => {
                   : null
               }
             }
-          }
-          result = await addCliente(payload).unwrap()
+          };
+          result = await addCliente(payload).unwrap();
+
+          console.log('Cliente salvo com sucesso:', result);
+          setDocumentoBusca('');
+          setDocumentoJaCadastrado(false);
+          setErroBusca(null);
+
+          const clienteFormatado = {
+            id: result.id,
+            tipoPessoa: result.tipoPessoa,
+            pessoaFisica: result.pessoaFisica ?? null,
+            pessoaJuridica: result.pessoaJuridica ?? null
+          };
+
+          dispatch(setClienteSelecionado(clienteFormatado));
+          localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
+
+          navigate('/produtos');
+          console.log('✅ Resposta do backend:', clienteFormatado);
+
         } else {
-          console.error("Payload inválido")
-          return
+          console.error("Payload inválido");
+          return;
         }
       }
 
-      console.log('Cliente salvo com sucesso:', result)
-      setDocumentoBusca('')
-      setDocumentoJaCadastrado(false)
-      setErroBusca(null)
+      console.log('Cliente salvo com sucesso:', result);
+      setDocumentoBusca('');
+      setDocumentoJaCadastrado(false);
+      setErroBusca(null);
 
-      dispatch(setClienteSelecionado(result))
-      localStorage.setItem('clienteSelecionado', JSON.stringify(result))
-
-      navigate('/produtos')
-      console.log('✅ Resposta do backend:', result)
+      dispatch(setClienteSelecionado(result));
+      localStorage.setItem('clienteSelecionado', JSON.stringify(result));
+      navigate('/produtos');
+      console.log('✅ Resposta do backend:', result);
     } catch (error) {
-      console.error('Erro ao salvar cliente:', error)
+      console.error('Erro ao salvar cliente:', error);
     }
   }
-
   return (
     <S.Container>
       <div>
         <S.Section>
           <div>
-            <S.Title>Digite número do documento para cadastrar um novo cliente ou buscar um cliente já cadastrado</S.Title>
+            <S.Title>Digite numero do documento para cadastrar um novo cliente ou buscar um cliente já cadastrado</S.Title>
           </div>
           <div>
             <S.Input
@@ -645,6 +627,7 @@ const Cliente = () => {
                   name="dataNascimento"
                   value={form.pessoaFisica.dataNascimento}
                   onChange={(e) => handleChange(e, 'dataNascimento', 'cliente')}
+                  disabled={documentoJaCadastrado}
                 />
                 <S.Subtitle>Endereço</S.Subtitle>
                 <S.Input

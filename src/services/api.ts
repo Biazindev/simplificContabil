@@ -196,7 +196,6 @@ export const api = createApi({
         body
       })
     }),
-
     addProduto: builder.mutation<ProdutoProps, Partial<ProdutoProps>>({
       query: (novoProduto) => ({
         url: '/produtos',
@@ -207,6 +206,10 @@ export const api = createApi({
     }),
     getProdutos: builder.query<ProdutoProps[], void>({
       query: () => '/produtos',
+      providesTags: ['Produto']
+    }),
+    searchProdutos: builder.query<ProdutoProps[], string>({
+      query: (searchTerm) => `/produtos?search=${searchTerm}`,
       providesTags: ['Produto']
     }),
     updateProduto: builder.mutation<ProdutoProps, ProdutoProps>({
@@ -224,7 +227,6 @@ export const api = createApi({
       }),
       invalidatesTags: ['Produto']
     }),
-
     getVendas: builder.query<VendaProps[], void>({
       query: () => '/pdv',
       providesTags: ['Venda']
@@ -396,6 +398,7 @@ export const {
   useLazyGetClienteByIdQuery,
   useGetClienteByIdQuery,
   useLazyGetClienteByDocumentoQuery,
+  useSearchProdutosQuery
 } = api
 
 export default api
