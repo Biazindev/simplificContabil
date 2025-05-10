@@ -5,6 +5,13 @@ import {
   useUpdateVendaMutation,
   useDeleteVendaMutation
 } from '../../services/api'
+import { Venda } from './types' 
+export type Produto = {
+  id: number
+  nome: string
+  precoUnitario: number
+  quantidade: number
+}
 
 const Vendas = () => {
   const { data: vendas, error, isLoading } = useGetVendasQuery()
@@ -12,31 +19,41 @@ const Vendas = () => {
   const [updateVenda] = useUpdateVendaMutation()
   const [deleteVenda] = useDeleteVendaMutation()
 
-  const [novaVenda, setNovaVenda] = useState({
-    cliente: '', produtos: [{ id: 1, quantidade: 1 }],
-    metodoPagamento: 'cartao', valorPago: 0,
-    totalVenda: 0, dataVenda: new Date().toISOString()
+  const [novaVenda, setNovaVenda] = useState<Omit<Venda, 'id'>>({
+    cliente: '',
+    produtos: [{ id: 1, quantidade: 1 }],
+    metodoPagamento: 'cartao',
+    valorPago: 0,
+    totalVenda: 0,
+    dataVenda: new Date().toISOString()
   })
 
-  // ... handlers (sem alterações) ...
+  const handleAddVenda = () => {
+    addVenda(novaVenda)
+    setNovaVenda({
+      cliente: '',
+      produtos: [{ id: 1, quantidade: 1 }],
+      metodoPagamento: 'cartao',
+      valorPago: 0,
+      totalVenda: 0,
+      dataVenda: new Date().toISOString()
+    })
+  }
 
   return (
     <div>
       <h2>Vendas</h2>
-      {/* renderização corrigida */}
-      {isLoading ? (
-        <p>Carregando...</p>
-      ) : !!error ? (
-        <p>Erro ao carregar vendas</p>
-      ) : null}
+
+      {isLoading && <p>Carregando...</p>}
+      {Boolean(error) && <p>Erro ao carregar vendas</p>}
 
       <ul>
-        {vendas?.map((venda) => (
+        {vendas?.map((venda: Venda) => (
           <li key={venda.id}>
-            <p>Cliente: {venda.cliente}</p>
-            <p>Total: R${venda.totalVenda}</p>
-            <p>Data: {venda.dataVenda}</p>
-            <button onClick={() => updateVenda({ ...venda })}>Atualizar</button>
+            <p><strong>Cliente:</strong> {venda.cliente}</p>
+            <p><strong>Total:</strong> R$ {venda.totalVenda.toFixed(2)}</p>
+            <p><strong>Data:</strong> {new Date(venda.dataVenda).toLocaleDateString()}</p>
+            <button onClick={() => updateVenda(venda)}>Atualizar</button>
             <button onClick={() => deleteVenda(venda.id)}>Deletar</button>
           </li>
         ))}
@@ -49,7 +66,7 @@ const Vendas = () => {
         onChange={(e) => setNovaVenda({ ...novaVenda, cliente: e.target.value })}
         placeholder="Nome do cliente"
       />
-      <button onClick={() => addVenda(novaVenda)}>Adicionar Venda</button>
+      <button onClick={handleAddVenda}>Adicionar Venda</button>
     </div>
   )
 }

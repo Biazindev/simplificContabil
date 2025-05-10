@@ -232,20 +232,21 @@ export const api = createApi({
       invalidatesTags: ['Produto']
     }),
     getVendas: builder.query<VendaProps[], void>({
-      query: () => '/pdv',
+      query: () => '/venda',
       providesTags: ['Venda']
     }),
-    addVenda: builder.mutation<VendaProps, Partial<VendaProps>>({
-      query: (novaVenda) => ({
-        url: '/pdv',
+    addVenda: builder.mutation<Blob, any>({
+      query: (venda) => ({
+        url: '/venda',
         method: 'POST',
-        body: novaVenda
+        body: venda,
+        responseHandler: (response) => response.blob(),
       }),
       invalidatesTags: ['Venda']
     }),
     updateVenda: builder.mutation<VendaProps, VendaProps>({
       query: (venda) => ({
-        url: `/pdv/${venda.id}`,
+        url: `'/venda'${venda.id}`,
         method: 'PUT',
         body: venda
       }),
@@ -253,7 +254,7 @@ export const api = createApi({
     }),
     deleteVenda: builder.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
-        url: `/pdv/${id}`,
+        url: `'/venda'${id}`,
         method: 'DELETE'
       }),
       invalidatesTags: ['Venda']

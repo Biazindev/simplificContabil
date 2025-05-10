@@ -478,6 +478,7 @@ useEffect(() => {
       console.log('✅ Resposta do backend:', result);
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
+      console.log('Cliente:', cliente)
     }
   }
   return (

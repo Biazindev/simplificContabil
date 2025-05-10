@@ -12,6 +12,7 @@ import { ForgotPassword } from './components/Credentials/ForgotPassword'
 import { ResetPassword } from './components/Credentials/ResetPassword'
 import GetClientes from "./components/Get/GetClientes"
 import { PrivateRoute } from '../src/PrivateRoute'
+import Venda from "./components/Venda"
 
 const Rotas = () => (
   <Routes>
@@ -30,6 +31,7 @@ const Rotas = () => (
         <Route path="/stock" element={<Stock />} />
         <Route path="/dashboard/pizzaria" element={<DashboardPizzaria />} />
         <Route path="/get" element={<GetClientes />} />
+        <Route path="/venda" element={<Venda />} />
       </Route>
     </Route>
   </Routes>

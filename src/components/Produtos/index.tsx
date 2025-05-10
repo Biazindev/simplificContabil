@@ -7,6 +7,7 @@ import {
 
 import { FaArrowRight } from "react-icons/fa"
 import * as S from './styles'
+import { useNavigate } from 'react-router-dom'
 
 const parseCurrency = (value: string): number => {
   return Number(value.replace(/\./g, '').replace(',', '.')) || 0
@@ -26,6 +27,7 @@ type ProdutoProps = {
 
 const Produtos = () => {
   const [searchTerm, setSearchTerm] = useState('')
+  const navigate = useNavigate()
   const { data: produtosFiltrados } = useGetProdutosByNameQuery(searchTerm, {
     skip: searchTerm.length === 0
   })
@@ -47,7 +49,6 @@ const Produtos = () => {
     imagem: null
   })
 
-  // Lê o cliente do localStorage
   const [cliente, setCliente] = useState<any>(null)
 
   useEffect(() => {
@@ -143,7 +144,7 @@ const Produtos = () => {
     (total, p) => total + p.precoUnitario * p.quantidade,
     0
   )
-
+  console.log('Produtos selecionados:', produtosSelecionados)
   return (
     <S.Container>
       <S.TopBar>
@@ -319,11 +320,23 @@ const Produtos = () => {
                 </tr>
               ))}
             </tbody>
+            <S.Total>Subtotal: R$ {totalGeral.toFixed(2)}</S.Total>
+            <td colSpan={5}>
+              <S.Button
+                onClick={() => {
+                  localStorage.setItem('clienteSelecionado', JSON.stringify(cliente))
+                  localStorage.setItem('produtosSelecionados', JSON.stringify(produtosSelecionados))
+                  navigate('/venda')
+                }}
+                style={{ marginTop: '1rem' }}
+              >
+                Finalizar Venda
+              </S.Button>
+            </td>
           </S.Table>
         ) : (
           <p>Nenhum produto selecionado.</p>
         )}
-        <S.Total>Subtotal: R$ {totalGeral.toFixed(2)}</S.Total>
       </S.FullWidth>
     </S.Container>
   )
