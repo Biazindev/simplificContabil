@@ -10,7 +10,7 @@ import {
 } from "recharts"
 import { Briefcase } from 'lucide-react';
 import { CodesandboxLogo } from 'phosphor-react'
-import { IoMdPersonAdd } from "react-icons/io"
+import { UserPlus } from 'lucide-react'
 import { PiMoneyBold } from "react-icons/pi"
 
 import { Card, CardContent } from "../ui/card"
@@ -82,7 +82,7 @@ const Dashboard = () => {
                         <p>38</p>
                         <div>
                             <span>
-                                <IoMdPersonAdd style={{ fontSize: "40px", marginRight: "8px" }} />
+                                <UserPlus style={{ fontSize: "40px", marginRight: "8px" }} />
                                 <p>Novos Clientes</p>
                             </span>
                         </div>
