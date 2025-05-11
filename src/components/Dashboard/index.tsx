@@ -8,7 +8,7 @@ import {
     ResponsiveContainer,
     Legend
 } from "recharts"
-import { LuBriefcase } from "react-icons/lu"
+import { Briefcase } from 'lucide-react';
 import { PiCodesandboxLogoThin } from "react-icons/pi"
 import { IoMdPersonAdd } from "react-icons/io"
 import { PiMoneyBold } from "react-icons/pi"
@@ -64,7 +64,7 @@ const Dashboard = () => {
                         <p>22</p>
                         <div>
                             <span>
-                                <LuBriefcase style={{fontSize: "40px", marginRight: "8px"}} />
+                                <Briefcase style={{fontSize: "40px", marginRight: "8px"}} />
                                 <p>Novas Vendas</p>
                             </span>
                         </div>
