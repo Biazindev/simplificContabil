@@ -506,7 +506,6 @@ const Cliente = () => {
         </SectionHeader>
         <FormGrid as="div">
           <Fieldset>
-            <Label>Documento</Label>
             <Input
               type="text"
               placeholder="CPF ou CNPJ"
@@ -586,8 +585,6 @@ const Cliente = () => {
             {erroBusca && <ErrorText>{erroBusca}</ErrorText>}
           </Fieldset>
         </FormGrid>
-
-        {/* Se aparecer confirmação */}
         {mostrarConfirmacao && (
           <FormGrid as="div">
             <Fieldset>
@@ -614,8 +611,6 @@ const Cliente = () => {
             </Fieldset>
           </FormGrid>
         )}
-
-        {/* Formulário principal */}
         {form && (
           <>
             <SectionHeader>
@@ -625,9 +620,7 @@ const Cliente = () => {
                   : 'Cadastro Pessoa Jurídica'}
               </Title>
             </SectionHeader>
-
             <FormGrid as="form" onSubmit={handleSubmit}>
-              {/* Campos Pessoa Física */}
               {form.pessoaFisica && (
                 <>
                   <Fieldset>

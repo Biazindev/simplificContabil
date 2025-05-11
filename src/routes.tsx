@@ -13,6 +13,7 @@ import { ResetPassword } from './components/Credentials/ResetPassword'
 import GetClientes from "./components/Get/GetClientes"
 import { PrivateRoute } from '../src/PrivateRoute'
 import Venda from "./components/Venda"
+import User from "./components/User/User"
 
 const Rotas = () => (
   <Routes>
@@ -32,6 +33,7 @@ const Rotas = () => (
         <Route path="/dashboard/pizzaria" element={<DashboardPizzaria />} />
         <Route path="/get" element={<GetClientes />} />
         <Route path="/venda" element={<Venda />} />
+        <Route path="/user" element={<User />} />
       </Route>
     </Route>
   </Routes>

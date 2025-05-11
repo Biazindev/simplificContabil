@@ -1,3 +1,4 @@
+import { Usuario } from '../../src/components/User/User'
 import {
   createApi,
   fetchBaseQuery,
@@ -203,6 +204,13 @@ export const api = createApi({
         method: 'POST',
         body
       })
+    }),
+    criarUsuario: builder.mutation<string, Usuario>({
+      query: (usuario) => ({
+        url: 'usuario',
+        method: 'POST',
+        body: usuario,
+      }),
     }),
     addProduto: builder.mutation<ProdutoProps, Partial<ProdutoProps>>({
       query: (novoProduto) => ({
@@ -412,7 +420,8 @@ export const {
   useLazyGetClienteByIdQuery,
   useGetClienteByIdQuery,
   useLazyGetClienteByDocumentoQuery,
-  useSearchProdutosQuery
+  useSearchProdutosQuery,
+  useCriarUsuarioMutation
 } = api
 
 export default api
