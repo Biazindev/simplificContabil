@@ -9,7 +9,7 @@ import {
     Legend
 } from "recharts"
 import { Briefcase } from 'lucide-react';
-import { PiCodesandboxLogoThin } from "react-icons/pi"
+import { CodesandboxLogo } from 'phosphor-react'
 import { IoMdPersonAdd } from "react-icons/io"
 import { PiMoneyBold } from "react-icons/pi"
 
@@ -64,7 +64,7 @@ const Dashboard = () => {
                         <p>22</p>
                         <div>
                             <span>
-                                <Briefcase style={{fontSize: "40px", marginRight: "8px"}} />
+                                <Briefcase style={{ fontSize: "40px", marginRight: "8px" }} />
                                 <p>Novas Vendas</p>
                             </span>
                         </div>
@@ -73,8 +73,8 @@ const Dashboard = () => {
                         <p>1890</p>
                         <div>
                             <span>
-                            <PiCodesandboxLogoThin style={{fontSize: "40px", marginRight: "8px"}} />
-                            <p>Produtos em estoque</p>
+                                <CodesandboxLogo style={{ fontSize: "40px", marginRight: "8px" }} />
+                                <p>Produtos em estoque</p>
                             </span>
                         </div>
                     </CardContainer>
@@ -82,17 +82,17 @@ const Dashboard = () => {
                         <p>38</p>
                         <div>
                             <span>
-                            <IoMdPersonAdd style={{fontSize: "40px", marginRight: "8px"}} />
-                            <p>Novos Clientes</p>
+                                <IoMdPersonAdd style={{ fontSize: "40px", marginRight: "8px" }} />
+                                <p>Novos Clientes</p>
                             </span>
                         </div>
                     </CardContainer>
                     <CardContainer>
-                    <p>{formatCurrency(100)}</p>
+                        <p>{formatCurrency(100)}</p>
                         <div>
                             <span>
-                            <PiMoneyBold style={{fontSize: "40px", marginRight: "8px"}} />
-                            <p>Total hoje</p>
+                                <PiMoneyBold style={{ fontSize: "40px", marginRight: "8px" }} />
+                                <p>Total hoje</p>
                             </span>
                         </div>
                     </CardContainer>
@@ -101,7 +101,7 @@ const Dashboard = () => {
             <Container>
                 <Card>
                     <CardContent>
-                    <h3 className="text-lg font-semibold mb-4">Vendas Diárias</h3>
+                        <h3 className="text-lg font-semibold mb-4">Vendas Diárias</h3>
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={dailyData}>
                                 <CartesianGrid strokeDasharray="3 3" />

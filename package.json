@@ -16,6 +16,7 @@
     "framer-motion": "^12.8.0",
     "lucide-react": "^0.509.0",
     "meu-app": "file:",
+    "phosphor-react": "^1.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
