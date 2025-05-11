@@ -1,58 +1,49 @@
-import { cores } from '../../styles'
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 export const Container = styled.div`
   font-family: 'Roboto', sans-serif;
-  color: ${cores.cinza};
-  padding: 32px;
+  color: ${({ theme }) => theme.colors.textLight};
+  background: ${({ theme }) => theme.colors.bg};
+  padding: ${({ theme }) => theme.spacing(6)};
   margin: 0 auto;
   max-width: 1200px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-`
+  gap: ${({ theme }) => theme.spacing(6)};
+`;
 
 export const TopBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  gap: 24px;
+  gap: ${({ theme }) => theme.spacing(6)};
 
-  > div {
+  & > div {
     flex: 1;
   }
-
-  > div:first-child {
+  & > div:first-child {
+    display: flex;
     justify-content: flex-start;
-    display: flex;
   }
-
-  > div:last-child {
-    justify-content: flex-end;
+  & > div:last-child {
     display: flex;
+    justify-content: flex-end;
   }
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
-
-    > div {
+    & > div {
       justify-content: center;
     }
   }
-`
-
-
+`;
 
 export const GridContent = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: ${({ theme }) => theme.spacing(6)};
 `;
 
 export const FullWidth = styled.div`
@@ -60,62 +51,66 @@ export const FullWidth = styled.div`
 `;
 
 export const Title = styled.h2`
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 600;
   text-align: center;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
-    export const Total = styled.div`
-    margin:0 auto;
-    `
+export const Total = styled.div`
+  margin: 0 auto;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: ${({ theme }) => theme.colors.primary};
+`;
 
 export const Form = styled.form`
-  background-color: #ffffff;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  background: ${({ theme }) => theme.colors.surface};
+  padding: ${({ theme }) => theme.spacing(6)};
+  border-radius: ${({ theme }) => theme.radii.md};
+  box-shadow: 0 4px 14px ${({ theme }) => theme.colors.neoShadowDark};
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: ${({ theme }) => theme.spacing(4)};
 `;
 
 export const Input = styled.input`
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(1)};
+  border: 1px solid ${({ theme }) => theme.colors.textLight};
+  border-radius: ${({ theme }) => theme.radii.sm};
   font-size: 1rem;
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: ${({ theme }) => theme.colors.primary};
     outline: none;
   }
 `;
 
 export const TextArea = styled.textarea`
   width: 100%;
-  padding: 12px 14px;
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
   resize: vertical;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 1px solid ${({ theme }) => theme.colors.textLight};
+  border-radius: ${({ theme }) => theme.radii.sm};
   font-size: 1rem;
   min-height: 100px;
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: ${({ theme }) => theme.colors.primary};
     outline: none;
   }
 `;
 
 export const Label = styled.label`
   font-size: 1rem;
-  color: #374151;
-  margin-bottom: 4px;
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: ${({ theme }) => theme.spacing(1)};
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: ${({ theme }) => theme.spacing(2)};
 
   input[type='checkbox'] {
     width: 18px;
@@ -126,114 +121,124 @@ export const Label = styled.label`
 export const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.radii.sm};
   overflow: hidden;
 
   th,
   td {
-    padding: 12px 16px;
+    padding: ${({ theme }) => theme.spacing(3)} ${({ theme }) => theme.spacing(4)};
     text-align: left;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid ${({ theme }) => theme.colors.textLight};
   }
 
   th {
-    background-color: #f3f4f6;
-    color: #111827;
+    background: ${({ theme }) => theme.colors.bg};
+    color: ${({ theme }) => theme.colors.text};
     font-weight: 500;
     font-size: 0.95rem;
   }
 
   td {
-    background-color: #fff;
+    background: ${({ theme }) => theme.colors.surface};
     font-size: 0.95rem;
   }
 
   tr:hover td {
-    background-color: #f9fafb;
+    background: ${({ theme }) => theme.colors.glassShadow};
   }
 
-  button {
-    background-color: #ef4444;
-    color: white;
-    padding: 6px 10px;
+  >button {
+    background: transparent;
+    color: #000;
+    padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(2)};
     border: none;
-    border-radius: 4px;
+    border-radius: ${({ theme }) => theme.radii.sm};
     font-size: 0.875rem;
     cursor: pointer;
-
-    &:hover {
-      background-color: #dc2626;
-    }
   }
 `;
 
 export const ImgPreview = styled.img`
   max-width: 120px;
-  margin-top: 10px;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-top: ${({ theme }) => theme.spacing(2)};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  box-shadow: 0 2px 6px ${({ theme }) => theme.colors.neoShadowDark};
 `;
 
 export const Button = styled.button`
-  background-color: #10b981;
-  color: white;
-  padding: 12px 20px;
+  background: ${({ theme }) => theme.colors.primaryAccent};
+  color: #fff;
+  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(5)};
   border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 1rem;
+  border-radius: ${({ theme }) => theme.radii.md};
+  font-weight: 400;
+  width: 200px;
+  height: 36px;
+  font-size: 14px;
   cursor: pointer;
-  width: fit-content;
   transition: background-color 0.3s;
 
-  &:hover {
-    background-color: #059669;
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.secondary};
   }
 
   &:disabled {
-    background-color: #9ca3af;
     cursor: not-allowed;
   }
 `;
 
 export const SearchResults = styled.div`
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  padding: 16px;
-  margin-top: 12px;
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.radii.sm};
+  box-shadow: 0 2px 12px ${({ theme }) => theme.colors.neoShadowDark};
+  padding: ${({ theme }) => theme.spacing(4)};
+  margin-top: ${({ theme }) => theme.spacing(3)};
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: ${({ theme }) => theme.spacing(3)};
 
-  div {
+  & > div {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: ${({ theme }) => theme.spacing(3)};
   }
 
   input {
     flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
+    border: 1px solid ${({ theme }) => theme.colors.textLight};
+    border-radius: ${({ theme }) => theme.radii.sm};
     font-size: 1rem;
   }
 
   button {
-    padding: 8px 16px;
-    background-color: #3b82f6;
-    color: white;
+    padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
+    background: ${({ theme }) => theme.colors.primary};
+    width: 80px;
+    height: 52px;
+    color: #fff;
     border: none;
-    border-radius: 6px;
+    border-radius: ${({ theme }) => theme.radii.sm};
     font-size: 1rem;
     cursor: pointer;
 
     &:hover {
-      background-color: #2563eb;
+      background: ${({ theme }) => theme.colors.primaryAccent};
     }
   }
-`;
+`
+export const IconButton = styled.button`
+  background: transparent;
+  color: ${({ theme }) => theme.colors.text};
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 1rem;
 
+  &:hover {
+    background: transparent;
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;

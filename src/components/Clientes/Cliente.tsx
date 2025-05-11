@@ -13,6 +13,21 @@ import {
   useLazyGetClienteByDocumentoQuery,
 } from '../../services/api'
 
+import {
+  PageContainer,
+  Card,
+  Title,
+  Subtitle,
+  FormGrid,
+  Fieldset,
+  Label,
+  Input,
+  Button,
+  ButtonGroup,
+  SectionHeader,
+  ErrorText
+} from './styles';
+
 interface ClienteForm {
   pessoaFisica: (PessoaFisica & { endereco: Endereco }) | null
   pessoaJuridica: (PessoaJuridica & { endereco: Endereco; email?: string }) | null
@@ -81,74 +96,74 @@ const Cliente = () => {
 
 
   useEffect(() => {
-  if (cliente) {
-    if (cliente.pessoaFisica) {
-      const dataNascimento = cliente.pessoaFisica.dataNascimento.includes('/')
-        ? cliente.pessoaFisica.dataNascimento.split('/').reverse().join('-')
-        : cliente.pessoaFisica.dataNascimento;
+    if (cliente) {
+      if (cliente.pessoaFisica) {
+        const dataNascimento = cliente.pessoaFisica.dataNascimento.includes('/')
+          ? cliente.pessoaFisica.dataNascimento.split('/').reverse().join('-')
+          : cliente.pessoaFisica.dataNascimento;
 
-      setForm({
-        pessoaFisica: {
-          ...cliente.pessoaFisica,
-          dataNascimento,
-          endereco: cliente.pessoaFisica.endereco || {
-            logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
-          }
-        },
-        pessoaJuridica: null
-      });
-    } else if (cliente.pessoaJuridica) {
-      setForm({
-        pessoaFisica: null,
-        pessoaJuridica: {
-          ...cliente.pessoaJuridica,
-          endereco: cliente.pessoaJuridica.endereco || {
-            logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
+        setForm({
+          pessoaFisica: {
+            ...cliente.pessoaFisica,
+            dataNascimento,
+            endereco: cliente.pessoaFisica.endereco || {
+              logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
+            }
           },
-          simples: cliente.pessoaJuridica.simples || {
-            mei: false,
-            optante: false,
-            dataExclusao: null,
-            ultimaAtualizacao: null
+          pessoaJuridica: null
+        });
+      } else if (cliente.pessoaJuridica) {
+        setForm({
+          pessoaFisica: null,
+          pessoaJuridica: {
+            ...cliente.pessoaJuridica,
+            endereco: cliente.pessoaJuridica.endereco || {
+              logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
+            },
+            simples: cliente.pessoaJuridica.simples || {
+              mei: false,
+              optante: false,
+              dataExclusao: null,
+              ultimaAtualizacao: null
+            }
           }
-        }
-      });
+        });
+      }
+
+      setDocumentoJaCadastrado(true);
+      setErroBusca(null);
     }
+  }, [cliente]);
+  useEffect(() => {
+    const cleaned = documentoBusca.replace(/\D/g, '');
+    if (cleaned.length === 11 || cleaned.length === 14) {
+      const delayDebounce = setTimeout(() => {
+        handleBuscaDocumento();
+      }, 500);
 
-    setDocumentoJaCadastrado(true);
-    setErroBusca(null);
-  }
-}, [cliente]);
-useEffect(() => {
-  const cleaned = documentoBusca.replace(/\D/g, '');
-  if (cleaned.length === 11 || cleaned.length === 14) {
-    const delayDebounce = setTimeout(() => {
-      handleBuscaDocumento();
-    }, 500); 
-
-    return () => clearTimeout(delayDebounce);
-  }
-}, [documentoBusca]);
+      return () => clearTimeout(delayDebounce);
+    }
+  }, [documentoBusca]);
 
   const handleBuscaDocumento = async () => {
     if (!documentoBusca.trim()) {
       setErroBusca('Digite um CPF/CNPJ');
       return;
     }
-  
+
     try {
       const response = await trigger(documentoBusca).unwrap();
-  
+
       if (response?.id) {
         setDocumentoJaCadastrado(true);
         setMostrarConfirmacao(false);
         setErroBusca(null);
-  
+
         if (response.pessoaFisica) {
           const {
             nome, cpf, email, telefone, dataNascimento, endereco
           } = response.pessoaFisica;
-  
+
           setForm({
             pessoaFisica: {
               nome,
@@ -170,7 +185,7 @@ useEffect(() => {
             porte, dataAbertura, ultimaAtualizacao, atividadesPrincipais, atividadesSecundarias,
             socios, capitalSocial, simples, endereco, telefone, inscricaoEstadual, email
           } = response.pessoaJuridica;
-  
+
           setForm({
             pessoaFisica: null,
             pessoaJuridica: {
@@ -207,9 +222,9 @@ useEffect(() => {
     } catch (error: any) {
       const mensagemBackend = error?.data?.message || 'Cliente não encontrado. Preencha os dados.';
       setErroBusca(mensagemBackend);
-  
+
       const isCPF = documentoBusca.replace(/\D/g, '').length === 11;
-  
+
       setForm({
         pessoaFisica: isCPF ? {
           nome: '',
@@ -260,11 +275,11 @@ useEffect(() => {
           email: ''
         } : null
       });
-  
+
       setDocumentoJaCadastrado(false);
     }
   };
-  
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     campo: string,
@@ -482,24 +497,26 @@ useEffect(() => {
     }
   }
   return (
-    <S.Container>
-      <div>
-        <S.Section>
-          <div>
-            <S.Title>Digite numero do documento para cadastrar um novo cliente ou buscar um cliente já cadastrado</S.Title>
-          </div>
-          <div>
-            <S.Input
+    <PageContainer>
+      <Card>
+        <SectionHeader>
+          <Subtitle>
+            Consulte ou cadastre um novo cliente
+          </Subtitle>
+        </SectionHeader>
+        <FormGrid as="div">
+          <Fieldset>
+            <Label>Documento</Label>
+            <Input
               type="text"
-              placeholder="CPF/CNPJ"
+              placeholder="CPF ou CNPJ"
               value={documentoBusca}
               onChange={(e) => {
-                const valor = e.target.value.replace(/\D/g, '')
+                const valor = e.target.value.replace(/\D/g, '');
                 if (!documentoJaCadastrado) {
-                  setDocumentoBusca(valor)
+                  setDocumentoBusca(valor);
                   if (valor.length === 11) {
                     setForm({
-                      pessoaJuridica: null,
                       pessoaFisica: {
                         cpf: valor,
                         nome: '',
@@ -515,8 +532,9 @@ useEffect(() => {
                           cep: '',
                           complemento: '',
                         },
-                      }
-                    })
+                      },
+                      pessoaJuridica: null,
+                    });
                   } else if (valor.length === 14) {
                     setForm({
                       pessoaFisica: null,
@@ -524,7 +542,6 @@ useEffect(() => {
                         cnpj: valor,
                         razaoSocial: '',
                         nomeFantasia: '',
-                        dataAbertura: '',
                         situacao: '',
                         tipo: '',
                         porte: '',
@@ -534,12 +551,14 @@ useEffect(() => {
                         atividadesSecundarias: [],
                         socios: [],
                         capitalSocial: 0,
+                        dataAbertura: '',
                         simples: {
                           optante: false,
                           dataExclusao: null,
                           ultimaAtualizacao: null,
-                          mei: true
+                          mei: true,
                         },
+                        ultimaAtualizacao: null,
                         endereco: {
                           logradouro: '',
                           numero: '',
@@ -551,273 +570,314 @@ useEffect(() => {
                         },
                         telefone: '',
                         email: '',
-                        ultimaAtualizacao: null
                       }
-                    })
+                    });
                   }
                 }
               }}
+              disabled={documentoJaCadastrado}
             />
-            <S.Button type="button" onClick={handleBuscaDocumento}>
-              Consultar
-            </S.Button>
-            {erroBusca && <S.Error>{erroBusca}</S.Error>}
-          </div>
-        </S.Section>
+          </Fieldset>
+          <Fieldset>
+            <Label>&nbsp;</Label>
+            <ButtonGroup>
+              <Button onClick={handleBuscaDocumento}>Consultar</Button>
+            </ButtonGroup>
+            {erroBusca && <ErrorText>{erroBusca}</ErrorText>}
+          </Fieldset>
+        </FormGrid>
 
+        {/* Se aparecer confirmação */}
         {mostrarConfirmacao && (
-          <div>
-            <p>Cliente já cadastrado, deseja prosseguir com os dados já cadastrados?</p>
-            <S.Button
-              type="button"
-              onClick={() => {
-                setBuscaPorId(true)
-                setMostrarConfirmacao(false)
-              }}
-            >
-              Sim
-            </S.Button>
-            <S.Button
-              type="button"
-              onClick={() => {
-                setMostrarConfirmacao(false)
-              }}
-            >
-              Cancelar
-            </S.Button>
-          </div>
+          <FormGrid as="div">
+            <Fieldset>
+              <Label>&nbsp;</Label>
+              <Subtitle>
+                Cliente já cadastrado. Deseja usar os dados existentes?
+              </Subtitle>
+            </Fieldset>
+            <Fieldset>
+              <ButtonGroup>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setBuscaPorId(true);
+                    setMostrarConfirmacao(false);
+                  }}
+                >
+                  Sim
+                </Button>
+                <Button onClick={() => setMostrarConfirmacao(false)}>
+                  Cancelar
+                </Button>
+              </ButtonGroup>
+            </Fieldset>
+          </FormGrid>
         )}
 
+        {/* Formulário principal */}
         {form && (
-          <S.Form onSubmit={handleSubmit}>
-            {form.pessoaFisica ? (
-              <>
-                <h3>Cadastro Pessoa Física</h3>
-                <S.Input
-                  type="text"
-                  name="nome"
-                  placeholder="Nome"
-                  value={form.pessoaFisica.nome}
-                  onChange={(e) => handleChange(e, 'nome', 'cliente')}
-                  disabled={documentoJaCadastrado}
-                />
-                <S.Input
-                  type="text"
-                  name="cpf"
-                  placeholder="CPF"
-                  value={form.pessoaFisica.cpf}
-                  onChange={(e) => handleChange(e, 'cpf', 'cliente')}
-                  disabled={documentoJaCadastrado}
-                />
-                <S.Input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={form.pessoaFisica.email}
-                  onChange={(e) => handleChange(e, 'email', 'cliente')}
-                />
-                <S.Input
-                  type="text"
-                  name="telefone"
-                  placeholder="Telefone"
-                  value={form.pessoaFisica.telefone}
-                  onChange={(e) => handleChange(e, 'telefone', 'cliente')}
-                />
-                <S.Input
-                  type="date"
-                  name="dataNascimento"
-                  value={form.pessoaFisica.dataNascimento}
-                  onChange={(e) => handleChange(e, 'dataNascimento', 'cliente')}
-                  disabled={documentoJaCadastrado}
-                />
-                <S.Subtitle>Endereço</S.Subtitle>
-                <S.Input
-                  type="text"
-                  name="logradouro"
-                  placeholder="Logradouro"
-                  value={form.pessoaFisica.endereco.logradouro}
-                  onChange={(e) => handleChange(e, 'logradouro', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="numero"
-                  placeholder="Número"
-                  value={form.pessoaFisica.endereco.numero}
-                  onChange={(e) => handleChange(e, 'numero', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="bairro"
-                  placeholder="Bairro"
-                  value={form.pessoaFisica.endereco.bairro}
-                  onChange={(e) => handleChange(e, 'bairro', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="municipio"
-                  placeholder="Município"
-                  value={form.pessoaFisica.endereco.municipio}
-                  onChange={(e) => handleChange(e, 'municipio', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="uf"
-                  placeholder="UF"
-                  value={form.pessoaFisica.endereco.uf}
-                  onChange={(e) => handleChange(e, 'uf', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="cep"
-                  placeholder="CEP"
-                  value={form.pessoaFisica.endereco.cep}
-                  onChange={(e) => handleChange(e, 'cep', 'endereco')}
-                />
-              </>
-            ) : form.pessoaJuridica && (
-              <>
-                <h3>Cadastro Pessoa Jurídica</h3>
-                <S.Input
-                  type="text"
-                  name="razaoSocial"
-                  placeholder="Razão Social"
-                  value={form.pessoaJuridica.razaoSocial || ''}
-                  onChange={(e) => handleChange(e, 'razaoSocial', 'cliente')}
-                  disabled={documentoJaCadastrado}
-                />
-                <S.Input
-                  type="text"
-                  name="nomeFantasia"
-                  placeholder="Nome Fantasia"
-                  value={form.pessoaJuridica.nomeFantasia || ''}
-                  onChange={(e) => handleChange(e, 'nomeFantasia', 'cliente')}
-                />
-                <S.Input
-                  type="text"
-                  name="cnpj"
-                  placeholder="CNPJ"
-                  value={form.pessoaJuridica.cnpj || ''}
-                  onChange={(e) => handleChange(e, 'cnpj', 'cliente')}
-                  disabled={documentoJaCadastrado}
-                />
-                <S.Input
-                  type="text"
-                  name="email"
-                  placeholder="Email"
-                  value={form.pessoaJuridica.email || ''}
-                  onChange={(e) => handleChange(e, 'email', 'cliente')}
-                />
-                <label>
-                  MEI:
-                  <input
-                    type="checkbox"
-                    name="mei"
-                    checked={form.pessoaJuridica.simples?.optante || false}
-                    onChange={(e) =>
-                      setForm((prev) => {
-                        if (!prev || !prev.pessoaJuridica) return prev;
-                        const prevSimples = prev.pessoaJuridica.simples || {
-                          optante: false,
-                          dataExclusao: null,
-                          ultimaAtualizacao: null
-                        }
-                        return {
-                          ...prev,
-                          pessoaFisica: prev.pessoaFisica ?? null,
-                          pessoaJuridica: {
-                            ...prev.pessoaJuridica,
-                            simples: {
-                              ...prevSimples,
-                              mei: e.target.checked
-                            }
-                          }
-                        };
-                      })
-                    }
-                  />
-                  {form.pessoaJuridica.simples?.mei ? 'Sim' : 'Não'}
-                </label>
-                <S.Input
-                  type="text"
-                  name="telefone"
-                  placeholder="Telefone"
-                  value={form.pessoaJuridica.telefone || ''}
-                  onChange={(e) => handleChange(e, 'telefone', 'cliente')}
-                />
-                <S.Input
-                  type="text"
-                  name="inscricaoEstadual"
-                  placeholder="Inscrição Estadual"
-                  value={form.pessoaJuridica.inscricaoEstadual || ''}
-                  onChange={(e) => handleChange(e, 'inscricaoEstadual', 'cliente')}
-                />
-                <S.Input
-                  type="text"
-                  name="naturezaJuridica"
-                  placeholder="Natureza Jurídica"
-                  value={form.pessoaJuridica.naturezaJuridica || ''}
-                  onChange={(e) => handleChange(e, 'naturezaJuridica', 'cliente')}
-                />
-                <S.Input
-                  type="date"
-                  name="dataAbertura"
-                  value={form.pessoaJuridica.dataAbertura || ''}
-                  onChange={(e) => handleChange(e, 'dataAbertura', 'cliente')}
-                  disabled={documentoJaCadastrado}
-                />
-                <S.Subtitle>Endereço</S.Subtitle>
-                <S.Input
-                  type="text"
-                  name="logradouro"
-                  placeholder="Logradouro"
-                  value={form.pessoaJuridica.endereco?.logradouro || ''}
-                  onChange={(e) => handleChange(e, 'logradouro', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="numero"
-                  placeholder="Número"
-                  value={form.pessoaJuridica.endereco?.numero || ''}
-                  onChange={(e) => handleChange(e, 'numero', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="bairro"
-                  placeholder="Bairro"
-                  value={form.pessoaJuridica.endereco?.bairro || ''}
-                  onChange={(e) => handleChange(e, 'bairro', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="municipio"
-                  placeholder="Município"
-                  value={form.pessoaJuridica.endereco?.municipio || ''}
-                  onChange={(e) => handleChange(e, 'municipio', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="uf"
-                  placeholder="UF"
-                  value={form.pessoaJuridica.endereco?.uf || ''}
-                  onChange={(e) => handleChange(e, 'uf', 'endereco')}
-                />
-                <S.Input
-                  type="text"
-                  name="cep"
-                  placeholder="CEP"
-                  value={form.pessoaJuridica.endereco?.cep || ''}
-                  onChange={(e) => handleChange(e, 'cep', 'endereco')}
-                />
-              </>
-            )}
-            <S.Button type="submit">
-              {documentoJaCadastrado ? 'Atualizar Cliente' : 'Cadastrar Cliente'}
-            </S.Button>
-          </S.Form>
-        )}
-      </div>
-    </S.Container>
-  )
-}
+          <>
+            <SectionHeader>
+              <Title>
+                {form.pessoaFisica
+                  ? 'Cadastro Pessoa Física'
+                  : 'Cadastro Pessoa Jurídica'}
+              </Title>
+            </SectionHeader>
 
+            <FormGrid as="form" onSubmit={handleSubmit}>
+              {/* Campos Pessoa Física */}
+              {form.pessoaFisica && (
+                <>
+                  <Fieldset>
+                    <Label>Nome</Label>
+                    <Input
+                      name="nome"
+                      value={form.pessoaFisica.nome}
+                      onChange={(e) => handleChange(e, 'nome', 'cliente')}
+                      disabled={documentoJaCadastrado}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>CPF</Label>
+                    <Input
+                      name="cpf"
+                      value={form.pessoaFisica.cpf}
+                      onChange={(e) => handleChange(e, 'cpf', 'cliente')}
+                      disabled={documentoJaCadastrado}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      name="email"
+                      value={form.pessoaFisica.email}
+                      onChange={(e) => handleChange(e, 'email', 'cliente')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Telefone</Label>
+                    <Input
+                      name="telefone"
+                      value={form.pessoaFisica.telefone}
+                      onChange={(e) => handleChange(e, 'telefone', 'cliente')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Data Nascimento</Label>
+                    <Input
+                      type="date"
+                      name="dataNascimento"
+                      value={form.pessoaFisica.dataNascimento}
+                      onChange={(e) =>
+                        handleChange(e, 'dataNascimento', 'cliente')
+                      }
+                      disabled={documentoJaCadastrado}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Logradouro</Label>
+                    <Input
+                      name="logradouro"
+                      value={form.pessoaFisica.endereco.logradouro}
+                      onChange={(e) =>
+                        handleChange(e, 'logradouro', 'endereco')
+                      }
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Número</Label>
+                    <Input
+                      name="numero"
+                      value={form.pessoaFisica.endereco.numero}
+                      onChange={(e) => handleChange(e, 'numero', 'endereco')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Bairro</Label>
+                    <Input
+                      name="bairro"
+                      value={form.pessoaFisica.endereco.bairro}
+                      onChange={(e) => handleChange(e, 'bairro', 'endereco')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Município</Label>
+                    <Input
+                      name="municipio"
+                      value={form.pessoaFisica.endereco.municipio}
+                      onChange={(e) =>
+                        handleChange(e, 'municipio', 'endereco')
+                      }
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>UF</Label>
+                    <Input
+                      name="uf"
+                      value={form.pessoaFisica.endereco.uf}
+                      onChange={(e) => handleChange(e, 'uf', 'endereco')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>CEP</Label>
+                    <Input
+                      name="cep"
+                      value={form.pessoaFisica.endereco.cep}
+                      onChange={(e) => handleChange(e, 'cep', 'endereco')}
+                    />
+                  </Fieldset>
+                </>
+              )}
+
+              {form.pessoaJuridica && (
+                <>
+                  <Fieldset>
+                    <Label>Razão Social</Label>
+                    <Input
+                      name="razaoSocial"
+                      value={form.pessoaJuridica.razaoSocial}
+                      onChange={(e) =>
+                        handleChange(e, 'razaoSocial', 'cliente')
+                      }
+                      disabled={documentoJaCadastrado}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Nome Fantasia</Label>
+                    <Input
+                      name="nomeFantasia"
+                      value={form.pessoaJuridica.nomeFantasia}
+                      onChange={(e) =>
+                        handleChange(e, 'nomeFantasia', 'cliente')
+                      }
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>CNPJ</Label>
+                    <Input
+                      name="cnpj"
+                      value={form.pessoaJuridica.cnpj}
+                      onChange={(e) => handleChange(e, 'cnpj', 'cliente')}
+                      disabled={documentoJaCadastrado}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Email</Label>
+                    <Input
+                      name="email"
+                      value={form.pessoaJuridica.email}
+                      onChange={(e) => handleChange(e, 'email', 'cliente')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Telefone</Label>
+                    <Input
+                      name="telefone"
+                      value={form.pessoaJuridica.telefone}
+                      onChange={(e) => handleChange(e, 'telefone', 'cliente')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Inscrição Estadual</Label>
+                    <Input
+                      name="inscricaoEstadual"
+                      value={form.pessoaJuridica.inscricaoEstadual}
+                      onChange={(e) =>
+                        handleChange(e, 'inscricaoEstadual', 'cliente')
+                      }
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Natureza Jurídica</Label>
+                    <Input
+                      name="naturezaJuridica"
+                      value={form.pessoaJuridica.naturezaJuridica}
+                      onChange={(e) =>
+                        handleChange(e, 'naturezaJuridica', 'cliente')
+                      }
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Data Abertura</Label>
+                    <Input
+                      type="date"
+                      name="dataAbertura"
+                      value={form.pessoaJuridica.dataAbertura}
+                      onChange={(e) =>
+                        handleChange(e, 'dataAbertura', 'cliente')
+                      }
+                      disabled={documentoJaCadastrado}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Logradouro</Label>
+                    <Input
+                      name="logradouro"
+                      value={form.pessoaJuridica.endereco.logradouro}
+                      onChange={(e) =>
+                        handleChange(e, 'logradouro', 'endereco')
+                      }
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Número</Label>
+                    <Input
+                      name="numero"
+                      value={form.pessoaJuridica.endereco.numero}
+                      onChange={(e) => handleChange(e, 'numero', 'endereco')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Bairro</Label>
+                    <Input
+                      name="bairro"
+                      value={form.pessoaJuridica.endereco.bairro}
+                      onChange={(e) => handleChange(e, 'bairro', 'endereco')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>Município</Label>
+                    <Input
+                      name="municipio"
+                      value={form.pessoaJuridica.endereco.municipio}
+                      onChange={(e) =>
+                        handleChange(e, 'municipio', 'endereco')
+                      }
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>UF</Label>
+                    <Input
+                      name="uf"
+                      value={form.pessoaJuridica.endereco.uf}
+                      onChange={(e) => handleChange(e, 'uf', 'endereco')}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <Label>CEP</Label>
+                    <Input
+                      name="cep"
+                      value={form.pessoaJuridica.endereco.cep}
+                      onChange={(e) => handleChange(e, 'cep', 'endereco')}
+                    />
+                  </Fieldset>
+                </>
+              )}
+              <ButtonGroup>
+                <Button type="submit">
+                  {documentoJaCadastrado
+                    ? 'Atualizar Cliente'
+                    : 'Cadastrar Cliente'}
+                </Button>
+              </ButtonGroup>
+            </FormGrid>
+          </>
+        )}
+      </Card>
+    </PageContainer>
+  );
+}
 export default Cliente

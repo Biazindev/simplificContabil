@@ -106,9 +106,17 @@ export interface CreateClienteRequest {
 
 
 export type ProdutoProps = {
-  mensagem: string; id: number; nome: string; descricao: string;
-  precoUnitario: number; ncm: string; ativo: boolean; dataDeVencimento: string;
-  imagem: string | null; quantidade: number; observacao: string | null
+  mensagem: string
+  id: number
+  nome: string
+  descricao: string
+  precoUnitario: number
+  ncm: string
+  ativo: boolean
+  dataVencimento: string
+  imagem: string | null
+  quantidade: number
+  observacao: string | null
 }
 export type VendaProps = {
   id: number; cliente: string;

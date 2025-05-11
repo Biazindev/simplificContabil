@@ -19,6 +19,7 @@ type ProdutoProps = {
   descricao: string
   precoUnitario: number
   ncm: string
+  dataVencimento: string
   ativo: boolean
   quantidade: number
   observacao?: string | null
@@ -43,6 +44,7 @@ const Produtos = () => {
     descricao: '',
     precoUnitario: 0,
     ncm: '',
+    dataVencimento: '',
     ativo: true,
     quantidade: 0,
     observacao: '',
@@ -58,6 +60,9 @@ const Produtos = () => {
       setCliente(clienteParsed)
     }
   }, [])
+
+  const formatForJava = (date: Date) =>
+    date.toISOString().split('.')[0]
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -84,7 +89,8 @@ const Produtos = () => {
     } else {
       setProduto((prev) => ({
         ...prev,
-        [name]: name === 'quantidade' ? Number(value) : value
+        [name]: name === 'quantidade' ? Number(value) : value,
+        dataVencimento: formatForJava(new Date())
       }))
     }
   }
@@ -106,6 +112,7 @@ const Produtos = () => {
         precoUnitario: 0,
         ncm: '',
         ativo: true,
+        dataVencimento: '',
         quantidade: 0,
         observacao: '',
         imagem: null
@@ -165,7 +172,7 @@ const Produtos = () => {
         <div>
           {!mostrarFormulario && (
             <S.Button onClick={() => setMostrarFormulario(true)}>
-              Cadastrar Novo Produto
+              Cadastrar Produto
             </S.Button>
           )}
         </div>
@@ -197,12 +204,12 @@ const Produtos = () => {
                     }
                     style={{ width: '60px', marginLeft: '10px' }}
                   />
-                  <S.Button
+                  <button
                     type="button"
                     onClick={() => adicionarProduto(produto, quantidadesTemp[produto.id] || 1)}
                   >
                     <FaArrowRight />
-                  </S.Button>
+                  </button>
                 </div>
               ))}
             </S.SearchResults>
@@ -235,6 +242,15 @@ const Produtos = () => {
                 name="precoUnitario"
                 placeholder="Preço Unitário"
                 value={produto.precoUnitario}
+                onChange={handleChange}
+                required
+              />
+              <S.Label htmlFor="precoUnitario">Data de Vencimento </S.Label>
+              <S.Input
+                type="text"
+                name="dataVencimento"
+                placeholder="Data de vencimento"
+                value={produto.dataVencimento}
                 onChange={handleChange}
                 required
               />
@@ -313,9 +329,9 @@ const Produtos = () => {
                   <td>{produto.precoUnitario.toFixed(2)}</td>
                   <td>{(produto.quantidade * produto.precoUnitario).toFixed(2)}</td>
                   <td>
-                    <S.Button onClick={() => handleDeletarProdutoSelecionado(produto.id)}>
-                      Remover
-                    </S.Button>
+                    <S.IconButton title='remover' onClick={() => handleDeletarProdutoSelecionado(produto.id)}>
+                      X
+                    </S.IconButton>
                   </td>
                 </tr>
               ))}
