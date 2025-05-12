@@ -423,8 +423,23 @@ export const api = createApi({
         method: 'DELETE'
       }),
       invalidatesTags: ['Cliente']
-    })
+    }),
+    importarProdutosXml: builder.mutation<string, File>({
+      query: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return {
+          url: '/produtos/importar-xml',
+          method: 'POST',
+          body: formData,
+          responseHandler: (res) => res.text(), // evita erro de parse
+        };
+      },
+      invalidatesTags: ['Produto']
+    }),
+
   })
+
 });
 
 export const {
@@ -466,7 +481,8 @@ export const {
   useGetClienteByIdQuery,
   useLazyGetClienteByDocumentoQuery,
   useSearchProdutosQuery,
-  useCriarUsuarioMutation
+  useCriarUsuarioMutation,
+  useImportarProdutosXmlMutation
 } = api
 
 export default api
