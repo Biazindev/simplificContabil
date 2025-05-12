@@ -39,45 +39,6 @@ function formatDateToBr(dateString: string): string {
   return `${day}/${month}/${year}`;
 }
 
-function parseEndereco(enderecoStr: string): Endereco {
-  try {
-    const [logradouroNumero, bairro, municipioUf] = enderecoStr.split(' - ')
-    const [logradouro, numero] = logradouroNumero.split(', ')
-    const [municipio, uf] = municipioUf.split('/')
-
-    return {
-      logradouro: logradouro?.trim() || '',
-      numero: numero?.trim() || '',
-      bairro: bairro?.trim() || '',
-      complemento: '',
-      municipio: municipio?.trim() || '',
-      uf: uf?.trim() || '',
-      cep: '',
-    }
-  } catch (e) {
-    console.error('Erro ao fazer parse do endereço:', e)
-    return {
-      logradouro: '',
-      numero: '',
-      bairro: '',
-      municipio: '',
-      complemento: '',
-      uf: '',
-      cep: '',
-    }
-  }
-}
-
-const toDDMMYYYY = (date: string | Date): string => {
-  const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-  return `${day}/${month}/${year}`;
-}
-
-
-
 const Cliente = () => {
   const [documentoBusca, setDocumentoBusca] = useState('');
   const [form, setForm] = useState<ClienteForm | null>(null);
@@ -106,8 +67,15 @@ const Cliente = () => {
           pessoaFisica: {
             ...cliente.pessoaFisica,
             dataNascimento,
-            endereco: cliente.pessoaFisica.endereco || {
-              logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
+            endereco: cliente.pessoaFisica.endereco || 
+            {
+              logradouro: '', 
+              numero: '', 
+              bairro: '', 
+              municipio: '', 
+              uf: '', 
+              cep: '', 
+              complemento: ''
             }
           },
           pessoaJuridica: null
@@ -117,8 +85,15 @@ const Cliente = () => {
           pessoaFisica: null,
           pessoaJuridica: {
             ...cliente.pessoaJuridica,
-            endereco: cliente.pessoaJuridica.endereco || {
-              logradouro: '', numero: '', bairro: '', municipio: '', uf: '', cep: '', complemento: ''
+            endereco: cliente.pessoaJuridica.endereco || 
+            {
+              logradouro: '', 
+              numero: '', 
+              bairro: '', 
+              unicipio: '', 
+              uf: '', 
+              cep: '', 
+              complemento: ''
             },
             simples: cliente.pessoaJuridica.simples || {
               mei: false,

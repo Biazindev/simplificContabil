@@ -1,3 +1,4 @@
+import { VendaProps } from '../components/SaleList/index'
 import { Usuario } from '../../src/components/User/User'
 import {
   createApi,
@@ -113,16 +114,12 @@ export type ProdutoProps = {
   descricao: string
   precoUnitario: number
   ncm: string
+  EAN: string
   ativo: boolean
   dataVencimento: string
   imagem: string | null
   quantidade: number
   observacao: string | null
-}
-export type VendaProps = {
-  id: number; cliente: string;
-  produtos: { id: number; quantidade: number }[]; metodoPagamento: string;
-  valorPago: number; totalVenda: number; dataVenda: string
 }
 export interface LoginRequest { username: string; password: string }
 export interface LoginResponse { accessToken: string; username: string; roles: string[] }
@@ -212,6 +209,12 @@ export const api = createApi({
         body: usuario,
       }),
     }),
+    buscarUsuario: builder.query<Usuario[], void>({
+      query: () => ({
+        url: '/usuario/listar',
+        method: 'GET',
+      }),
+    }),
     addProduto: builder.mutation<ProdutoProps, Partial<ProdutoProps>>({
       query: (novoProduto) => ({
         url: '/produtos',
@@ -250,6 +253,25 @@ export const api = createApi({
     getVendas: builder.query<VendaProps[], void>({
       query: () => '/venda',
       providesTags: ['Venda']
+    }),
+    getTotalDia: builder.query<number, void>({
+      query: () => '/venda/total-dia',
+      providesTags: ['Venda'],
+    }),
+
+    getTotalSemana: builder.query<number, void>({
+      query: () => '/venda/total-semana',
+      providesTags: ['Venda'],
+    }),
+
+    getTotalMes: builder.query<number, void>({
+      query: () => '/venda/total-mes',
+      providesTags: ['Venda'],
+    }),
+
+    getTotalAno: builder.query<number, void>({
+      query: () => '/venda/total-ano',
+      providesTags: ['Venda'],
     }),
     addVenda: builder.mutation<Blob, any>({
       query: (venda) => ({
@@ -391,6 +413,11 @@ export const api = createApi({
 
 export const {
   useLoginMutation,
+  useBuscarUsuarioQuery,
+  useGetTotalDiaQuery,
+  useGetTotalSemanaQuery,
+  useGetTotalMesQuery,
+  useGetClienteByDocumentoQuery,
   useGetProdutosQuery,
   useGetProdutosByNameQuery,
   useAddProdutoMutation,

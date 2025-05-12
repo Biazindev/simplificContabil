@@ -18,6 +18,7 @@ type ProdutoProps = {
   nome: string
   descricao: string
   precoUnitario: number
+  EAN: string
   ncm: string
   dataVencimento: string
   ativo: boolean
@@ -44,6 +45,7 @@ const Produtos = () => {
     descricao: '',
     precoUnitario: 0,
     ncm: '',
+    EAN: '',
     dataVencimento: '',
     ativo: true,
     quantidade: 0,
@@ -111,6 +113,7 @@ const Produtos = () => {
         descricao: '',
         precoUnitario: 0,
         ncm: '',
+        EAN: '',
         ativo: true,
         dataVencimento: '',
         quantidade: 0,
@@ -259,6 +262,14 @@ const Produtos = () => {
                 type="text"
                 name="ncm"
                 placeholder="NCM"
+                value={produto.ncm}
+                onChange={handleChange}
+                required
+              />
+              <S.Input
+                type="text"
+                name="EAN"
+                placeholder="EAN"
                 value={produto.ncm}
                 onChange={handleChange}
                 required

@@ -8,6 +8,17 @@ interface Endereco {
   complemento?: string
 }
 
+export type Perfil = 'ADMIN' | 'COMUM';
+
+export interface Usuario {
+  id?: number;
+  username: string;
+  nome: string;
+  email: string;
+  senha: string;
+  perfil: Perfil;
+}
+
 interface PessoaFisica {
   id?: number;
   nome: string
@@ -42,6 +53,7 @@ type ProdutoProps = {
   descricao: string
   precoUnitario: number
   ncm: string
+  EAN: string
   ativo: boolean
   dataCadastro: number[]
   imagem: string | null
@@ -49,15 +61,6 @@ type ProdutoProps = {
   observacao: string | null
 }
 
-type VendaProps = {
-  id: number
-  cliente: string
-  produtos: { id: number; quantidade: number }[]
-  metodoPagamento: string
-  valorPago: number
-  totalVenda: number
-  dataVenda: string
-}
 
 interface LoginRequest {
   username: string

@@ -6,6 +6,7 @@ import {
   useDeleteVendaMutation
 } from '../../services/api'
 import { Venda } from './types' 
+import { VendaProps } from '../SaleList'
 export type Produto = {
   id: number
   nome: string
@@ -48,9 +49,9 @@ const Vendas = () => {
       {Boolean(error) && <p>Erro ao carregar vendas</p>}
 
       <ul>
-        {vendas?.map((venda: Venda) => (
+        {vendas?.map((venda: VendaProps) => (
           <li key={venda.id}>
-            <p><strong>Cliente:</strong> {venda.cliente}</p>
+            <p><strong>Cliente:</strong> {venda.clienteId}</p>
             <p><strong>Total:</strong> R$ {venda.totalVenda.toFixed(2)}</p>
             <p><strong>Data:</strong> {new Date(venda.dataVenda).toLocaleDateString()}</p>
             <button onClick={() => updateVenda(venda)}>Atualizar</button>

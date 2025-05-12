@@ -14,6 +14,7 @@ import GetClientes from "./components/Get/GetClientes"
 import { PrivateRoute } from '../src/PrivateRoute'
 import Venda from "./components/Venda"
 import User from "./components/User/User"
+import SaleList from "./components/SaleList"
 
 const Rotas = () => (
   <Routes>
@@ -34,6 +35,7 @@ const Rotas = () => (
         <Route path="/get" element={<GetClientes />} />
         <Route path="/venda" element={<Venda />} />
         <Route path="/user" element={<User />} />
+        <Route path="/sale-list" element={<SaleList/>} />
       </Route>
     </Route>
   </Routes>
