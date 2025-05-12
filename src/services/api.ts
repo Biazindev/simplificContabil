@@ -121,8 +121,11 @@ export type ProdutoProps = {
   quantidade: number
   observacao: string | null
 }
-export interface LoginRequest { username: string; password: string }
-export interface LoginResponse { accessToken: string; username: string; roles: string[] }
+export interface LoginRequest { username: string; password: string, accessToken: string }
+export interface LoginResponse {
+  id: number; // ou `string`, dependendo do backend
+  accessToken: string;
+}
 
 const mutex = new Mutex()
 
@@ -213,6 +216,19 @@ export const api = createApi({
       query: () => ({
         url: '/usuario/listar',
         method: 'GET',
+      }),
+    }),
+    buscarUsuarioPorId: builder.query<Usuario, number>({
+      query: (id) => ({
+        url: `/usuario/${id}`,
+        method: 'GET',
+      }),
+    }),
+    logout: builder.mutation<void, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
+        responseHandler: (response) => response.text(),
       }),
     }),
     addProduto: builder.mutation<ProdutoProps, Partial<ProdutoProps>>({
@@ -413,6 +429,8 @@ export const api = createApi({
 
 export const {
   useLoginMutation,
+  useLogoutMutation,
+  useBuscarUsuarioPorIdQuery,
   useBuscarUsuarioQuery,
   useGetTotalDiaQuery,
   useGetTotalSemanaQuery,

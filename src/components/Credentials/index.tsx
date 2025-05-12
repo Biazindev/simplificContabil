@@ -5,13 +5,10 @@ import {
   CredentialsImage,
   InputField,
   ForgotButton
-} from './styles'
+} from './styles';
 import { useNavigate } from 'react-router-dom';
-import ImgLogo from '../../assets/image/img.jpg';
-import {
-  useLoginMutation,
-  useForgotPasswordMutation
-} from '../../services/api';
+import logo from '../../assets/image/logo.png';
+import api, { useLoginMutation, useForgotPasswordMutation, LoginResponse } from '../../services/api';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/reducers/authSlice';
 
@@ -24,25 +21,42 @@ const Credentials = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // Realiza o login com a API
   const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+  // Envia o email de recuperação de senha
   const [forgotPassword, { isLoading: isSendingReset }] = useForgotPasswordMutation();
 
   const handleLogin = async () => {
-    setMensagem(null);
-    try {
-      const response = await login({ username, password }).unwrap();
+  setMensagem(null);
+  try {
+    const response: LoginResponse = await login({
+      username, password,
+      accessToken: ''
+    }).unwrap();
+
+    if (response.accessToken && response.id) {
       localStorage.setItem('ACCESS_TOKEN', response.accessToken);
+      localStorage.setItem('USER_ID', String(response.id));
+
       dispatch(loginSuccess(response.accessToken));
+
+      // ⚠️ Limpa cache do RTK Query (muito importante após login)
+      dispatch(api.util.resetApiState());
+
       alert('Login bem-sucedido!');
       navigate('/dashboard');
-    } catch (err: any) {
-      if (err?.status === 401) {
-        setMensagem('Credenciais inválidas.');
-      } else {
-        setMensagem('Erro ao tentar logar. Tente novamente.');
-      }
+    } else {
+      setMensagem('Dados de login inválidos.');
     }
-  };
+  } catch (err: any) {
+    if (err?.status === 401) {
+      setMensagem('Credenciais inválidas.');
+    } else {
+      setMensagem('Erro ao tentar logar. Tente novamente mais tarde.');
+    }
+  }
+};
+
 
   const handleForgot = async () => {
     if (!username) {
@@ -60,19 +74,14 @@ const Credentials = () => {
 
   return (
     <CredentialsContainer>
-      <CredentialsImage>
-        <img src={ImgLogo} alt="Simplifica Contábil" />
-      </CredentialsImage>
-
       <CredentialsForm>
-        <h1>Simplifica Contábil</h1>
-
+        <img src={logo} alt="logo" />
         <InputField>
           <input
             type="text"
             placeholder="Usuário ou e-mail"
             value={username}
-            onChange={e => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </InputField>
 
@@ -81,19 +90,15 @@ const Credentials = () => {
             type="password"
             placeholder="Senha"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </InputField>
 
-        <ForgotButton
-          type="button"
-          onClick={handleLogin}
-          disabled={isLoggingIn}
-        >
+        <ForgotButton type="button" onClick={handleLogin} disabled={isLoggingIn}>
           {isLoggingIn ? 'Entrando…' : 'Login'}
         </ForgotButton>
 
-        {mensagem && <p>{mensagem}</p>}
+        {mensagem && <p style={{ color: 'red' }}>{mensagem}</p>}
 
         <ForgotButton
           type="button"
@@ -105,13 +110,13 @@ const Credentials = () => {
             border: 'none',
             color: '#06c',
             cursor: 'pointer',
-            fontSize: '14px'
+            fontSize: '14px',
           }}
         >
           {isSendingReset ? 'Enviando link…' : 'Esqueci a Senha'}
         </ForgotButton>
 
-        {forgotMessage && <p>{forgotMessage}</p>}
+        {forgotMessage && <p style={{ color: '#555' }}>{forgotMessage}</p>}
       </CredentialsForm>
     </CredentialsContainer>
   );

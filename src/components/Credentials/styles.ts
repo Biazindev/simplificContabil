@@ -7,7 +7,7 @@ const fadeIn = keyframes`
 
 export const CredentialsContainer = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   width: 100%;
   height: 100vh;
   align-items: center;
@@ -54,7 +54,7 @@ export const CredentialsImage = styled.div`
 `;
 
 export const CredentialsForm = styled.section`
-  background: ${({ theme }) => theme.colors.surface};
+  background: #1e272e;
   padding: ${({ theme }) => theme.spacing(6)};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow:
@@ -67,9 +67,14 @@ export const CredentialsForm = styled.section`
   flex-direction: column;
   width: 100%;
   max-width: 600px;
-  height: 400px;
+  height: 500px;
   animation: ${fadeIn} 0.4s ease-out;
   overflow: hidden;
+
+  img {
+  width: 180px;
+  height: 180px;
+  }
 
   @media (max-width: 768px) {
     padding: ${({ theme }) => theme.spacing(4)};
