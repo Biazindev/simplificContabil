@@ -1,3 +1,7 @@
+import { Briefcase, UserPlus } from "lucide-react"
+import { CodesandboxLogo } from "phosphor-react"
+import { PiMoneyBold } from "react-icons/pi"
+
 import {
   ComposedChart,
   Bar,
@@ -9,18 +13,10 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Legend,
-} from "recharts";
-import { Briefcase, UserPlus } from "lucide-react";
-import { CodesandboxLogo } from "phosphor-react";
-import { PiMoneyBold } from "react-icons/pi";
+} from "recharts"
 
-import { Card, CardContent } from "../ui/card";
-import {
-  Container,
-  DashboardContainer,
-  ContainerDash,
-  CardContainer,
-} from "./styles";
+
+import { Card, CardContent } from "../ui/card"
 
 import {
   useGetTotalDiaQuery,
@@ -28,20 +24,27 @@ import {
   useGetTotalMesQuery,
   useGetTotalDiaSingQuery,
   useGetTotalSemanasQuery,
-} from "../../services/api";
+} from "../../services/api"
 
-const COLORS = ["#FACC15", "#FB7185", "#60A5FA", "#22D3EE", "#34D399", "#EF4444", "#8B5CF6"];
+import {
+  Container,
+  DashboardContainer,
+  ContainerDash,
+  CardContainer,
+} from "./styles"
+
+const COLORS = ["#FACC15", "#FB7185", "#60A5FA", "#22D3EE", "#34D399", "#EF4444", "#8B5CF6"]
 
 const formatCurrency = (value: number) =>
-  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 
 const Dashboard = () => {
-  const { data: dailySingData, isLoading: loadingDiaSing, error: errorDiaSing } = useGetTotalDiaSingQuery();
-  const { data: dailyData, isLoading: loadingDia, error: errorDia } = useGetTotalDiaQuery();
-  const { data: weeklyData, isLoading: loadingSemana, error: errorSemana } = useGetTotalSemanaQuery();
-  const { data: weeklySingData, isLoading: loadingSemanas, error: errorSemanas } = useGetTotalSemanasQuery();
-  const { data: monthlyData, isLoading: loadingMes, error: errorMes } = useGetTotalMesQuery();
-  const { data: monthlySingData, isLoading: loadingMeses, error: errorMeses } = useGetTotalMesQuery();
+  const { data: dailySingData, isLoading: loadingDiaSing, error: errorDiaSing } = useGetTotalDiaSingQuery()
+  const { data: dailyData, isLoading: loadingDia, error: errorDia } = useGetTotalDiaQuery()
+  const { data: weeklyData, isLoading: loadingSemana, error: errorSemana } = useGetTotalSemanaQuery()
+  const { data: weeklySingData, isLoading: loadingSemanas, error: errorSemanas } = useGetTotalSemanasQuery()
+  const { data: monthlyData, isLoading: loadingMes, error: errorMes } = useGetTotalMesQuery()
+  const { data: monthlySingData, isLoading: loadingMeses, error: errorMeses } = useGetTotalMesQuery()
 
   const vendasHoje = dailySingData ?? 0;
   const vendasSemana = weeklySingData ?? 0;
@@ -53,20 +56,16 @@ const Dashboard = () => {
     fallbackLabel: string
   ) => {
     if (typeof dataObj === "number") {
-      return [{ name: fallbackLabel, vendas: dataObj }];
+      return [{ name: fallbackLabel, vendas: dataObj }]
     }
 
-    if (!dataObj) return [{ name: fallbackLabel, vendas: 0 }];
-    
+    if (!dataObj) return [{ name: fallbackLabel, vendas: 0 }]
+
     return Object.entries(dataObj).map(([label, valor]) => ({
       name: label,
       vendas: valor,
-    }));
-  };
-
-  const createChartData = (label: string, valor: number) => [
-    { name: label, vendas: valor },
-  ];
+    }))
+  }
 
   return (
     <ContainerDash>
@@ -205,7 +204,7 @@ const Dashboard = () => {
         </Card>
       </Container>
     </ContainerDash>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard

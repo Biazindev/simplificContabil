@@ -28,7 +28,7 @@ import {
 } from './styles';
 import { setCliente } from '../../store/reducers/vendaSlice'
 
-interface ClienteForm {
+export interface ClienteForm {
   pessoaFisica: (PessoaFisica & { endereco: Endereco }) | null
   pessoaJuridica: (PessoaJuridica & { endereco: Endereco; email?: string }) | null
 }

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate, Navigate } from 'react-router-dom'
+
 import { useResetPasswordMutation } from '../../services/api'
 
-// type guard para error com status
 function isErrorWithStatus(e: any): e is { status: number } {
     return e && typeof e === 'object' && 'status' in e
 }

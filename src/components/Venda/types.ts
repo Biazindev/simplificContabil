@@ -11,6 +11,7 @@ export interface PessoaFisica {
   nome: string
   cpf: string
   email: string
+  dataNascimento: string
   telefone: string
   endereco: Endereco
 }

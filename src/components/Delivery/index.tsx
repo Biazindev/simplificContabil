@@ -1,7 +1,17 @@
-import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+
 import { Cliente, Produto } from '../Venda/types';
-import { DeliveryCard, DeliveryContainer, DeliveryTable, DeliveryTitle, StatusSelect, TableHeader, TableRow } from './styles';
+
+import {
+  DeliveryCard,
+  DeliveryContainer,
+  DeliveryTable,
+  DeliveryTitle,
+  StatusSelect,
+  TableHeader,
+  TableRow
+} from './styles';
 
 interface LocationState {
   cliente: Cliente;
@@ -11,9 +21,12 @@ interface LocationState {
 
 const Delivery = () => {
   const location = useLocation();
-  
-  // Verifica se 'location.state' existe antes de tentar acessar 'cliente', 'produtos' e 'total'
-  const { cliente, produtos, total } = location.state as LocationState || { cliente: {}, produtos: [], total: 0 };
+
+  const { cliente, produtos, total } = (location.state as LocationState) || {
+    cliente: {} as Cliente,
+    produtos: [],
+    total: 0
+  };
 
   const [status, setStatus] = useState<'Pendente' | 'Concluída'>('Pendente');
 
@@ -27,32 +40,37 @@ const Delivery = () => {
 
   const renderClienteInfo = () => {
     if (entrega.cliente.pessoaFisica) {
+      const endereco = entrega.cliente.pessoaFisica.endereco;
       return (
         <>
           <td>{entrega.cliente.pessoaFisica.nome}</td>
-          <td>{entrega.cliente.pessoaFisica.endereco.logradouro}</td>
-          <td>{entrega.cliente.pessoaFisica.endereco.bairro}</td>
-          <td>{entrega.cliente.pessoaFisica.endereco.numero}</td>
-          <td>{entrega.cliente.pessoaFisica.endereco.municipio}</td>
+          <td>{endereco?.logradouro || '-'}</td>
+          <td>{endereco?.bairro || '-'}</td>
+          <td>{endereco?.numero || '-'}</td>
+          <td>{endereco?.municipio || '-'}</td>
         </>
       );
     } else if (entrega.cliente.pessoaJuridica) {
+      const endereco = entrega.cliente.pessoaJuridica.endereco;
       return (
         <>
           <td>{entrega.cliente.pessoaJuridica.razaoSocial}</td>
-          <td>{entrega.cliente.pessoaJuridica.endereco}</td>
-          <td>-</td> {/* Não aplicável a PJ */}
-          <td>-</td> {/* Não aplicável a PJ */}
-          <td>-</td> {/* Não aplicável a PJ */}
+          <td>{endereco?.logradouro || '-'}</td>
+          <td>{endereco?.bairro || '-'}</td>
+          <td>{endereco?.numero || '-'}</td>
+          <td>{endereco?.municipio || '-'}</td>
         </>
       );
     }
-    return null;
+    return (
+      <>
+        <td colSpan={5}>Cliente desconhecido</td>
+      </>
+    );
   };
 
-  // Verifica se o cliente existe antes de renderizar o componente
   if (!cliente || !produtos.length) {
-    return <div>Informações não disponíveis.</div>; // Você pode redirecionar ou exibir uma mensagem de erro aqui
+    return <div>Informações não disponíveis.</div>;
   }
 
   return (

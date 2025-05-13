@@ -4,28 +4,28 @@ import {
 } from '../../services/api'
 
 const GetClientes = () => {
-  const { data: clientes, error, isLoading, refetch } = useGetClientesQuery();
-  const [deleteCliente] = useDeleteClienteMutation();
+  const { data: clientes, error, isLoading, refetch } = useGetClientesQuery()
+  const [deleteCliente] = useDeleteClienteMutation()
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir este cliente?')) {
       try {
-        await deleteCliente(id).unwrap();
-        alert('Cliente excluído com sucesso!');
-        refetch(); // Atualiza a lista
+        await deleteCliente(id).unwrap()
+        alert('Cliente excluído com sucesso!')
+        refetch()
       } catch (err) {
-        console.error('Erro ao excluir cliente:', err);
-        alert('Erro ao excluir cliente.');
+        console.error('Erro ao excluir cliente:', err)
+        alert('Erro ao excluir cliente.')
       }
     }
-  };
+  }
 
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return <div>Carregando...</div>
   }
 
   if (error) {
-    return <div>Erro ao carregar clientes</div>;
+    return <div>Erro ao carregar clientes</div>
   }
 
   return (
@@ -90,7 +90,7 @@ const GetClientes = () => {
                 );
               }
 
-              return null; // fallback se dados inválidos
+              return null
             })}
           </tbody>
 
@@ -99,7 +99,7 @@ const GetClientes = () => {
         <p>Não há clientes cadastrados.</p>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default GetClientes;
+export default GetClientes

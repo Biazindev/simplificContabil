@@ -1,76 +1,74 @@
-import React, { useState } from 'react';
+import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+
+import api, { useLoginMutation, useForgotPasswordMutation, LoginResponse } from '../../services/api'
+import { loginSuccess } from '../../store/reducers/authSlice'
+
+import logo from '../../assets/image/logo.png'
+
 import {
   CredentialsContainer,
   CredentialsForm,
-  CredentialsImage,
   InputField,
   ForgotButton
-} from './styles';
-import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/image/logo.png';
-import api, { useLoginMutation, useForgotPasswordMutation, LoginResponse } from '../../services/api';
-import { useDispatch } from 'react-redux';
-import { loginSuccess } from '../../store/reducers/authSlice';
+} from './styles'
 
 const Credentials = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [mensagem, setMensagem] = useState<string | null>(null);
-  const [forgotMessage, setForgotMessage] = useState<string | null>(null);
+  const [forgotMessage, setForgotMessage] = useState<string | null>(null)
 
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
-  // Realiza o login com a API
-  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
-  // Envia o email de recuperação de senha
-  const [forgotPassword, { isLoading: isSendingReset }] = useForgotPasswordMutation();
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation()
+  const [forgotPassword, { isLoading: isSendingReset }] = useForgotPasswordMutation()
 
   const handleLogin = async () => {
-  setMensagem(null);
-  try {
-    const response: LoginResponse = await login({
-      username, password,
-      accessToken: ''
-    }).unwrap();
+    setMensagem(null)
+    try {
+      const response: LoginResponse = await login({
+        username, password,
+        accessToken: ''
+      }).unwrap()
 
-    if (response.accessToken && response.id) {
-      localStorage.setItem('ACCESS_TOKEN', response.accessToken);
-      localStorage.setItem('USER_ID', String(response.id));
+      if (response.accessToken && response.id) {
+        localStorage.setItem('ACCESS_TOKEN', response.accessToken)
+        localStorage.setItem('USER_ID', String(response.id))
 
-      dispatch(loginSuccess(response.accessToken));
+        dispatch(loginSuccess(response.accessToken))
+        dispatch(api.util.resetApiState())
 
-      // ⚠️ Limpa cache do RTK Query (muito importante após login)
-      dispatch(api.util.resetApiState());
-
-      alert('Login bem-sucedido!');
-      navigate('/dashboard');
-    } else {
-      setMensagem('Dados de login inválidos.');
-    }
-  } catch (err: any) {
-    if (err?.status === 401) {
-      setMensagem('Credenciais inválidas.');
-    } else {
-      setMensagem('Erro ao tentar logar. Tente novamente mais tarde.');
+        alert('Login bem-sucedido!')
+        navigate('/dashboard')
+      } else {
+        setMensagem('Dados de login inválidos.')
+      }
+    } catch (err: any) {
+      if (err?.status === 401) {
+        setMensagem('Credenciais inválidas.')
+      } else {
+        setMensagem('Erro ao tentar logar. Tente novamente mais tarde.')
+      }
     }
   }
-};
 
 
   const handleForgot = async () => {
     if (!username) {
-      setForgotMessage('Digite seu usuário ou e-mail acima para receber o link.');
+      setForgotMessage('Digite seu usuário ou e-mail acima para receber o link.')
       return;
     }
     setForgotMessage(null);
     try {
-      const { message } = await forgotPassword({ email: username }).unwrap();
-      setForgotMessage(message);
+      const { message } = await forgotPassword({ email: username }).unwrap()
+      setForgotMessage(message)
     } catch {
-      setForgotMessage('Falha ao enviar e-mail de recuperação.');
+      setForgotMessage('Falha ao enviar e-mail de recuperação.')
     }
-  };
+  }
 
   return (
     <CredentialsContainer>
@@ -119,7 +117,7 @@ const Credentials = () => {
         {forgotMessage && <p style={{ color: '#555' }}>{forgotMessage}</p>}
       </CredentialsForm>
     </CredentialsContainer>
-  );
-};
+  )
+}
 
-export default Credentials;
+export default Credentials
