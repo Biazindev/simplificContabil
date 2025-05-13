@@ -24,6 +24,7 @@ import {
   useGetTotalMesQuery,
   useGetTotalDiaSingQuery,
   useGetTotalSemanasQuery,
+  useGetTotalMesesQuery,
 } from "../../services/api"
 
 import {
@@ -43,13 +44,12 @@ const Dashboard = () => {
   const { data: dailyData, isLoading: loadingDia, error: errorDia } = useGetTotalDiaQuery()
   const { data: weeklyData, isLoading: loadingSemana, error: errorSemana } = useGetTotalSemanaQuery()
   const { data: weeklySingData, isLoading: loadingSemanas, error: errorSemanas } = useGetTotalSemanasQuery()
-  const { data: monthlyData, isLoading: loadingMes, error: errorMes } = useGetTotalMesQuery()
-  const { data: monthlySingData, isLoading: loadingMeses, error: errorMeses } = useGetTotalMesQuery()
+  const { data: monthlySingData, isLoading: loadingMeses, error: errorMeses } = useGetTotalMesesQuery()
 
   const vendasHoje = dailySingData ?? 0;
   const vendasSemana = weeklySingData ?? 0;
-  const vendasSemanas = weeklyData ?? 0;
-  const vendasMes = monthlySingData ?? 0;
+  const vendasDia = weeklyData ?? 0;
+  const vendasMeses = monthlySingData ?? 0;
 
   const formatChartDataFromObject = (
     dataObj: Record<string, number> | number | undefined,
@@ -98,7 +98,7 @@ const Dashboard = () => {
           </div>
         </CardContainer>
         <CardContainer>
-          <p>{formatCurrency(vendasHoje)}</p>
+          <p>{formatCurrency(vendasDia)}</p>
           <div>
             <span>
               <PiMoneyBold style={{ fontSize: "40px", marginRight: "8px" }} />
@@ -112,14 +112,14 @@ const Dashboard = () => {
         <Card>
           <CardContent>
             <h3 className="text-lg font-semibold mb-4">Vendas Diárias</h3>
-            {loadingDia ? (
+            {loadingDiaSing ? (
               <p>Carregando...</p>
-            ) : errorDia ? (
+            ) : errorDiaSing ? (
               <p>Erro ao carregar dados diários.</p>
             ) : (
               <>
                 <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart data={formatChartDataFromObject(dailyData, "Hoje")}>
+                  <ComposedChart data={formatChartDataFromObject(dailySingData, "Hoje")}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -134,7 +134,7 @@ const Dashboard = () => {
                   Valor total de vendas diárias:{" "}
                   <span className="valor">
                     {formatCurrency(
-                      Object.values(dailyData ?? {}).reduce((acc, val) => acc + val, 0)
+                      Object.values(dailySingData ?? {}).reduce((acc, val) => acc + val, 0)
                     )}
                   </span>
                 </h4>
@@ -166,7 +166,7 @@ const Dashboard = () => {
                 </ResponsiveContainer>
                 <h4 className="mt-2 text-sm font-medium">
                   Valor total de vendas semanais:{" "}
-                  <span className="valor">{formatCurrency(vendasSemanas)}</span>
+                  <span className="valor">{formatCurrency(vendasSemana)}</span>
                 </h4>
               </>
             )}
@@ -176,9 +176,9 @@ const Dashboard = () => {
         <Card>
           <CardContent>
             <h3 className="text-lg font-semibold mb-4">Vendas Mensais</h3>
-            {loadingMes ? (
+            {loadingMeses ? (
               <p>Carregando...</p>
-            ) : errorMes ? (
+            ) : errorMeses ? (
               <p>Erro ao carregar dados mensais.</p>
             ) : (
               <>
@@ -196,7 +196,7 @@ const Dashboard = () => {
                 </ResponsiveContainer>
                 <h4 className="mt-2 text-sm font-medium">
                   Valor total de vendas mensais:{" "}
-                  <span className="valor">{formatCurrency(vendasMes)}</span>
+                  <span className="valor">{formatCurrency(vendasMeses)}</span>
                 </h4>
               </>
             )}

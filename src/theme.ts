@@ -1,6 +1,6 @@
 import { DefaultTheme } from 'styled-components'
 
-export const theme: DefaultTheme = {
+export const lightTheme: DefaultTheme = {
   colors: {
     bg: '#F3F4F6',
     surface: 'rgba(255, 255, 255, 0.8)',
@@ -19,5 +19,23 @@ export const theme: DefaultTheme = {
     md: '16px',
     lg: '24px',
   },
-  spacing: (factor: number) => `${factor * 0.5}rem`,
+  spacing: (factor) => `${factor * 0.5}rem`
+}
+
+export const darkTheme: DefaultTheme = {
+  colors: {
+    bg: '#121212',
+    surface: 'rgba(30, 30, 30, 0.9)',
+    primary: '#5A4AE3',
+    primaryAccent: '#A78BFA',
+    secondary: '#10B981',
+    text: '#E5E7EB',
+    textLight: '#9CA3AF',
+    error: '#F87171',
+    glassShadow: 'rgba(0, 0, 0, 0.25)',
+    neoShadowLight: 'rgba(255, 255, 255, 0.05)',
+    neoShadowDark: 'rgba(0, 0, 0, 0.6)',
+  },
+  radii: lightTheme.radii,
+  spacing: lightTheme.spacing
 }

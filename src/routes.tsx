@@ -14,7 +14,12 @@ import User from "./components/User/User"
 import SaleList from "./components/SaleList"
 import Delivery from "./components/Delivery"
 
-const Rotas = () => (
+interface AppRoutesProps {
+  toggleTheme: () => void;
+  isDarkMode: boolean;
+}
+
+const Rotas = ({ toggleTheme, isDarkMode }: AppRoutesProps) => (
   <Routes>
     <Route path="/" element={<Credentials />} />
     <Route path="/recuperar-senha" element={<ForgotPassword />} />
@@ -22,7 +27,7 @@ const Rotas = () => (
     <Route path="/login" element={<Credentials />} />
 
     <Route element={<PrivateRoute />}>
-      <Route element={<Header />}>
+      <Route element={<Header toggleTheme={toggleTheme} isDarkMode={isDarkMode} />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/produtos" element={<Produtos />} />
         <Route path="/clientes" element={<Cliente />} />

@@ -123,7 +123,7 @@ export type ProdutoProps = {
 }
 export interface LoginRequest { username: string; password: string, accessToken: string }
 export interface LoginResponse {
-  id: number; // ou `string`, dependendo do backend
+  id: number; 
   accessToken: string;
 }
 
@@ -149,10 +149,8 @@ export const baseQueryWithReauth: BaseQueryFn<
   unknown,
   unknown
 > = async (args, api, extraOptions) => {
-  // primeiro, faz a request normalmente:
   let result = await baseQuery(args, api, extraOptions)
 
-  // se deu 401, tenta refresh do token e repete a query
   if (result.error && (result.error as any).status === 401) {
     console.log('401, tentando refresh…')
     const refreshResult = await baseQuery(
@@ -161,15 +159,11 @@ export const baseQueryWithReauth: BaseQueryFn<
       extraOptions
     )
     if (refreshResult.data) {
-      // supondo que o refresh cookie já foi enviado/recebido via credentials: 'include'
-      // e o servidor mandou um novo ACCESS_TOKEN em Set-Cookie ou no body:
       const newToken = (refreshResult.data as any).accessToken
       localStorage.setItem('ACCESS_TOKEN', newToken)
 
-      // refaz a request original
       result = await baseQuery(args, api, extraOptions)
     } else {
-      // não conseguiu refresh: força logout, etc
       api.dispatch({ type: 'auth/logout' })
     }
   }
@@ -275,7 +269,7 @@ export const api = createApi({
       providesTags: ['Venda'],
     }),
     getTotalDiaSing: builder.query<number, void>({
-      query: () => '/totais-diario',
+      query: () => 'venda/totais-diario',
       providesTags: ['Venda'],
     }),
 
@@ -284,7 +278,7 @@ export const api = createApi({
       providesTags: ['Venda'],
     }),
     getTotalSemanas: builder.query<number, void>({
-      query: () => '/totais-semanais',
+      query: () => 'venda/totais-semanais',
       providesTags: ['Venda'],
     }),
 
@@ -293,7 +287,7 @@ export const api = createApi({
       providesTags: ['Venda'],
     }),
     getTotalMeses: builder.query<number, void>({
-      query: () => '/vendas/totais-mensais',
+      query: () => '/venda/totais-mensais',
       providesTags: ['Venda'],
     }),
 
