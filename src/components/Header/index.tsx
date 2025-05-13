@@ -68,7 +68,7 @@ const Header = () => {
                 <SidebarItem href="/sale-list"><IoReceiptOutline /> Relatório de vendas</SidebarItem>
                 <SidebarItem href="/dashboard/pizzaria"><MdOutlineTableBar /> Mesas</SidebarItem>
                 <SidebarItem href="/dashboard/pizzaria/pedidos/novo"><TfiAgenda /> Pedidos</SidebarItem>
-                <SidebarItem href="/#"><FaMotorcycle /> Entregas</SidebarItem>
+                <SidebarItem href="/delivery"><FaMotorcycle /> Entregas</SidebarItem>
                 <SidebarItem href="/#"><IoReceiptOutline /> Recibo</SidebarItem>
                 <SidebarItem href="/#"><FaFileInvoiceDollar /> Nota fiscal</SidebarItem>
                 <SidebarItem onClick={handleLogout} style={{ cursor: "pointer" }}>

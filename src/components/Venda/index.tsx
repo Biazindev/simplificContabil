@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../store/reducers';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { setCliente, setProdutos } from '../../store/reducers/vendaSlice';
 import { useAddVendaMutation } from '../../services/api';
 import { Cliente, Produto } from './types';
@@ -17,6 +18,7 @@ import {
   ContainerButton,
   ContainerSpace
 } from './styles';
+import Delivery from '../Delivery';
 
 const Venda = () => {
   const dispatch = useDispatch();
@@ -25,6 +27,8 @@ const Venda = () => {
   const produtos: Produto[] = useSelector((state: RootState) => state.venda.produtos);
 
   const [enviarVenda, { isLoading, isSuccess, isError, error }] = useAddVendaMutation();
+  const [mostrarEntrega, setMostrarEntrega] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const clienteString = localStorage.getItem('clienteSelecionado');
@@ -84,6 +88,13 @@ const Venda = () => {
     }
   };
 
+  const handleAbrirEntrega = () => {
+    if (cliente && produtos.length > 0) {
+      navigate('/delivery', {
+        state: { cliente, produtos, total }
+      });
+    }
+  };
   return (
     <Container>
       <Title>Resumo da Venda</Title>
@@ -126,7 +137,6 @@ const Venda = () => {
       </ul>
 
       <Total>Total: R$ {total.toFixed(2)}</Total>
-
       <ContainerSpace>
         <ContainerButton>
           <Button onClick={handleEnviarVenda} disabled={isLoading}>
@@ -138,10 +148,26 @@ const Venda = () => {
             {isLoading ? 'Enviando...' : 'Nota Fiscal'}
           </Button>
         </ContainerButton>
+        <ContainerButton>
+          <Button onClick={handleAbrirEntrega}>
+            Entrega
+          </Button>
+        </ContainerButton>
       </ContainerSpace>
 
       {isSuccess && <SuccessMessage>Venda enviada com sucesso!</SuccessMessage>}
       {isError && <ErrorMessage>Erro: {JSON.stringify(error)}</ErrorMessage>}
+
+      {mostrarEntrega && cliente && produtos.length > 0 && (
+        navigate('/delivery', {
+          state: {
+            cliente,
+            produtos,
+            total,
+          },
+        })
+      )}
+
     </Container>
   );
 };
