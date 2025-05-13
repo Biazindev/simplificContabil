@@ -180,7 +180,7 @@ export const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Auth', 'Produto', 'Venda', 'Cliente'],
+  tagTypes: ['Auth', 'Produto', 'Venda', 'Cliente', 'Filial'],
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (creds) => ({
@@ -424,41 +424,44 @@ export const api = createApi({
       }),
       invalidatesTags: ['Cliente']
     }),
-    importarProdutosXml: builder.mutation<string, File>({
-      query: (file) => {
+    importarProdutosXml: builder.mutation<string, { file: File; filialId: number }>({
+      query: ({ file, filialId }) => {
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('filialId', filialId.toString()); // 👈 esse era o ponto
+
         return {
           url: '/produtos/importar-xml',
           method: 'POST',
           body: formData,
-          responseHandler: (res) => res.text(),
+          responseHandler: (res) => res.text()
         };
       },
-      invalidatesTags: ['Produto'],
+      invalidatesTags: ['Produto']
     }),
-    listarFiliais: builder.query({
-      query: () => 'filial',
-    }),
-    importarProdutosXmlFilial: builder.mutation({
+
+    importarProdutosXmlFilial: builder.mutation<any, { file: File, filialId: number }>({
       query: ({ file, filialId }) => {
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('filialId', filialId.toString());
+        formData.append('file', file); // só o file vai no body
 
         return {
-          url: `/estoque/${filialId}`,
+          url: `/estoque/${filialId}`, // filialId vai na URL
           method: 'POST',
           body: formData,
         };
       },
     }),
+listarFiliais: builder.query<any[], void>({
+  query: () => 'filial',
+  providesTags: ['Filial'], // opcional, mas ajuda
+}),
+
 
   })
 })
 
 export const {
-  useListarFiliaisQuery,
   useImportarProdutosXmlFilialMutation,
   useLoginMutation,
   useLogoutMutation,
@@ -499,7 +502,9 @@ export const {
   useLazyGetClienteByDocumentoQuery,
   useSearchProdutosQuery,
   useCriarUsuarioMutation,
-  useImportarProdutosXmlMutation
+  useImportarProdutosXmlMutation,
+  useListarFiliaisQuery,
+
 } = api
 
 export default api

@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import * as S from './styles';
 import {
   useListarFiliaisQuery,
-  useImportarProdutosXmlMutation,
   useImportarProdutosXmlFilialMutation,
+  useImportarProdutosXmlMutation,
 } from '../../services/api';
 
 const Stock = () => {
   const [activeTab, setActiveTab] = useState<'manual' | 'xml' | 'codigo'>('manual');
   const [filialId, setFilialId] = useState<number | null>(null);
-  const { data: filiais, isLoading: loadingFiliais, error: errorFiliais } = useListarFiliaisQuery(null);
-  const [importarXml, { isLoading }] = useImportarProdutosXmlMutation();
-  const [enviarFilialId] = useImportarProdutosXmlFilialMutation()
 
+const { data: filiais, isLoading: loadingFiliais, error: errorFiliais } = useListarFiliaisQuery();
+
+  // Renomeia para evitar conflito
+  const [enviarXmlParaFilial, { isLoading: loadingFilial }] = useImportarProdutosXmlFilialMutation();
+  const [importarXml, { isLoading: loadingImport }] = useImportarProdutosXmlMutation();
 
   const handleXmlUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -21,20 +23,12 @@ const Stock = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('filialId', filialId.toString());
-
     try {
-      await importarXml(formData).unwrap();
+      await importarXml({ file, filialId }).unwrap();
       alert('✅ XML importado com sucesso!');
     } catch (error: any) {
       console.error("Erro ao importar XML:", error);
-      if (error?.status === 500) {
-        alert('⚠️ Alguns produtos foram importados, mas ocorreu um erro durante o processo.');
-      } else {
-        alert('❌ Erro ao importar XML.');
-      }
+      alert('❌ Erro ao importar XML.');
     }
   };
 
@@ -74,11 +68,7 @@ const Stock = () => {
                 as="select"
                 id="filial-select"
                 value={filialId ?? ''}
-                onChange={(e) => {
-                  const selectedFilialId = Number(e.target.value);
-                  console.log("Filial selecionada:", selectedFilialId)
-                  setFilialId(selectedFilialId);
-                }}
+                onChange={(e) => setFilialId(Number(e.target.value))}
               >
                 <option value="" disabled>Selecione uma filial</option>
                 {filiais?.map((f: any) => (
@@ -91,10 +81,10 @@ const Stock = () => {
               type="file"
               accept=".xml"
               onChange={handleXmlUpload}
-              disabled={isLoading}
+              disabled={loadingImport}
             />
 
-            {isLoading && <p>Enviando XML...</p>}
+            {loadingImport && <p>Enviando XML...</p>}
           </div>
         )}
 
