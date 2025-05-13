@@ -23,10 +23,10 @@ import {
 } from "./styles";
 
 import {
-  useGetVendasQuery,
   useGetTotalDiaQuery,
   useGetTotalSemanaQuery,
   useGetTotalMesQuery,
+  useGetTotalDiaSingQuery,
 } from "../../services/api";
 
 const COLORS = ["#FACC15", "#FB7185", "#60A5FA", "#22D3EE", "#34D399", "#EF4444", "#8B5CF6"];
@@ -35,13 +35,32 @@ const formatCurrency = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const Dashboard = () => {
+  const { data: dailySingData, isLoading: loadingDiaSing, error: errorDiaSing } = useGetTotalDiaSingQuery();
   const { data: dailyData, isLoading: loadingDia, error: errorDia } = useGetTotalDiaQuery();
   const { data: weeklyData, isLoading: loadingSemana, error: errorSemana } = useGetTotalSemanaQuery();
   const { data: monthlyData, isLoading: loadingMes, error: errorMes } = useGetTotalMesQuery();
 
-  const vendasHoje = dailyData ?? 0;
+  const vendasHoje = dailySingData ?? 0;
   const vendasSemana = weeklyData ?? 0;
   const vendasMes = monthlyData ?? 0;
+
+  // Função para formatar os dados, tratando quando são números
+  const formatChartDataFromObject = (
+    dataObj: Record<string, number> | number | undefined,
+    fallbackLabel: string
+  ) => {
+    // Se for undefined ou número, tratamos como um objeto
+    if (typeof dataObj === "number") {
+      return [{ name: fallbackLabel, vendas: dataObj }];
+    }
+
+    if (!dataObj) return [{ name: fallbackLabel, vendas: 0 }];
+    
+    return Object.entries(dataObj).map(([label, valor]) => ({
+      name: label,
+      vendas: valor,
+    }));
+  };
 
   const createChartData = (label: string, valor: number) => [
     { name: label, vendas: valor },
@@ -89,7 +108,6 @@ const Dashboard = () => {
       </DashboardContainer>
 
       <Container>
-        {/* Gráfico Diário */}
         <Card>
           <CardContent>
             <h3 className="text-lg font-semibold mb-4">Vendas Diárias</h3>
@@ -100,7 +118,7 @@ const Dashboard = () => {
             ) : (
               <>
                 <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart data={createChartData("Hoje", vendasHoje)}>
+                  <ComposedChart data={formatChartDataFromObject(dailyData, "Hoje")}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -113,14 +131,17 @@ const Dashboard = () => {
                 </ResponsiveContainer>
                 <h4 className="mt-2 text-sm font-medium">
                   Valor total de vendas diárias:{" "}
-                  <span className="valor">{formatCurrency(vendasHoje)}</span>
+                  <span className="valor">
+                    {formatCurrency(
+                      Object.values(dailyData ?? {}).reduce((acc, val) => acc + val, 0)
+                    )}
+                  </span>
                 </h4>
               </>
             )}
           </CardContent>
         </Card>
 
-        {/* Gráfico Semanal */}
         <Card>
           <CardContent>
             <h3 className="text-lg font-semibold mb-4">Vendas Semanais</h3>
@@ -151,7 +172,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Gráfico Mensal */}
         <Card>
           <CardContent>
             <h3 className="text-lg font-semibold mb-4">Vendas Mensais</h3>

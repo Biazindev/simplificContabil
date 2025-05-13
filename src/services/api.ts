@@ -271,6 +271,10 @@ export const api = createApi({
       providesTags: ['Venda']
     }),
     getTotalDia: builder.query<number, void>({
+      query: () => '/venda/totais-semana',
+      providesTags: ['Venda'],
+    }),
+    getTotalDiaSing: builder.query<number, void>({
       query: () => '/venda/total-dia',
       providesTags: ['Venda'],
     }),
@@ -463,6 +467,7 @@ listarFiliais: builder.query<any[], void>({
 
 export const {
   useImportarProdutosXmlFilialMutation,
+  useGetTotalDiaSingQuery,
   useLoginMutation,
   useLogoutMutation,
   useBuscarUsuarioPorIdQuery,

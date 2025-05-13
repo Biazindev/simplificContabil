@@ -43,14 +43,14 @@ export const Sidebar = styled.nav`
     opacity: 1;
   }
     @media (max-width: 771px) {
-    width: 58px;
+    width: 65px;
   }
 `;
 
 export const SidebarItem = styled.a`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 2rem;
   padding: 0.75rem;
   color: #ccc;
   text-decoration: none;
@@ -77,6 +77,7 @@ export const SidebarItem = styled.a`
   ${Sidebar}:hover & span {
     opacity: 1;
   }
+
 `;
 
 export const HeaderContainer = styled.header`
