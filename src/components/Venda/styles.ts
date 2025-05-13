@@ -69,6 +69,14 @@ export const Button = styled.button`
   }
 `;
 
+export const ContainerSpace = styled.div`
+  display: flex;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+`
+
 export const SuccessMessage = styled.p`
   color: green;
   font-weight: bold;

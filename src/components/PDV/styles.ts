@@ -58,10 +58,19 @@ export const Title = styled.h1`
 `;
 
 export const Subtitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 500;
+  font-size: 1.3rem;
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.primary};
+  margin-bottom: 1rem;
+  text-align: center;
+  letter-spacing: -0.5px;
+  line-height: 1.4;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
+
 
 export const FormGrid = styled.form`
   display: grid;

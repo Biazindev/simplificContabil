@@ -161,15 +161,6 @@ const Produtos = () => {
         <div>
           <S.Title>
             Buscar Produto
-            {cliente && cliente.pessoaFisica ? (
-              <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
-                Cliente: {cliente.pessoaFisica.nome}
-              </span>
-            ) : (
-              <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
-                Cliente: Não encontrado
-              </span>
-            )}
           </S.Title>
         </div>
         <div>
@@ -180,7 +171,15 @@ const Produtos = () => {
           )}
         </div>
       </S.TopBar>
-
+          {cliente && cliente.pessoaFisica ? (
+              <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
+                 {cliente.pessoaFisica.nome}
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
+                Cliente: Não encontrado
+              </span>
+            )}
       <S.GridContent>
         <div>
           <S.Input

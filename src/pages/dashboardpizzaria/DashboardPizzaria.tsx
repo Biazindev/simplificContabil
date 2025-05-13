@@ -5,7 +5,7 @@ import PedidosEntrega from "./PedidosEntrega"
 import CriarPedido from "./pedido/novo/CriarPedido"
 
 import * as S from "./style"
-import Cliente from "../../components/Clientes/Cliente"
+import Cliente from "../../components/PDV/Cliente"
 
 const DashboardPizzaria: React.FC = () => {
     const mesas = [

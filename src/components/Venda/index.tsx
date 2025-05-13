@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { setCliente, setProdutos } from '../../store/reducers/vendaSlice'
 import { useAddVendaMutation } from '../../services/api'
 import { Cliente, Produto } from './types'
-import { Container, SectionTitle, Title, Text, ProdutoItem, Total, Button, SuccessMessage, ErrorMessage, ContainerButton } from './styles'
+import { Container, SectionTitle, Title, Text, ProdutoItem, Total, Button, SuccessMessage, ErrorMessage, ContainerButton, ContainerSpace } from './styles'
 
 const Venda = () => {
   const dispatch = useDispatch()
@@ -101,11 +101,18 @@ const Venda = () => {
 
       <Total>Total: R$ {total.toFixed(2)}</Total>
 
-      <ContainerButton>
+      <ContainerSpace>
+        <ContainerButton>
         <Button onClick={handleEnviarVenda} disabled={isLoading}>
           {isLoading ? 'Enviando...' : 'Finalizar Venda'}
         </Button>
       </ContainerButton>
+      <ContainerButton>
+        <Button onClick={handleEnviarVenda} disabled={isLoading}>
+          {isLoading ? 'Enviando...' : 'Nota Fiscal'}
+        </Button>
+      </ContainerButton>
+      </ContainerSpace>
 
       {isSuccess && <SuccessMessage>Venda enviada com sucesso!</SuccessMessage>}
       {isError && <ErrorMessage>Erro: {JSON.stringify(error)}</ErrorMessage>}

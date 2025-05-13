@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import * as S from '../Clientes/styles'
+import * as S from './styles'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { setClienteSelecionado } from '../../store/reducers/ClienteSlice'

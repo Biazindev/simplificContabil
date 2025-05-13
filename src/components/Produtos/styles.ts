@@ -55,6 +55,10 @@ export const Title = styled.h2`
   font-weight: 600;
   text-align: center;
   color: ${({ theme }) => theme.colors.text};
+
+  span {
+  font-size: 3.5rem;
+  }
 `;
 
 export const Total = styled.div`

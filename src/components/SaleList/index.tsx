@@ -8,7 +8,7 @@ import {
   Card,
   PageContainer,
   Title,
-} from '../Clientes/styles';
+} from '../PDV/styles';
 
 import {
   Table,

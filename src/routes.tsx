@@ -5,7 +5,7 @@ import CriarPedido from "./pages/dashboardpizzaria/pedido/novo/CriarPedido"
 import Stock from "./components/Stock"
 import Produtos from "./components/Produtos"
 import Vendas from "./components/Vendas/Venda"
-import Cliente from "./components/Clientes/Cliente"
+import Cliente from "./components/PDV/Cliente"
 import Dashboard from "./components/Dashboard"
 import DashboardPizzaria from "./pages/dashboardpizzaria/DashboardPizzaria"
 import { ForgotPassword } from './components/Credentials/ForgotPassword'
