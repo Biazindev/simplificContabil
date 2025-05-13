@@ -275,7 +275,7 @@ export const api = createApi({
       providesTags: ['Venda'],
     }),
     getTotalDiaSing: builder.query<number, void>({
-      query: () => '/venda/total-dia',
+      query: () => '/totais-diario',
       providesTags: ['Venda'],
     }),
 
@@ -283,9 +283,17 @@ export const api = createApi({
       query: () => '/venda/total-semana',
       providesTags: ['Venda'],
     }),
+    getTotalSemanas: builder.query<number, void>({
+      query: () => '/totais-semanais',
+      providesTags: ['Venda'],
+    }),
 
     getTotalMes: builder.query<number, void>({
       query: () => '/venda/total-mes',
+      providesTags: ['Venda'],
+    }),
+    getTotalMeses: builder.query<number, void>({
+      query: () => '/vendas/totais-mensais',
       providesTags: ['Venda'],
     }),
 
@@ -474,7 +482,9 @@ export const {
   useBuscarUsuarioQuery,
   useGetTotalDiaQuery,
   useGetTotalSemanaQuery,
+  useGetTotalSemanasQuery,
   useGetTotalMesQuery,
+  useGetTotalMesesQuery,
   useGetClienteByDocumentoQuery,
   useGetProdutosQuery,
   useGetProdutosByNameQuery,
