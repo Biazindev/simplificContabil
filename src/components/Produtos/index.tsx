@@ -171,15 +171,27 @@ const Produtos = () => {
           )}
         </div>
       </S.TopBar>
-          {cliente && cliente.pessoaFisica ? (
-              <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
-                 {cliente.pessoaFisica.nome}
-              </span>
-            ) : (
-              <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
-                Cliente: Não encontrado
-              </span>
-            )}
+      {cliente ? (
+        <>
+          {cliente.pessoaFisica ? (
+            <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
+              Cliente PF: {cliente.pessoaFisica.nome}
+            </span>
+          ) : cliente.pessoaJuridica ? (
+            <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
+              Cliente PJ: {cliente.pessoaJuridica.razaoSocial}
+            </span>
+          ) : (
+            <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
+              Cliente: Tipo não identificado
+            </span>
+          )}
+        </>
+      ) : (
+        <span style={{ fontSize: '0.9rem', marginLeft: '12px', color: '#666' }}>
+          Cliente: Não encontrado
+        </span>
+      )}
       <S.GridContent>
         <div>
           <S.Input
@@ -194,7 +206,7 @@ const Produtos = () => {
                 <div key={produto.id}>
                   {produto.nome} - R$ {produto.precoUnitario.toFixed(2)}
                   <S.Input
-                    type="number"
+                    type="text"
                     min={1}
                     placeholder="Qtd"
                     value={quantidadesTemp[produto.id] || 1}

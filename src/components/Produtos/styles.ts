@@ -3,7 +3,6 @@ import styled from 'styled-components';
 export const Container = styled.div`
   font-family: 'Roboto', sans-serif;
   color: ${({ theme }) => theme.colors.textLight};
-  background: ${({ theme }) => theme.colors.bg};
   padding: ${({ theme }) => theme.spacing(6)};
   margin: 0 auto;
   max-width: 1200px;
@@ -57,7 +56,7 @@ export const Title = styled.h2`
   color: ${({ theme }) => theme.colors.text};
 
   span {
-  font-size: 3.5rem;
+    font-size: 3.5rem;
   }
 `;
 
@@ -70,7 +69,7 @@ export const Total = styled.div`
 
 export const Form = styled.form`
   background: ${({ theme }) => theme.colors.surface};
-  padding: ${({ theme }) => theme.spacing(6)};
+  padding: ${({ theme }) => theme.spacing(4)};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: 0 4px 14px ${({ theme }) => theme.colors.neoShadowDark};
   display: flex;
@@ -80,7 +79,7 @@ export const Form = styled.form`
 
 export const Input = styled.input`
   width: 100%;
-  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(1)};
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(2)}; /* Ajuste na proporção do padding */
   border: 1px solid ${({ theme }) => theme.colors.textLight};
   border-radius: ${({ theme }) => theme.radii.sm};
   font-size: 1rem;
@@ -99,7 +98,7 @@ export const TextArea = styled.textarea`
   border: 1px solid ${({ theme }) => theme.colors.textLight};
   border-radius: ${({ theme }) => theme.radii.sm};
   font-size: 1rem;
-  min-height: 100px;
+  min-height: 120px;
   transition: border-color 0.2s;
 
   &:focus {
@@ -130,7 +129,6 @@ export const Table = styled.table`
 
   th,
   td {
-    padding: ${({ theme }) => theme.spacing(3)} ${({ theme }) => theme.spacing(4)};
     text-align: left;
     border-bottom: 1px solid ${({ theme }) => theme.colors.textLight};
   }
@@ -172,15 +170,17 @@ export const ImgPreview = styled.img`
 export const Button = styled.button`
   background: ${({ theme }) => theme.colors.primaryAccent};
   color: #fff;
-  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(5)};
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(4)};
   border: none;
   border-radius: ${({ theme }) => theme.radii.md};
   font-weight: 400;
-  width: 200px;
-  height: 36px;
   font-size: 14px;
+  height: 100%;
   cursor: pointer;
   transition: background-color 0.3s;
+  width: 200px;
+  max-width: 100%;
+  align-self: flex-end;
 
   &:hover:not(:disabled) {
     background: ${({ theme }) => theme.colors.secondary};
@@ -189,28 +189,38 @@ export const Button = styled.button`
   &:disabled {
     cursor: not-allowed;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    align-self: stretch;
+  }
 `;
+
 
 export const SearchResults = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.radii.sm};
   box-shadow: 0 2px 12px ${({ theme }) => theme.colors.neoShadowDark};
   padding: ${({ theme }) => theme.spacing(4)};
-  margin-top: ${({ theme }) => theme.spacing(3)};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
 
   & > div {
     width: 100%;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr 80px;
     align-items: center;
     gap: ${({ theme }) => theme.spacing(3)};
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+      gap: ${({ theme }) => theme.spacing(2)};
+    }
   }
 
   input {
-    flex: 1;
+    width: 100%;
     padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
     border: 1px solid ${({ theme }) => theme.colors.textLight};
     border-radius: ${({ theme }) => theme.radii.sm};
@@ -218,21 +228,23 @@ export const SearchResults = styled.div`
   }
 
   button {
-    padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
     background: ${({ theme }) => theme.colors.primary};
-    width: 80px;
-    height: 52px;
+    width: 100%;
+    height: 40px;
     color: #fff;
     border: none;
     border-radius: ${({ theme }) => theme.radii.sm};
     font-size: 1rem;
     cursor: pointer;
+    transition: background-color 0.2s;
 
     &:hover {
       background: ${({ theme }) => theme.colors.primaryAccent};
     }
   }
-`
+`;
+
+
 export const IconButton = styled.button`
   background: transparent;
   color: ${({ theme }) => theme.colors.text};

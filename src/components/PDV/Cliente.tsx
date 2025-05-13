@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import * as S from './styles'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { setClienteSelecionado } from '../../store/reducers/ClienteSlice'
@@ -27,6 +26,7 @@ import {
   SectionHeader,
   ErrorText
 } from './styles';
+import { setCliente } from '../../store/reducers/vendaSlice'
 
 interface ClienteForm {
   pessoaFisica: (PessoaFisica & { endereco: Endereco }) | null
@@ -67,14 +67,14 @@ const Cliente = () => {
           pessoaFisica: {
             ...cliente.pessoaFisica,
             dataNascimento,
-            endereco: cliente.pessoaFisica.endereco || 
+            endereco: cliente.pessoaFisica.endereco ||
             {
-              logradouro: '', 
-              numero: '', 
-              bairro: '', 
-              municipio: '', 
-              uf: '', 
-              cep: '', 
+              logradouro: '',
+              numero: '',
+              bairro: '',
+              municipio: '',
+              uf: '',
+              cep: '',
               complemento: ''
             }
           },
@@ -85,14 +85,14 @@ const Cliente = () => {
           pessoaFisica: null,
           pessoaJuridica: {
             ...cliente.pessoaJuridica,
-            endereco: cliente.pessoaJuridica.endereco || 
+            endereco: cliente.pessoaJuridica.endereco ||
             {
-              logradouro: '', 
-              numero: '', 
-              bairro: '', 
-              unicipio: '', 
-              uf: '', 
-              cep: '', 
+              logradouro: '',
+              numero: '',
+              bairro: '',
+              unicipio: '',
+              uf: '',
+              cep: '',
               complemento: ''
             },
             simples: cliente.pessoaJuridica.simples || {
@@ -447,8 +447,10 @@ const Cliente = () => {
 
           dispatch(setClienteSelecionado(clienteFormatado));
           localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
-
-          navigate('/produtos');
+          if (result) {
+            dispatch(setCliente(result))
+            navigate('/produtos')
+          }
           console.log('✅ Resposta do backend:', clienteFormatado);
 
         } else {

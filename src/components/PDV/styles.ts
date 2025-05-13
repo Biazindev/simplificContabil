@@ -1,4 +1,4 @@
-import styled, { keyframes } from 'styled-components'
+import styled, { keyframes } from 'styled-components';
 
 export interface ThemeColor {
   colors: {
@@ -33,6 +33,7 @@ export const PageContainer = styled.div`
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
+  width: 100%;
 `;
 
 export const Card = styled.section`
@@ -44,17 +45,31 @@ export const Card = styled.section`
    -8px -8px 16px ${({ theme }) => theme.colors.neoShadowLight};
   padding: ${({ theme }) => theme.spacing(6)};
   width: 100%;
-  max-width: 900px;
+  max-width: 600px;
   animation: ${fadeIn} 0.4s ease-out;
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(4)};
+
+  @media (max-width: 768px) {
+    padding: ${({ theme }) => theme.spacing(4)};
+    width: 100%;
+  }
+    @media (max-width: 400px) {
+    padding: ${({ theme }) => theme.spacing(4)};
+    width: 100%;
+    margin: 4px;
+  }
 `;
 
 export const Title = styled.h1`
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
+
+  @media (max-width: 480px) {
+    font-size: 1.3rem;
+  }
 `;
 
 export const Subtitle = styled.h2`
@@ -67,15 +82,15 @@ export const Subtitle = styled.h2`
   line-height: 1.4;
 
   @media (max-width: 768px) {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
 `;
 
-
 export const FormGrid = styled.form`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: ${({ theme }) => theme.spacing(3)};
+  width: 100%;
 `;
 
 export const Fieldset = styled.fieldset`
@@ -85,6 +100,7 @@ export const Fieldset = styled.fieldset`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(1)};
+  width: 100%;
 `;
 
 export const Label = styled.label`
@@ -98,6 +114,10 @@ export const Input = styled.input`
   border-radius: ${({ theme }) => theme.radii.sm};
   padding: ${({ theme }) => theme.spacing(2)};
   font-size: 1rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   box-shadow:
     inset 4px 4px 8px ${({ theme }) => theme.colors.neoShadowDark},
     inset -4px -4px 8px ${({ theme }) => theme.colors.neoShadowLight};
@@ -110,17 +130,22 @@ export const Input = styled.input`
       inset 4px 4px 8px ${({ theme }) => theme.colors.neoShadowDark},
       inset -4px -4px 8px ${({ theme }) => theme.colors.neoShadowLight};
   }
+        @media (max-width: 523px) {
+        max-width: 230px;
+  }
 `;
 
+
 export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
-  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(4)};
+  padding: ${({ theme }) => theme.spacing(2)};
   border: none;
   border-radius: ${({ theme }) => theme.radii.lg};
-  width: 180px;
-  height: 36px;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   transition: transform 0.15s, box-shadow 0.15s;
 
   background: ${({ theme, variant }) =>
@@ -144,6 +169,38 @@ export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
     opacity: 0.6;
     cursor: not-allowed;
   }
+
+   @media (max-width: 444px) {
+       width: 230px;
+  }
+`;
+
+export const ButtonGroup = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing(2)};
+  width: 100%;
+  justify-content: flex-end;
+
+  & > button {
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+
+    & > button {
+      flex: 1 1 100%;
+      width: 100%;
+    }
+
+    @media (max-width: 444px) {
+       width: 230px;
+  }
+  }
 `;
 
 export const ErrorText = styled.span`
@@ -151,24 +208,20 @@ export const ErrorText = styled.span`
   font-size: 0.85rem;
 `;
 
-export const ButtonGroup = styled.div`
-  display: flex;
-  width: 100%;
-  align-items: end;
-  gap: ${({ theme }) => theme.spacing(2)};
-  justify-content: end;
-  flex-wrap: wrap;
-`;
-
 export const SectionHeader = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing(2)};
+  flex-wrap: wrap;
 
   > h3 {
     margin: 0;
     font-size: 1.75rem;
     font-weight: 500;
     color: ${({ theme }) => theme.colors.text};
+
+    @media (max-width: 480px) {
+      font-size: 1.5rem;
+    }
   }
 `;

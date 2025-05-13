@@ -16,6 +16,10 @@ export interface PessoaFisica {
 }
 
 export interface Cliente {
+  pessoaJuridica: any
+  telefone: string | number | readonly string[] | undefined
+  email: string | number | readonly string[] | undefined
+  nome: string | number | readonly string[] | undefined
   id: number
   pessoaFisica: PessoaFisica
 }

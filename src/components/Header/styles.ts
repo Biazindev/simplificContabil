@@ -1,6 +1,5 @@
 import styled from "styled-components";
 
-// Layout principal em grid
 export const Layout = styled.div`
   display: grid;
   grid-template-columns: 8px 1fr;
@@ -42,6 +41,9 @@ export const Sidebar = styled.nav`
 
   &:hover h2 {
     opacity: 1;
+  }
+    @media (max-width: 771px) {
+    width: 58px;
   }
 `;
 
@@ -146,4 +148,8 @@ export const Main = styled.main`
   padding: 2rem;
   background: #f7f7f7;
   overflow-y: auto;
+
+   @media (max-width: 523px) {
+        padding: 0;
+  }
 `;
