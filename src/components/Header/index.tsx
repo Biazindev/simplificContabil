@@ -16,6 +16,7 @@ import {
     Avatar,
     UserProfile,
     UserName,
+    HeaderRight,
 } from "./styles";
 
 import { Outlet } from "react-router-dom";
@@ -95,19 +96,22 @@ const Header = () => {
             </Sidebar>
 
             <HeaderContainer>
-                <UserProfile>
-                    <UserName>
-                        {isLoading
-                            ? "Carregando..."
-                            : error
-                                ? "Erro ao carregar usuário"
-                                : usuario?.nome ?? "Usuário"}
-                    </UserName>
-                    <Avatar>
-                        <RxAvatar size={32} />
-                    </Avatar>
-                </UserProfile>
+                <HeaderRight>
+                    <UserProfile>
+                        <UserName>
+                            {isLoading
+                                ? "Carregando..."
+                                : error
+                                    ? "Erro ao carregar usuário"
+                                    : usuario?.nome ?? "Usuário"}
+                        </UserName>
+                        <Avatar>
+                            <RxAvatar size={24} />
+                        </Avatar>
+                    </UserProfile>
+                </HeaderRight>
             </HeaderContainer>
+
 
             <Main>
                 <Outlet />

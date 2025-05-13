@@ -1,133 +1,97 @@
-import styled from 'styled-components'
-
-export const Container = styled.div`
-  padding: 2rem;
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(3, 1fr);
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-
-  h4 {
-  display: block;
-  align-items: center;
-  font-weight: 400;
-  justify-content: center;
-  background: linear-gradient(145deg, #ffffff, #e6e6e6);
-  border-radius: 12px;
-  cursor: pointer;
-  box-shadow:
-    5px 5px 10px #c5c5c5,
-    -5px -5px 10px #ffffff;
-  font-weight: 500;
-  width: 320px;
-  height: 88px;
-  padding: 28px;
-  transition: transform 0.2s ease;
-}
-
-h4:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    8px 8px 15px #c5c5c5,
-    -8px -8px 15px #ffffff;
-}
-    span.valor {
-     font-size: 24px;
-     color: #4834d4;
-  }
-
-  h3 {
-  background-color: #34ace0;
-  color: #fff;
-  width: 100%;
-  aling-items: center;
-  justify-content: center;
-  display: flex;
-  margin: 0 auto;
-  
-  }
-`
+import { styled } from 'styled-components';
 
 export const ContainerDash = styled.div`
-  display: grid;
-  margin: 0 auto;
-  gap: 1.5rem;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
   max-width: 1200px;
-  place-items: center;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-`
-
+  margin: 0 auto;
+  padding: 2rem 1rem;
+`;
 
 export const Title = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-`
+  font-size: 2rem;
+  font-weight: 700;
+  color: hsl(210, 22%, 20%);
+  text-align: center;
+  margin-bottom: 1.5rem;
+`;
 
 export const DashboardContainer = styled.div`
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+`;
 
-    >div {
-  background-color: #34ace0;
-  color: #fff;
-  font-weight: bold;
-  width: 240px;
-  height: 88px;
-  display: flex;
-  margin: 0 auto;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
+export const CardContainer = styled.div`
+  background-color: #fff;
+  border-radius: 1rem;
+  padding: 1.75rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  text-align: center;
 
   &:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    8px 8px 15px #c5c5c5,
-    -8px -8px 15px #ffffff;
-}
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   }
-`
-export const CardContainer = styled.div`
-  display: flex;
-  margin: 0 auto;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 
-  >p {
-    font-size: 24px;
-    margin: 8px 0;
+  > p {
+    font-size: 2rem;
+    font-weight: bold;
+    color: hsl(210, 22%, 20%);
+    margin-bottom: 1.25rem;
   }
 
   > div {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
 
     span {
       display: flex;
       align-items: center;
+      gap: 0.5rem;
+      color: hsl(210, 15%, 30%);
 
       p {
+        font-size: 1rem;
         margin: 0;
+        font-weight: 500;
+      }
+
+      svg {
+        font-size: 2rem;
+        color: hsl(204, 70%, 53%);
       }
     }
   }
-`
+`;
+
+export const Container = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 2rem;
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: hsl(210, 22%, 20%);
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 1rem;
+    color: hsl(210, 16%, 40%);
+
+    .valor {
+      color: hsl(245, 70%, 55%);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+  }
+`;

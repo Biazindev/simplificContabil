@@ -432,17 +432,34 @@ export const api = createApi({
           url: '/produtos/importar-xml',
           method: 'POST',
           body: formData,
-          responseHandler: (res) => res.text(), // evita erro de parse
+          responseHandler: (res) => res.text(),
         };
       },
-      invalidatesTags: ['Produto']
+      invalidatesTags: ['Produto'],
+    }),
+    listarFiliais: builder.query({
+      query: () => 'filial',
+    }),
+    importarProdutosXmlFilial: builder.mutation({
+      query: ({ file, filialId }) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('filialId', filialId.toString());
+
+        return {
+          url: `/estoque/${filialId}`,
+          method: 'POST',
+          body: formData,
+        };
+      },
     }),
 
   })
-
-});
+})
 
 export const {
+  useListarFiliaisQuery,
+  useImportarProdutosXmlFilialMutation,
   useLoginMutation,
   useLogoutMutation,
   useBuscarUsuarioPorIdQuery,

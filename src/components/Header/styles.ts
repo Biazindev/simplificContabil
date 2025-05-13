@@ -1,20 +1,48 @@
 import styled from "styled-components";
 
+// Layout principal em grid
 export const Layout = styled.div`
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 8px 1fr;
   grid-template-rows: 60px 1fr;
   grid-template-areas:
     "sidebar header"
     "sidebar main";
   height: 100vh;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 60px 1fr;
+  }
 `;
 
 export const Sidebar = styled.nav`
   grid-area: sidebar;
   background-color: #1e1e2f;
   color: white;
-  padding: 1rem;
+  padding: 1rem 0.5rem;
+  transition: width 0.3s ease-in-out;
+  width: 48px;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  z-index: 100;
+
+  &:hover {
+    width: 240px;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+  }
+
+  &:hover h2 {
+    opacity: 1;
+  }
 `;
 
 export const SidebarItem = styled.a`
@@ -25,40 +53,61 @@ export const SidebarItem = styled.a`
   color: #ccc;
   text-decoration: none;
   border-radius: 8px;
-  margin-bottom: 0.5rem;
-  transition: background 0.2s;
+  margin: 0.25rem 0;
+  transition: background 0.2s, color 0.2s;
+  font-size: 0.9rem;
+
+  svg {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+  }
+
+  span {
+    transition: opacity 0.2s;
+    opacity: 0;
+  }
 
   &:hover {
     background: #2c2c44;
     color: #fff;
   }
+
+  ${Sidebar}:hover & span {
+    opacity: 1;
+  }
 `;
 
 export const HeaderContainer = styled.header`
   grid-area: header;
+  width: 100%;
   background-color: #1e1e2f;
-  color: #fff;
-  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+  color: #ffffff;
   padding: 0 2rem;
   display: flex;
   align-items: center;
-  justify-content: end;
-`
+  justify-content: flex-end;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 10;
 
-export const Main = styled.main`
-  grid-area: main;
-  padding: 2rem;
-  background: #f7f7f7;
-  overflow-y: auto;
-`
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+  }
+`;
 
-export const UserProfile = styled.div`
+export const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+export const UserProfile = styled.button`
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  background: transparent;
+  border: none;
   cursor: pointer;
   padding: 0.5rem 1rem;
-  border-radius: 50px;
+  border-radius: 999px;
   transition: background-color 0.3s ease;
 
   &:hover {
@@ -69,24 +118,32 @@ export const UserProfile = styled.div`
 export const UserName = styled.span`
   font-size: 1rem;
   font-weight: 500;
-  color: #fff;
+  color: #ffffff;
+  white-space: nowrap;
 `;
 
 export const Avatar = styled.div`
   width: 40px;
-  color: #fff;
   height: 40px;
   background-color: #2c2c44;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s ease;
 
   &:hover {
     transform: scale(1.05);
   }
-`
+`;
 
+export const Main = styled.main`
+  grid-area: main;
+  padding: 2rem;
+  background: #f7f7f7;
+  overflow-y: auto;
+`;

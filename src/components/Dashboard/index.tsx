@@ -1,12 +1,14 @@
 import {
-  BarChart,
+  ComposedChart,
   Bar,
+  Line,
+  Area,
   Tooltip,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
-  Legend
+  Legend,
 } from "recharts";
 import { Briefcase, UserPlus } from "lucide-react";
 import { CodesandboxLogo } from "phosphor-react";
@@ -17,51 +19,33 @@ import {
   Container,
   DashboardContainer,
   ContainerDash,
-  CardContainer
+  CardContainer,
 } from "./styles";
 
 import {
   useGetVendasQuery,
   useGetTotalDiaQuery,
   useGetTotalSemanaQuery,
-  useGetTotalMesQuery
+  useGetTotalMesQuery,
 } from "../../services/api";
 
-const COLORS = [
-  "#FACC15",
-  "#FB7185",
-  "#60A5FA",
-  "#22D3EE",
-  "#34D399",
-  "#EF4444",
-  "#8B5CF6"
-];
+const COLORS = ["#FACC15", "#FB7185", "#60A5FA", "#22D3EE", "#34D399", "#EF4444", "#8B5CF6"];
 
 const formatCurrency = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const Dashboard = () => {
-  const {
-    data: dailyData,
-    isLoading: loadingDia,
-    error: errorDia
-  } = useGetTotalDiaQuery();
-
-  const {
-    data: weeklyData,
-    isLoading: loadingSemana,
-    error: errorSemana
-  } = useGetTotalSemanaQuery();
-
-  const {
-    data: monthlyData,
-    isLoading: loadingMes,
-    error: errorMes
-  } = useGetTotalMesQuery();
+  const { data: dailyData, isLoading: loadingDia, error: errorDia } = useGetTotalDiaQuery();
+  const { data: weeklyData, isLoading: loadingSemana, error: errorSemana } = useGetTotalSemanaQuery();
+  const { data: monthlyData, isLoading: loadingMes, error: errorMes } = useGetTotalMesQuery();
 
   const vendasHoje = dailyData ?? 0;
   const vendasSemana = weeklyData ?? 0;
   const vendasMes = monthlyData ?? 0;
+
+  const createChartData = (label: string, valor: number) => [
+    { name: label, vendas: valor },
+  ];
 
   return (
     <ContainerDash>
@@ -105,6 +89,7 @@ const Dashboard = () => {
       </DashboardContainer>
 
       <Container>
+        {/* Gráfico Diário */}
         <Card>
           <CardContent>
             <h3 className="text-lg font-semibold mb-4">Vendas Diárias</h3>
@@ -115,14 +100,16 @@ const Dashboard = () => {
             ) : (
               <>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[{ name: "Hoje", vendas: vendasHoje }]}>
+                  <ComposedChart data={createChartData("Hoje", vendasHoje)}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Legend />
-                    <Bar dataKey="vendas" fill={COLORS[0]} />
-                  </BarChart>
+                    <Area dataKey="vendas" fill={COLORS[0]} stroke={COLORS[0]} />
+                    <Bar dataKey="vendas" fill={COLORS[1]} />
+                    <Line type="monotone" dataKey="vendas" stroke={COLORS[2]} />
+                  </ComposedChart>
                 </ResponsiveContainer>
                 <h4 className="mt-2 text-sm font-medium">
                   Valor total de vendas diárias:{" "}
@@ -133,6 +120,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
+        {/* Gráfico Semanal */}
         <Card>
           <CardContent>
             <h3 className="text-lg font-semibold mb-4">Vendas Semanais</h3>
@@ -143,14 +131,16 @@ const Dashboard = () => {
             ) : (
               <>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[{ name: "Semana", vendas: vendasSemana }]}>
+                  <ComposedChart data={createChartData("Semana", vendasSemana)}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Legend />
-                    <Bar dataKey="vendas" fill={COLORS[1]} />
-                  </BarChart>
+                    <Area dataKey="vendas" fill={COLORS[3]} stroke={COLORS[3]} />
+                    <Bar dataKey="vendas" fill={COLORS[4]} />
+                    <Line type="monotone" dataKey="vendas" stroke={COLORS[5]} />
+                  </ComposedChart>
                 </ResponsiveContainer>
                 <h4 className="mt-2 text-sm font-medium">
                   Valor total de vendas semanais:{" "}
@@ -161,6 +151,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
+        {/* Gráfico Mensal */}
         <Card>
           <CardContent>
             <h3 className="text-lg font-semibold mb-4">Vendas Mensais</h3>
@@ -171,14 +162,16 @@ const Dashboard = () => {
             ) : (
               <>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[{ name: "Mês", vendas: vendasMes }]}>
+                  <ComposedChart data={createChartData("Mês", vendasMes)}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Legend />
-                    <Bar dataKey="vendas" fill={COLORS[2]} />
-                  </BarChart>
+                    <Area dataKey="vendas" fill={COLORS[6]} stroke={COLORS[6]} />
+                    <Bar dataKey="vendas" fill={COLORS[0]} />
+                    <Line type="monotone" dataKey="vendas" stroke={COLORS[1]} />
+                  </ComposedChart>
                 </ResponsiveContainer>
                 <h4 className="mt-2 text-sm font-medium">
                   Valor total de vendas mensais:{" "}
