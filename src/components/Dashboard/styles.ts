@@ -12,7 +12,7 @@ export const ContainerDash = styled.div`
 export const Title = styled.h3`
   font-size: 2rem;
   font-weight: 700;
-  color: hsl(210, 22%, 20%);
+  color: hsl(210, 22%, 15%);
   text-align: center;
   margin-bottom: 1.5rem;
 `;
@@ -24,23 +24,23 @@ export const DashboardContainer = styled.div`
 `;
 
 export const CardContainer = styled.div`
-  background-color: #fff;
-  border-radius: 1rem;
-  padding: 1.75rem;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background-color: #ffffff;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
   text-align: center;
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
   }
 
   > p {
-    font-size: 2rem;
-    font-weight: bold;
-    color: hsl(210, 22%, 20%);
-    margin-bottom: 1.25rem;
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: hsl(210, 22%, 15%);
+    margin-bottom: 1.5rem;
   }
 
   > div {
@@ -52,7 +52,7 @@ export const CardContainer = styled.div`
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      color: hsl(210, 15%, 30%);
+      color: hsl(210, 15%, 25%);
 
       p {
         font-size: 1rem;
@@ -61,8 +61,8 @@ export const CardContainer = styled.div`
       }
 
       svg {
-        font-size: 2rem;
-        color: hsl(204, 70%, 53%);
+        font-size: 2.25rem;
+        color: hsl(204, 80%, 55%);
       }
     }
   }
@@ -74,22 +74,22 @@ export const Container = styled.div`
   gap: 2rem;
 
   h3 {
-    font-size: 1.25rem;
+    font-size: 1.375rem;
     font-weight: 600;
     color: hsl(210, 22%, 20%);
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
   }
 
   h4 {
     font-size: 1rem;
     font-weight: 500;
     text-align: center;
-    margin-top: 1rem;
-    color: hsl(210, 16%, 40%);
+    margin-top: 1.25rem;
+    color: hsl(210, 16%, 35%);
 
     .valor {
-      color: hsl(245, 70%, 55%);
+      color: hsl(245, 75%, 55%);
       font-weight: 700;
       font-size: 1.1rem;
     }

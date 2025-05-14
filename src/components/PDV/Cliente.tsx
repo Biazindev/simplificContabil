@@ -390,13 +390,40 @@ const Cliente = () => {
             pessoaFisica: {
               nome: form.pessoaFisica.nome,
               cpf: form.pessoaFisica.cpf,
-              email: form.pessoaFisica.email,
+              email: form.pessoaFisica.email ?? '',
               telefone: form.pessoaFisica.telefone,
               dataNascimento: form.pessoaFisica.dataNascimento,
               endereco: form.pessoaFisica.endereco
             }
           };
-          result = await addCliente(payload).unwrap();
+
+          try {
+            console.log("📤 Enviando cliente PF:", payload);
+            await addCliente(payload);
+
+            const clienteFormatado = {
+              id: 0,
+              tipoPessoa: "PF",
+              pessoaFisica: payload.pessoaFisica,
+              pessoaJuridica: null
+            };
+
+            setDocumentoBusca('');
+            setDocumentoJaCadastrado(false);
+            setErroBusca(null);
+
+            dispatch(setClienteSelecionado(clienteFormatado));
+            localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
+            dispatch(setCliente(clienteFormatado));
+
+            console.log("📦 Cliente PF armazenado no Redux e localStorage");
+            navigate('/produtos');
+
+          } catch (error) {
+            console.error('❌ Erro ao cadastrar cliente PF:', error);
+          }
+
+
 
         } else if (isCNPJ && form.pessoaJuridica) {
           const payload: CreateClienteRequest = {
@@ -431,27 +458,30 @@ const Cliente = () => {
               }
             }
           };
-          result = await addCliente(payload).unwrap();
+          try {
+            await addCliente(payload); // Ignora a resposta da API
 
-          console.log('Cliente salvo com sucesso:', result);
-          setDocumentoBusca('');
-          setDocumentoJaCadastrado(false);
-          setErroBusca(null);
+            const clienteFormatado = {
+              id: 0, // Ou algum ID temporário, se necessário
+              tipoPessoa: "PJ",
+              pessoaFisica: null,
+              pessoaJuridica: payload.pessoaJuridica
+            };
 
-          const clienteFormatado = {
-            id: result.id,
-            tipoPessoa: result.tipoPessoa,
-            pessoaFisica: result.pessoaFisica ?? null,
-            pessoaJuridica: result.pessoaJuridica ?? null
-          };
+            setDocumentoBusca('');
+            setDocumentoJaCadastrado(false);
+            setErroBusca(null);
 
-          dispatch(setClienteSelecionado(clienteFormatado));
-          localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
-          if (result) {
-            dispatch(setCliente(result))
-            navigate('/produtos')
+            dispatch(setClienteSelecionado(clienteFormatado));
+            localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
+            dispatch(setCliente(clienteFormatado));
+
+            console.log("📦 Cliente PJ armazenado no Redux e localStorage");
+            navigate('/produtos');
+
+          } catch (error) {
+            console.error('❌ Erro ao cadastrar cliente PJ:', error);
           }
-          console.log('✅ Resposta do backend:', clienteFormatado);
 
         } else {
           console.error("Payload inválido");
@@ -459,20 +489,12 @@ const Cliente = () => {
         }
       }
 
-      console.log('Cliente salvo com sucesso:', result);
-      setDocumentoBusca('');
-      setDocumentoJaCadastrado(false);
-      setErroBusca(null);
-
-      dispatch(setClienteSelecionado(result));
-      localStorage.setItem('clienteSelecionado', JSON.stringify(result));
-      navigate('/produtos');
-      console.log('✅ Resposta do backend:', result);
     } catch (error) {
-      console.error('Erro ao salvar cliente:', error);
-      console.log('Cliente:', cliente)
+      console.error("Erro ao salvar cliente:", error);
     }
-  }
+  };
+
+
   return (
     <PageContainer>
       <Card>
@@ -486,7 +508,17 @@ const Cliente = () => {
             <Input
               type="text"
               placeholder="CPF ou CNPJ"
-              value={documentoBusca}
+              value={
+                documentoBusca.length <= 11
+                  ? documentoBusca.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, (_, a, b, c, d) =>
+                    d ? `${a}.${b}.${c}-${d}` : `${a}.${b}.${c}`
+                  )
+                  : documentoBusca.replace(
+                    /(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/,
+                    (_, a, b, c, d, e) =>
+                      e ? `${a}.${b}.${c}/${d}-${e}` : `${a}.${b}.${c}/${d}`
+                  )
+              }
               onChange={(e) => {
                 const valor = e.target.value.replace(/\D/g, '');
                 if (!documentoJaCadastrado) {
@@ -546,13 +578,14 @@ const Cliente = () => {
                         },
                         telefone: '',
                         email: '',
-                      }
+                      },
                     });
                   }
                 }
               }}
               disabled={documentoJaCadastrado}
             />
+
           </Fieldset>
           <Fieldset>
             <Label>&nbsp;</Label>

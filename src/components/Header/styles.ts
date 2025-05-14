@@ -1,5 +1,10 @@
 import styled from "styled-components";
 
+
+interface SidebarProps {
+  isOpen: boolean;
+}
+
 export const Layout = styled.div`
   display: grid;
   grid-template-columns: 8px 1fr;
@@ -14,38 +19,66 @@ export const Layout = styled.div`
     grid-template-columns: 60px 1fr;
   }
 `;
+export const ToggleSidebarButton = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 110; // acima do sidebar
 
-export const Sidebar = styled.nav`
+  @media (min-width: 769px) {
+    display: none;
+  }
+`;
+
+
+export const SidebarOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 99;
+
+  @media (min-width: 781px) {
+    display: none;
+  }
+`;
+
+export const Sidebar = styled.nav<SidebarProps>`
   grid-area: sidebar;
   background-color: #1e1e2f;
   color: white;
   padding: 1rem 0.5rem;
   transition: width 0.3s ease-in-out;
-  width: 48px;
+  width: ${({ isOpen }) => (isOpen ? "240px" : "48px")};
   overflow: hidden;
   white-space: nowrap;
   position: relative;
   z-index: 100;
-
-  &:hover {
-    width: 240px;
-  }
 
   h2 {
     font-size: 1.2rem;
     text-align: center;
     margin-bottom: 2rem;
     transition: opacity 0.3s ease;
-    opacity: 0;
+    opacity: ${({ isOpen }) => (isOpen ? 1 : 0)};
   }
 
-  &:hover h2 {
-    opacity: 1;
+  @media (max-width: 768px) {
+    width: ${({ isOpen }) => (isOpen ? "240px" : "65px")};
   }
-    @media (max-width: 771px) {
-    width: 65px;
+
+  &:hover {
+    width: 220px;
   }
 `;
+
 
 export const SidebarItem = styled.a`
   display: flex;

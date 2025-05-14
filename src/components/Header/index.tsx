@@ -16,10 +16,12 @@ import {
   UserProfile,
   UserName,
   HeaderRight,
+  ToggleSidebarButton,
+  SidebarOverlay
 } from "./styles";
 import { useBuscarUsuarioPorIdQuery, useLogoutMutation } from "../../services/api";
 import { useTheme } from "styled-components";
-import { FaSun, FaMoon } from "react-icons/fa";
+import { FaSun, FaMoon, FaBars } from "react-icons/fa";
 
 interface HeaderProps {
   toggleTheme: () => void;
@@ -30,6 +32,7 @@ const Header = ({ toggleTheme, isDarkMode }: HeaderProps) => {
   const navigate = useNavigate();
   const [logout] = useLogoutMutation();
   const [showUserInfo, setShowUserInfo] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const userId = Number(localStorage.getItem("USER_ID"));
 
@@ -61,22 +64,39 @@ const Header = ({ toggleTheme, isDarkMode }: HeaderProps) => {
     setShowUserInfo((prev) => !prev);
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   const theme = useTheme();
 
   return (
     <Layout>
-      <Sidebar>
+      {/* Botão de hambúrguer visível apenas em telas pequenas */}
+      <ToggleSidebarButton onClick={toggleSidebar}>
+        <FaBars />
+      </ToggleSidebarButton>
+
+      {/* Overlay, visível apenas quando o sidebar estiver aberto */}
+      {isSidebarOpen && <SidebarOverlay onClick={closeSidebar} />}
+
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen}>
         <h2 style={{ marginBottom: "2rem", color: theme.colors.text }}>ERP</h2>
-        <SidebarItem href="/dashboard"><RxDashboard /> Dashboard</SidebarItem>
-        <SidebarItem href="/clientes"><RxPerson /> Vendas</SidebarItem>
-        <SidebarItem href="/produtos"><RxBox /> Produtos</SidebarItem>
-        <SidebarItem href="/clientes"><RxPerson /> Clientes</SidebarItem>
-        <SidebarItem href="/stock"><PiCodesandboxLogoLight /> Estoque</SidebarItem>
-        <SidebarItem href="/sale-list"><IoReceiptOutline /> Relatório de vendas</SidebarItem>
-        <SidebarItem href="/delivery"><FaMotorcycle /> Entregas</SidebarItem>
-        <SidebarItem href="/#"><IoReceiptOutline /> Recibo</SidebarItem>
-        <SidebarItem href="/#"><FaFileInvoiceDollar /> Nota fiscal</SidebarItem>
-        <SidebarItem onClick={handleLogout} style={{ cursor: "pointer" }}>
+        <SidebarItem href="/dashboard" onClick={closeSidebar}><RxDashboard /> Dashboard</SidebarItem>
+        <SidebarItem href="/clientes" onClick={closeSidebar}><RxPerson /> Vendas</SidebarItem>
+        <SidebarItem href="/produtos" onClick={closeSidebar}><RxBox /> Produtos</SidebarItem>
+        <SidebarItem href="/clientes" onClick={closeSidebar}><RxPerson /> Clientes</SidebarItem>
+        <SidebarItem href="/stock" onClick={closeSidebar}><PiCodesandboxLogoLight /> Estoque</SidebarItem>
+        <SidebarItem href="/sale-list" onClick={closeSidebar}><IoReceiptOutline /> Relatório de vendas</SidebarItem>
+        <SidebarItem href="/delivery" onClick={closeSidebar}><FaMotorcycle /> Entregas</SidebarItem>
+        <SidebarItem href="/#" onClick={closeSidebar}><IoReceiptOutline /> Recibo</SidebarItem>
+        <SidebarItem href="/#" onClick={closeSidebar}><FaFileInvoiceDollar /> Nota fiscal</SidebarItem>
+        <SidebarItem onClick={() => { closeSidebar(); handleLogout(); }} style={{ cursor: "pointer" }}>
           <RxExit /> Sair
         </SidebarItem>
       </Sidebar>
@@ -96,9 +116,10 @@ const Header = ({ toggleTheme, isDarkMode }: HeaderProps) => {
             </Avatar>
           </UserProfile>
 
+          {/* Botão para alternar tema */}
           <button
             onClick={(e) => {
-              e.stopPropagation(); // evitar fechar modal do usuário
+              e.stopPropagation();
               toggleTheme();
             }}
             style={{
@@ -113,6 +134,7 @@ const Header = ({ toggleTheme, isDarkMode }: HeaderProps) => {
             {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
           </button>
 
+          {/* Exibe as informações do usuário quando o toggleUserInfo é ativado */}
           {showUserInfo && usuario && (
             <div
               style={{
@@ -141,6 +163,7 @@ const Header = ({ toggleTheme, isDarkMode }: HeaderProps) => {
         </HeaderRight>
       </HeaderContainer>
 
+      {/* Exibe o conteúdo principal */}
       <Main>
         <Outlet />
       </Main>

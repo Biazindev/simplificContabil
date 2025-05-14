@@ -23,7 +23,13 @@ export const CredentialsContainer = styled.div`
       justify-content: center;
       align-items: center;
   }
+
+  @media (max-width: 768px) {
+    background: #1e272e;
+  }
 `;
+
+
 
 export const CredentialsImage = styled.div`
   display: flex;
@@ -77,11 +83,9 @@ export const CredentialsForm = styled.section`
   }
 
   @media (max-width: 768px) {
-    padding: ${({ theme }) => theme.spacing(4)};
-    height: auto;
     max-width: 90%;
     box-shadow: none;
-    border-radius: 0;
+    border-radius: 24px;
   }
 
   h1 {

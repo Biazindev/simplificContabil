@@ -40,8 +40,6 @@ const Credentials = () => {
 
         dispatch(loginSuccess(response.accessToken))
         dispatch(api.util.resetApiState())
-
-        alert('Login bem-sucedido!')
         navigate('/dashboard')
       } else {
         setMensagem('Dados de login inválidos.')

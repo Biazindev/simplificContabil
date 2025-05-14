@@ -1,80 +1,117 @@
-import styled from "styled-components"
+import styled from "styled-components";
 
+// Container geral responsivo
 export const Container = styled.div`
-  padding: 2rem;
-  display: flex;
+  padding: 2rem 1rem;
+  max-width: 1200px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-`
+`;
 
+// Título centralizado e responsivo
 export const Title = styled.h2`
-  font-size: 1.5rem;
+  font-size: clamp(1.5rem, 2vw, 2rem);
   margin-bottom: 1.5rem;
-`
+  text-align: center;
+  color: #111827;
+`;
 
+// Container das tabs
 export const TabContainer = styled.div`
   display: flex;
-  width: 800px;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  text-decoration: none;
-  font-weight: normal;
-  border: none;
-`
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 2rem;
+`;
 
+// Botão de aba com estilo dinâmico
 export const TabButton = styled.button<{ active?: boolean }>`
-  padding: 0.5rem 1rem;
+  flex: 1;
+  min-width: 120px;
+  padding: 0.75rem 1rem;
   border: none;
-  background-color: ${({ active }) => (active ? "#3b82f6" : "#e5e7eb")};
-  color: ${({ active }) => (active ? "#fff" : "#000")};
-  border-radius: 0.375rem;
+  background-color: ${({ active }) => (active ? "#3b82f6" : "#f3f4f6")};
+  color: ${({ active }) => (active ? "#ffffff" : "#1f2937")};
+  font-weight: 500;
+  font-size: 1rem;
+  border-radius: 0.5rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
 
   &:hover {
-    background-color: ${({ active }) => (active ? "#2563eb" : "#d1d5db")};
+    background-color: ${({ active }) => (active ? "#2563eb" : "#e5e7eb")};
   }
-`
+`;
 
+// Formulário com gap e adaptação de largura
 export const Form = styled.form`
+  width: 100%;
+  max-width: 600px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  text-decoration: none;
-  font-weight: normal;
-  border: none;
-`
+`;
 
+// Input com visual limpo e acessível
 export const Input = styled.input`
-  padding: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
   border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  text-decoration: none;
-  font-weight: normal;
-  border: none;
-`
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s;
 
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  }
+`;
+
+// Botão com contraste forte e bom feedback visual
 export const Button = styled.button`
-  padding: 0.5rem 1rem;
+  width: 100%;
+  padding: 0.75rem;
   background-color: #10b981;
   color: white;
+  font-weight: bold;
+  font-size: 1rem;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
 
   &:hover {
     background-color: #059669;
   }
-`
 
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+  }
+`;
+
+// Container de imagem ou upload
 export const Img = styled.div`
-display: inline-grid;
-margin: 0 auto;
-justify-content: center;
-width: 100%;
-height: 120px;
-border: 1px dotted #10b981;
-border-radius: 16px;
-`
+  width: 100%;
+  max-width: 600px;
+  height: 140px;
+  border: 2px dashed #10b981;
+  border-radius: 1rem;
+  display: grid;
+  place-items: center;
+  color: #10b981;
+  background-color: #f0fdf4;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background-color: #ecfdf5;
+  }
+`;
