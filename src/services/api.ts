@@ -5,7 +5,6 @@ import {
   fetchBaseQuery,
   BaseQueryFn,
   FetchArgs,
-  FetchBaseQueryError
 } from '@reduxjs/toolkit/query/react'
 import { Mutex } from 'async-mutex'
 
@@ -123,7 +122,7 @@ export type ProdutoProps = {
 }
 export interface LoginRequest { username: string; password: string, accessToken: string }
 export interface LoginResponse {
-  id: number; 
+  id: number;
   accessToken: string;
 }
 
@@ -458,10 +457,10 @@ export const api = createApi({
         };
       },
     }),
-listarFiliais: builder.query<any[], void>({
-  query: () => 'filial',
-  providesTags: ['Filial'], // opcional, mas ajuda
-}),
+    listarFiliais: builder.query<any[], void>({
+      query: () => 'filial',
+      providesTags: ['Filial'], // opcional, mas ajuda
+    }),
 
 
   })
@@ -513,7 +512,6 @@ export const {
   useCriarUsuarioMutation,
   useImportarProdutosXmlMutation,
   useListarFiliaisQuery,
-
 } = api
 
 export default api

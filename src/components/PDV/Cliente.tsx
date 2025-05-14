@@ -335,165 +335,180 @@ const Cliente = () => {
     }
 
     try {
-      let result;
+  let result;
 
-      if (documentoJaCadastrado && cliente?.id) {
-        const clientePayload: CreateClienteRequest = {
-          pessoaFisica: isCPF && form.pessoaFisica ? {
-            nome: form.pessoaFisica.nome,
-            cpf: form.pessoaFisica.cpf,
-            email: form.pessoaFisica.email,
-            telefone: form.pessoaFisica.telefone,
-            dataNascimento: form.pessoaFisica.dataNascimento || '',
-            endereco: form.pessoaFisica.endereco
-          } : null,
-          pessoaJuridica: isCNPJ && form.pessoaJuridica ? {
-            cnpj: form.pessoaJuridica.cnpj,
-            razaoSocial: form.pessoaJuridica.razaoSocial,
-            nomeFantasia: form.pessoaJuridica.nomeFantasia,
-            situacao: form.pessoaJuridica.situacao,
-            tipo: form.pessoaJuridica.tipo,
-            naturezaJuridica: form.pessoaJuridica.naturezaJuridica,
-            porte: form.pessoaJuridica.porte,
-            dataAbertura: formatDateToBr(form.pessoaJuridica.dataAbertura),
-            ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao
-              ? formatDateToBr(form.pessoaJuridica.ultimaAtualizacao)
-              : null,
-            atividadesPrincipais: form.pessoaJuridica.atividadesPrincipais,
-            atividadesSecundarias: form.pessoaJuridica.atividadesSecundarias,
-            socios: form.pessoaJuridica.socios,
-            endereco: form.pessoaJuridica.endereco,
-            telefone: form.pessoaJuridica.telefone,
-            email: form.pessoaJuridica.email,
-            inscricaoEstadual: form.pessoaJuridica.inscricaoEstadual,
-            capitalSocial: form.pessoaJuridica.capitalSocial,
-            simples: {
-              optante: form.pessoaJuridica.simples?.optante ?? false,
-              dataExclusao: form.pessoaJuridica.simples?.dataExclusao
-                ? formatDateToBr(form.pessoaJuridica.simples.dataExclusao)
-                : null,
-              ultimaAtualizacao: form.pessoaJuridica.simples?.ultimaAtualizacao
-                ? formatDateToBr(form.pessoaJuridica.simples.ultimaAtualizacao)
-                : null
-            }
-          } : null
+  if (documentoJaCadastrado && cliente?.id) {
+    const clientePayload: CreateClienteRequest = {
+      pessoaFisica: isCPF && form.pessoaFisica ? {
+        nome: form.pessoaFisica.nome,
+        cpf: form.pessoaFisica.cpf,
+        email: form.pessoaFisica.email,
+        telefone: form.pessoaFisica.telefone,
+        dataNascimento: form.pessoaFisica.dataNascimento || '',
+        endereco: form.pessoaFisica.endereco
+      } : null,
+      pessoaJuridica: isCNPJ && form.pessoaJuridica ? {
+        cnpj: form.pessoaJuridica.cnpj,
+        razaoSocial: form.pessoaJuridica.razaoSocial,
+        nomeFantasia: form.pessoaJuridica.nomeFantasia,
+        situacao: form.pessoaJuridica.situacao,
+        tipo: form.pessoaJuridica.tipo,
+        naturezaJuridica: form.pessoaJuridica.naturezaJuridica,
+        porte: form.pessoaJuridica.porte,
+        dataAbertura: formatDateToBr(form.pessoaJuridica.dataAbertura),
+        ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao
+          ? formatDateToBr(form.pessoaJuridica.ultimaAtualizacao)
+          : null,
+        atividadesPrincipais: form.pessoaJuridica.atividadesPrincipais,
+        atividadesSecundarias: form.pessoaJuridica.atividadesSecundarias,
+        socios: form.pessoaJuridica.socios,
+        endereco: form.pessoaJuridica.endereco,
+        telefone: form.pessoaJuridica.telefone,
+        email: form.pessoaJuridica.email,
+        inscricaoEstadual: form.pessoaJuridica.inscricaoEstadual,
+        capitalSocial: form.pessoaJuridica.capitalSocial,
+        simples: {
+          optante: form.pessoaJuridica.simples?.optante ?? false,
+          dataExclusao: form.pessoaJuridica.simples?.dataExclusao
+            ? formatDateToBr(form.pessoaJuridica.simples.dataExclusao)
+            : null,
+          ultimaAtualizacao: form.pessoaJuridica.simples?.ultimaAtualizacao
+            ? formatDateToBr(form.pessoaJuridica.simples.ultimaAtualizacao)
+            : null
+        }
+      } : null
+    };
+
+    result = await updateCliente({
+      id: cliente.id,
+      ...clientePayload
+    }).unwrap();
+
+    const clienteFormatado = {
+      id: cliente.id,
+      tipoPessoa: isCPF ? "PF" : "PJ",
+      pessoaFisica: clientePayload.pessoaFisica,
+      pessoaJuridica: clientePayload.pessoaJuridica
+    };
+
+    setDocumentoBusca('');
+    setDocumentoJaCadastrado(false);
+    setErroBusca(null);
+
+    dispatch(setClienteSelecionado(clienteFormatado));
+    localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
+    dispatch(setCliente(clienteFormatado));
+
+    console.log("✅ Cliente atualizado armazenado no Redux e localStorage");
+    navigate('/produtos');
+
+  } else {
+    if (isCPF && form.pessoaFisica) {
+      const payload: CreateClienteRequest = {
+        pessoaFisica: {
+          nome: form.pessoaFisica.nome,
+          cpf: form.pessoaFisica.cpf,
+          email: form.pessoaFisica.email ?? '',
+          telefone: form.pessoaFisica.telefone,
+          dataNascimento: form.pessoaFisica.dataNascimento,
+          endereco: form.pessoaFisica.endereco
+        }
+      };
+
+      try {
+        console.log("📤 Enviando cliente PF:", payload);
+        await addCliente(payload);
+
+        const clienteFormatado = {
+          id: 0,
+          tipoPessoa: "PF",
+          pessoaFisica: payload.pessoaFisica,
+          pessoaJuridica: null
         };
 
-        result = await updateCliente({
-          id: cliente.id,
-          ...clientePayload
-        }).unwrap();
+        setDocumentoBusca('');
+        setDocumentoJaCadastrado(false);
+        setErroBusca(null);
 
-      } else {
-        if (isCPF && form.pessoaFisica) {
-          const payload: CreateClienteRequest = {
-            pessoaFisica: {
-              nome: form.pessoaFisica.nome,
-              cpf: form.pessoaFisica.cpf,
-              email: form.pessoaFisica.email ?? '',
-              telefone: form.pessoaFisica.telefone,
-              dataNascimento: form.pessoaFisica.dataNascimento,
-              endereco: form.pessoaFisica.endereco
-            }
-          };
+        dispatch(setClienteSelecionado(clienteFormatado));
+        localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
+        dispatch(setCliente(clienteFormatado));
 
-          try {
-            console.log("📤 Enviando cliente PF:", payload);
-            await addCliente(payload);
+        console.log("📦 Cliente PF armazenado no Redux e localStorage");
+        navigate('/produtos');
 
-            const clienteFormatado = {
-              id: 0,
-              tipoPessoa: "PF",
-              pessoaFisica: payload.pessoaFisica,
-              pessoaJuridica: null
-            };
-
-            setDocumentoBusca('');
-            setDocumentoJaCadastrado(false);
-            setErroBusca(null);
-
-            dispatch(setClienteSelecionado(clienteFormatado));
-            localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
-            dispatch(setCliente(clienteFormatado));
-
-            console.log("📦 Cliente PF armazenado no Redux e localStorage");
-            navigate('/produtos');
-
-          } catch (error) {
-            console.error('❌ Erro ao cadastrar cliente PF:', error);
-          }
-
-
-
-        } else if (isCNPJ && form.pessoaJuridica) {
-          const payload: CreateClienteRequest = {
-            pessoaJuridica: {
-              cnpj: form.pessoaJuridica.cnpj,
-              razaoSocial: form.pessoaJuridica.razaoSocial,
-              nomeFantasia: form.pessoaJuridica.nomeFantasia,
-              situacao: form.pessoaJuridica.situacao,
-              tipo: form.pessoaJuridica.tipo,
-              naturezaJuridica: form.pessoaJuridica.naturezaJuridica,
-              porte: form.pessoaJuridica.porte,
-              dataAbertura: formatDateToBr(form.pessoaJuridica.dataAbertura),
-              ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao
-                ? formatDateToBr(form.pessoaJuridica.ultimaAtualizacao)
-                : null,
-              atividadesPrincipais: form.pessoaJuridica.atividadesPrincipais,
-              atividadesSecundarias: form.pessoaJuridica.atividadesSecundarias,
-              socios: form.pessoaJuridica.socios,
-              endereco: form.pessoaJuridica.endereco,
-              telefone: form.pessoaJuridica.telefone,
-              email: form.pessoaJuridica.email || '',
-              inscricaoEstadual: form.pessoaJuridica.inscricaoEstadual,
-              capitalSocial: form.pessoaJuridica.capitalSocial,
-              simples: {
-                optante: form.pessoaJuridica.simples?.optante ?? false,
-                dataExclusao: form.pessoaJuridica.simples?.dataExclusao
-                  ? formatDateToBr(form.pessoaJuridica.simples.dataExclusao)
-                  : null,
-                ultimaAtualizacao: form.pessoaJuridica.simples?.ultimaAtualizacao
-                  ? formatDateToBr(form.pessoaJuridica.simples.ultimaAtualizacao)
-                  : null
-              }
-            }
-          };
-          try {
-            await addCliente(payload); // Ignora a resposta da API
-
-            const clienteFormatado = {
-              id: 0, // Ou algum ID temporário, se necessário
-              tipoPessoa: "PJ",
-              pessoaFisica: null,
-              pessoaJuridica: payload.pessoaJuridica
-            };
-
-            setDocumentoBusca('');
-            setDocumentoJaCadastrado(false);
-            setErroBusca(null);
-
-            dispatch(setClienteSelecionado(clienteFormatado));
-            localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
-            dispatch(setCliente(clienteFormatado));
-
-            console.log("📦 Cliente PJ armazenado no Redux e localStorage");
-            navigate('/produtos');
-
-          } catch (error) {
-            console.error('❌ Erro ao cadastrar cliente PJ:', error);
-          }
-
-        } else {
-          console.error("Payload inválido");
-          return;
-        }
+      } catch (error) {
+        console.error('❌ Erro ao cadastrar cliente PF:', error);
       }
 
-    } catch (error) {
-      console.error("Erro ao salvar cliente:", error);
-    }
-  };
+    } else if (isCNPJ && form.pessoaJuridica) {
+      const payload: CreateClienteRequest = {
+        pessoaJuridica: {
+          cnpj: form.pessoaJuridica.cnpj,
+          razaoSocial: form.pessoaJuridica.razaoSocial,
+          nomeFantasia: form.pessoaJuridica.nomeFantasia,
+          situacao: form.pessoaJuridica.situacao,
+          tipo: form.pessoaJuridica.tipo,
+          naturezaJuridica: form.pessoaJuridica.naturezaJuridica,
+          porte: form.pessoaJuridica.porte,
+          dataAbertura: formatDateToBr(form.pessoaJuridica.dataAbertura),
+          ultimaAtualizacao: form.pessoaJuridica.ultimaAtualizacao
+            ? formatDateToBr(form.pessoaJuridica.ultimaAtualizacao)
+            : null,
+          atividadesPrincipais: form.pessoaJuridica.atividadesPrincipais,
+          atividadesSecundarias: form.pessoaJuridica.atividadesSecundarias,
+          socios: form.pessoaJuridica.socios,
+          endereco: form.pessoaJuridica.endereco,
+          telefone: form.pessoaJuridica.telefone,
+          email: form.pessoaJuridica.email || '',
+          inscricaoEstadual: form.pessoaJuridica.inscricaoEstadual,
+          capitalSocial: form.pessoaJuridica.capitalSocial,
+          simples: {
+            optante: form.pessoaJuridica.simples?.optante ?? false,
+            dataExclusao: form.pessoaJuridica.simples?.dataExclusao
+              ? formatDateToBr(form.pessoaJuridica.simples.dataExclusao)
+              : null,
+            ultimaAtualizacao: form.pessoaJuridica.simples?.ultimaAtualizacao
+              ? formatDateToBr(form.pessoaJuridica.simples.ultimaAtualizacao)
+              : null
+          }
+        }
+      };
+      try {
+        await addCliente(payload);
 
+        const clienteFormatado = {
+          id: 0,
+          tipoPessoa: "PJ",
+          pessoaFisica: null,
+          pessoaJuridica: payload.pessoaJuridica
+        };
+
+        setDocumentoBusca('');
+        setDocumentoJaCadastrado(false);
+        setErroBusca(null);
+
+        dispatch(setClienteSelecionado(clienteFormatado));
+        localStorage.setItem('clienteSelecionado', JSON.stringify(clienteFormatado));
+        dispatch(setCliente(clienteFormatado));
+
+        console.log("📦 Cliente PJ armazenado no Redux e localStorage");
+        navigate('/produtos');
+
+      } catch (error) {
+        console.error('❌ Erro ao cadastrar cliente PJ:', error);
+      }
+
+    } else {
+      console.error("Payload inválido");
+      return;
+    }
+  }
+
+} catch (error) {
+  console.error("Erro ao salvar cliente:", error);
+}
+  }
 
   return (
     <PageContainer>

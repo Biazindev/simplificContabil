@@ -60,6 +60,23 @@ interface PessoaFisica {
   }
   
   interface PessoaJuridica {
+    tipo: string
+    simples: SimplesNacional
+    capitalSocial: number
+    socios: Socio[]
+    atividadesSecundarias: Atividade[]
+    atividadesPrincipais: Atividade[]
+    ultimaAtualizacao: string | null
+    porte: string
+    tipo: string
+    situacao: string
+    nomeFantasia: string | number | readonly string[] | undefined
+    email: string | number | readonly string[] | undefined
+    telefone: string | number | readonly string[] | undefined
+    inscricaoEstadual: string | number | readonly string[] | undefined
+    naturezaJuridica: string | number | readonly string[] | undefined
+    dataAbertura: string | number | readonly string[] | undefined
+    endereco: any
     razaoSocial: string;
     cnpj: string;
   }
@@ -119,7 +136,7 @@ interface ClienteProps {
   }
 
   
-  type VendaProps = {
+ export type VendaProps = {
     id: number;
     cliente: string;
     produtos: { id: number; quantidade: number }[];

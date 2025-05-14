@@ -94,7 +94,57 @@ const Venda = () => {
         state: { cliente, produtos, total }
       });
     }
+  }
+
+  const handleAbrirNotaFiscal = () => {
+  if (!cliente || produtos.length === 0) return;
+
+  const dataAtual = new Date().toLocaleDateString(); // formato mais amigável
+
+  // Montar objeto cliente "plano"
+  const clienteNota = {
+    tipo: cliente.pessoaFisica ? 'pf' : 'pj',
+    nome: cliente.pessoaFisica?.nome ?? '',
+    cpf: cliente.pessoaFisica?.cpf ?? '',
+    dataNascimento: cliente.pessoaFisica?.dataNascimento ?? '',
+    razaoSocial: cliente.pessoaJuridica?.razaoSocial ?? '',
+    nomeFantasia: cliente.pessoaJuridica?.nomeFantasia ?? '',
+    cnpj: cliente.pessoaJuridica?.cnpj ?? '',
+    email: cliente.email,
+    telefone: cliente.telefone
   };
+
+  // Produtos normalizados
+  const produtosNota = produtos.map(p => ({
+    nome: p.nome,
+    preco: p.precoUnitario,
+    quantidade: p.quantidade
+  }));
+
+  // Venda no formato esperado
+  const vendaNota = {
+    data: dataAtual,
+    formaPagamento: 'DINHEIRO',
+    total: produtosNota.reduce((acc, p) => acc + p.preco * p.quantidade, 0)
+  };
+
+  // Salvar no localStorage
+  localStorage.setItem('cliente', JSON.stringify(clienteNota));
+  localStorage.setItem('produtos', JSON.stringify(produtosNota));
+  localStorage.setItem('venda', JSON.stringify(vendaNota));
+
+  // Navegar
+  navigate('/nfe', {
+    state: {
+      cliente: clienteNota,
+      produtos: produtosNota,
+      venda: vendaNota
+    }
+  });
+};
+
+
+
   return (
     <Container>
       <Title>Resumo da Venda</Title>
@@ -144,8 +194,8 @@ const Venda = () => {
           </Button>
         </ContainerButton>
         <ContainerButton>
-          <Button onClick={handleEnviarVenda} disabled={isLoading}>
-            {isLoading ? 'Enviando...' : 'Nota Fiscal'}
+          <Button onClick={handleAbrirNotaFiscal}>
+            Nota Fiscal
           </Button>
         </ContainerButton>
         <ContainerButton>
