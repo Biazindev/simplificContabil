@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../store/reducers';
 import { useEffect, useState } from 'react';
 import { setCliente, setProdutos } from '../../store/reducers/vendaSlice';
-import { useAddVendaMutation } from '../../services/api';
+import { useAddVendaMutation, useAddNfeMutation } from '../../services/api';
 import { Cliente, Produto } from './types';
 import {
   Container,
@@ -22,6 +22,63 @@ import {
   Input,
   CheckboxContainer
 } from './styles';
+import { ItemVenda } from '../../types';
+
+export interface EmitirNotaPayload {
+  emitirNotaFiscal: boolean;
+  documentoCliente: string;
+  cliente: {
+    tipoPessoa: 'FISICA' | 'JURIDICA';
+    pessoaFisica?: {
+      nome: string;
+      cpf: string;
+      email: string;
+      telefone: string;
+      dataNascimento: string;
+      endereco: Endereco;
+    };
+    pessoaJuridica?: {
+      razaoSocial: string;
+      nomeFantasia: string;
+      cnpj: string;
+      email: string;
+      telefone: string;
+      endereco: Endereco;
+    };
+  };
+  emitente: {
+    razaoSocial: string;
+    nomeFantasia: string;
+    cnpj: string;
+    inscricaoEstadual: string;
+    endereco: Endereco;
+  };
+  itens: ItemVenda[];
+  totalVenda: number;
+  totalDesconto: number;
+  totalPagamento: number;
+  formaPagamento: string;
+  dataVenda: string;
+  status: string;
+  numeroParcelas: number;
+}
+
+export interface Endereco {
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  cep: string;
+  codigoIbge?: string;
+  uf: string;
+}
+
+export interface Emitente {
+  nome: string;
+  nomeFantasia?: string;
+  cnpj: string;
+  inscricaoEstadual: string;
+  endereco: Endereco;
+}
 
 const Venda = () => {
   const dispatch = useDispatch();
@@ -31,7 +88,6 @@ const Venda = () => {
   const produtos: Produto[] = useSelector((state: RootState) => state.venda.produtos);
 
   const [enviarVenda, { isLoading, isSuccess, isError, error }] = useAddVendaMutation();
-  const [mostrarEntrega, setMostrarEntrega] = useState(false);
   const [emitirNotaFiscal, setEmitirNotaFiscal] = useState(false);
 
   const [nome, setNome] = useState('');
@@ -40,6 +96,23 @@ const Venda = () => {
   const [cnpj, setCnpj] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
+  const [enviarNota, { isLoading: isLoadingNota, isSuccess: isSuccessNota, isError: isErrorNota, error: errorNota }] = useAddNfeMutation();
+  const [respostaNota, setRespostaNota] = useState<string | null>(null);
+
+  const emitente = {
+    nome: "Biazin Sistemas LTDA",
+    nomeFantasia: "Biazin Sistemas",
+    cnpj: "47397316000122",
+    inscricaoEstadual: "ISENTO",
+    endereco: {
+      logradouro: "Rua Belluno",
+      numero: "50",
+      bairro: "Tartarelli",
+      cep: "87240000",
+      codigoIbge: "4127205",
+      uf: "PR"
+    }
+  };
 
   useEffect(() => {
     const clienteString = localStorage.getItem('clienteSelecionado');
@@ -72,47 +145,47 @@ const Venda = () => {
   const total = produtos.reduce((acc, p) => acc + p.precoUnitario * p.quantidade, 0);
 
   const handleEnviarVenda = async () => {
-    if (!cliente || produtos.length === 0) return;
+  if (!cliente || produtos.length === 0) return;
 
-    const dataAtual = new Date().toISOString();
+  const dataAtual = new Date().toISOString();
 
-    const payload = {
-      venda: {
-        documentoCliente: cliente.pessoaFisica?.cpf ?? cliente.pessoaJuridica?.cnpj ?? '',
-        itens: produtos.map(p => ({
-          produtoId: p.id,
-          nomeProduto: p.nome,
-          precoUnitario: p.precoUnitario,
-          quantidade: p.quantidade,
-          totalItem: p.precoUnitario * p.quantidade,
-        })),
-        totalVenda: total,
-        totalDesconto: 0,
-        totalPagamento: total,
-        formaPagamento: 'DINHEIRO',
-        status: 'PAGO',
-        numeroParcelas: 1,
-      },
-      pagamento: {
-        formaPagamento: 'DINHEIRO',
-        valorPago: total,
-        valorRestante: 0,
-        dataPagamento: dataAtual,
-        status: 'PAGO',
-        numeroParcelas: 1,
-      },
-    };
-
-    try {
-      const response: any = await enviarVenda(payload).unwrap();
-
-      const blob = new Blob([response], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, '_blank');
-    } catch (e) {
-      console.error('Erro ao enviar venda:', e);
-    }
+  const payload = {
+    emitirNotaFiscal: emitirNotaFiscal,
+    documentoCliente: cliente.pessoaFisica?.cpf ?? cliente.pessoaJuridica?.cnpj ?? '',
+    clienteId: cliente.id,
+    cliente: {
+      id: cliente.id
+    },
+    ...(emitirNotaFiscal && {
+      emitente: {
+        id: 1 
+      }
+    }),
+    itens: produtos.map((p) => ({
+      produtoId: p.id,
+      quantidade: p.quantidade,
+      valorUnitario: p.precoUnitario,
+      valorTotal: p.precoUnitario * p.quantidade
+    })),
+    totalVenda: total,
+    totalDesconto: 0.00,
+    totalPagamento: total,
+    formaPagamento: "DINHEIRO",
+    dataVenda: dataAtual,
+    status: "PAGO",
+    numeroParcelas: 1
   };
+
+  try {
+    const response: any = await enviarVenda(payload).unwrap();
+    const blob = new Blob([response], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  } catch (e) {
+    console.error('Erro ao enviar venda:', e);
+  }
+};
+
 
   const handleAbrirEntrega = () => {
     if (cliente && produtos.length > 0) {
@@ -122,44 +195,89 @@ const Venda = () => {
     }
   };
 
-  const handleEmitirNotaFiscal = () => {
-    const dataAtual = new Date().toLocaleDateString();
+  const handleEmitirNotaFiscal = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
 
-    const clienteNota = {
-      tipo: cliente?.pessoaFisica ? 'pf' : 'pj',
-      nome,
-      cpf,
-      dataNascimento: cliente?.pessoaFisica?.dataNascimento ?? '',
-      razaoSocial,
-      nomeFantasia: cliente?.pessoaJuridica?.nomeFantasia ?? '',
-      cnpj,
-      email,
-      telefone
+    if (!cliente || produtos.length === 0) return;
+
+    const dataVenda = new Date().toISOString();
+    const documentoCliente = cliente.pessoaFisica?.cpf ?? cliente.pessoaJuridica?.cnpj ?? '';
+
+    const payload: EmitirNotaPayload = {
+      emitirNotaFiscal: true,
+      documentoCliente,
+      cliente: {
+        tipoPessoa: cliente.pessoaFisica ? 'FISICA' : 'JURIDICA',
+        ...(cliente.pessoaFisica && {
+          pessoaFisica: {
+            nome: cliente.pessoaFisica.nome,
+            cpf: cliente.pessoaFisica.cpf,
+            email: cliente.pessoaFisica.email,
+            telefone: cliente.pessoaFisica.telefone,
+            dataNascimento: cliente.pessoaFisica.dataNascimento,
+            endereco: {
+              logradouro: "Rua Exemplo",
+              numero: "100",
+              bairro: "Centro",
+              cep: "87240000",
+              codigoIbge: "4127205",
+              uf: "PR"
+            }
+          }
+        }),
+        ...(cliente.pessoaJuridica && {
+          pessoaJuridica: {
+            razaoSocial: cliente.pessoaJuridica.razaoSocial,
+            nomeFantasia: cliente.pessoaJuridica.nomeFantasia,
+            cnpj: cliente.pessoaJuridica.cnpj,
+            email: cliente.pessoaJuridica.email,
+            telefone: cliente.pessoaJuridica.telefone,
+            endereco: {
+              logradouro: "Rua Exemplo",
+              numero: "100",
+              bairro: "Centro",
+              cep: "87240000",
+              codigoIbge: "4127205",
+              uf: "PR"
+            }
+          }
+        })
+      },
+      emitente: {
+        razaoSocial: emitente.nome,
+        nomeFantasia: emitente.nomeFantasia ?? emitente.nome,
+        cnpj: emitente.cnpj,
+        inscricaoEstadual: emitente.inscricaoEstadual,
+        endereco: emitente.endereco
+      },
+      itens: produtos.map((p) => ({
+        produto: {
+          id: p.id,
+          nome: p.nome,
+          descricao: p.nome,
+          ncm: "21069090",
+          precoUnitario: p.precoUnitario
+        },
+        nomeProduto: p.nome,
+        precoUnitario: p.precoUnitario,
+        quantidade: p.quantidade,
+        totalItem: p.precoUnitario * p.quantidade
+      })),
+      totalVenda: total,
+      totalDesconto: 0.00,
+      totalPagamento: total,
+      formaPagamento: "DINHEIRO",
+      dataVenda,
+      status: "PAGO",
+      numeroParcelas: 1
     };
 
-    const produtosNota = produtos.map(p => ({
-      nome: p.nome,
-      preco: p.precoUnitario,
-      quantidade: p.quantidade
-    }));
-
-    const vendaNota = {
-      data: dataAtual,
-      formaPagamento: 'DINHEIRO',
-      total: produtosNota.reduce((acc, p) => acc + p.preco * p.quantidade, 0)
-    };
-
-    localStorage.setItem('cliente', JSON.stringify(clienteNota));
-    localStorage.setItem('produtos', JSON.stringify(produtosNota));
-    localStorage.setItem('venda', JSON.stringify(vendaNota));
-
-    navigate('/nfe', {
-      state: {
-        cliente: clienteNota,
-        produtos: produtosNota,
-        venda: vendaNota
-      }
-    });
+    try {
+      const resposta = await enviarNota(payload).unwrap();
+      setRespostaNota(JSON.stringify(resposta, null, 2));
+    } catch (e) {
+      console.error('Erro ao emitir nota fiscal:', e);
+    }
   };
 
   return (
@@ -167,8 +285,6 @@ const Venda = () => {
       <Title>Resumo da Venda</Title>
 
       <SectionTitle>Cliente</SectionTitle>
-
-      {/* Dados do cliente - igual ao original */}
       {cliente?.pessoaFisica && (
         <div>
           <Text><strong>Nome:</strong> {cliente.pessoaFisica.nome}</Text>
@@ -237,7 +353,14 @@ const Venda = () => {
           <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
 
           <ContainerButton>
-            <Button onClick={handleEmitirNotaFiscal}>Emitir Nota</Button>
+            <Button type="button" onClick={handleEmitirNotaFiscal}>Emitir Nota</Button>
+            {isLoadingNota && <Text>Emitindo nota...</Text>}
+            {isSuccessNota && respostaNota && (
+              <SuccessMessage>Nota emitida com sucesso: <pre>{respostaNota}</pre></SuccessMessage>
+            )}
+            {isErrorNota && (
+              <ErrorMessage>Erro ao emitir nota: {JSON.stringify(errorNota)}</ErrorMessage>
+            )}
           </ContainerButton>
         </Form>
       )}
@@ -252,7 +375,6 @@ const Venda = () => {
           <Button onClick={handleAbrirEntrega}>Entrega</Button>
         </ContainerButton>
       </ContainerSpace>
-
       {isSuccess && <SuccessMessage>Venda enviada com sucesso!</SuccessMessage>}
       {isError && <ErrorMessage>Erro: {JSON.stringify(error)}</ErrorMessage>}
     </Container>

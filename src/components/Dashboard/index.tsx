@@ -100,7 +100,7 @@ const Dashboard = () => {
           </div>
         </CardContainer>
         <CardContainer>
-          <p>{formatCurrency(vendasDia)}</p>
+          <p>{formatCurrency(vendasHoje)}</p>
           <div>
             <span>
               <PiMoneyBold style={{ fontSize: "40px", marginRight: "8px" }} />

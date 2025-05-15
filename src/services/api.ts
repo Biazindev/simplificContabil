@@ -7,6 +7,7 @@ import {
   FetchArgs,
 } from '@reduxjs/toolkit/query/react'
 import { Mutex } from 'async-mutex'
+import { EmitirNotaPayload } from '../components/Venda/index';
 
 export interface ForgotPasswordRequest { email: string }
 export interface ResetPasswordRequest { token: string; newPassword: string }
@@ -95,7 +96,7 @@ export interface ClienteProps {
   cliente: void | ClienteProps;
   id: number; nome: string; cpf?: string; cnpj?: string; email?: string; telefone?: string;
   endereco?: Endereco; dataNascimento?: string; razaoSocial?: string;
-  pessoaFisica?: PessoaFisica; pessoaJuridica?: PessoaJuridica
+  pessoaFisica?: PessoaFisica; pessoaJuridica?: PessoaJuridica; municipio: string
 }
 
 export interface CreateClienteRequest {
@@ -462,14 +463,20 @@ export const api = createApi({
     }),
     listarFiliais: builder.query<any[], void>({
       query: () => 'filial',
-      providesTags: ['Filial'], // opcional, mas ajuda
+      providesTags: ['Filial'],
     }),
-
-
+    addNfe: builder.mutation<any, EmitirNotaPayload>({
+      query: (body) => ({
+        url: '/nfe/emitir  ',
+        method: 'POST',
+        body
+      })
+    })
   })
 })
 
 export const {
+  useAddNfeMutation,
   useGetTotalDiaSingleQuery,
   useImportarProdutosXmlFilialMutation,
   useGetTotalDiaSingQuery,
@@ -518,4 +525,3 @@ export const {
   useListarFiliaisQuery,
 } = api
 
-export default api

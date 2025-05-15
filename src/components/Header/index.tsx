@@ -19,9 +19,9 @@ import {
   ToggleSidebarButton,
   SidebarOverlay
 } from "./styles";
-import { useBuscarUsuarioPorIdQuery, useLogoutMutation } from "../../services/api";
 import { useTheme } from "styled-components";
 import { FaSun, FaMoon, FaBars } from "react-icons/fa";
+import {useBuscarUsuarioPorIdQuery,  useLogoutMutation }  from "../../services/api";
 
 interface HeaderProps {
   toggleTheme: () => void;

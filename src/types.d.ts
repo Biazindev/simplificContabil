@@ -6,6 +6,67 @@ interface ProdutoPedido {
     observacao?: string
 
 }
+export interface EmitirNotaPayload {
+  emitirNotaFiscal: boolean;
+  documentoCliente: string;
+  cliente: {
+    tipoPessoa: 'FISICA' | 'JURIDICA';
+    pessoaFisica?: {
+      nome: string;
+      cpf: string;
+      email: string;
+      telefone: string;
+      dataNascimento: string;
+      endereco: Endereco;
+    };
+    pessoaJuridica?: {
+      razaoSocial: string;
+      nomeFantasia: string;
+      cnpj: string;
+      email: string;
+      telefone: string;
+      endereco: Endereco;
+    };
+  };
+  emitente: {
+    razaoSocial: string;
+    nomeFantasia: string;
+    cnpj: string;
+    inscricaoEstadual: string;
+    endereco: Endereco;
+  };
+  itens: ItemVenda[];
+  totalVenda: number;
+  totalDesconto: number;
+  totalPagamento: number;
+  formaPagamento: string;
+  dataVenda: string;
+  status: string;
+  numeroParcelas: number;
+}
+
+interface Endereco {
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  cep: string;
+  codigoIbge?: string;
+  uf: string;
+}
+
+interface ItemVenda {
+  produto: {
+    id: number;
+    nome: string;
+    descricao: string;
+    ncm: string;
+    precoUnitario: number;
+  };
+  nomeProduto: string;
+  precoUnitario: number;
+  quantidade: number;
+  totalItem: number;
+}
 
 interface PedidoEntrega {
     id: number
@@ -59,27 +120,27 @@ interface PessoaFisica {
     dataNascimento: string;
   }
   
-  interface PessoaJuridica {
-    tipo: string
-    simples: SimplesNacional
-    capitalSocial: number
-    socios: Socio[]
-    atividadesSecundarias: Atividade[]
-    atividadesPrincipais: Atividade[]
-    ultimaAtualizacao: string | null
-    porte: string
-    tipo: string
-    situacao: string
-    nomeFantasia: string | number | readonly string[] | undefined
-    email: string | number | readonly string[] | undefined
-    telefone: string | number | readonly string[] | undefined
-    inscricaoEstadual: string | number | readonly string[] | undefined
-    naturezaJuridica: string | number | readonly string[] | undefined
-    dataAbertura: string | number | readonly string[] | undefined
-    endereco: any
-    razaoSocial: string;
-    cnpj: string;
-  }
+  // interface PessoaJuridica {
+  //   tipo: string
+  //   simples: SimplesNacional
+  //   capitalSocial: number
+  //   socios: Socio[]
+  //   atividadesSecundarias: Atividade[]
+  //   atividadesPrincipais: Atividade[]
+  //   ultimaAtualizacao: string | null
+  //   porte: string
+  //   tipo: string
+  //   situacao: string
+  //   nomeFantasia: string | number | readonly string[] | undefined
+  //   email: string | number | readonly string[] | undefined
+  //   telefone: string | number | readonly string[] | undefined
+  //   inscricaoEstadual: string | number | readonly string[] | undefined
+  //   naturezaJuridica: string | number | readonly string[] | undefined
+  //   dataAbertura: string | number | readonly string[] | undefined
+  //   endereco: any
+  //   razaoSocial: string;
+  //   cnpj: string;
+  // }
   
   interface ClienteProps {
     dataNascimento: string
@@ -137,14 +198,77 @@ interface ClienteProps {
 
   
  export type VendaProps = {
-    id: number;
-    cliente: string;
-    produtos: { id: number; quantidade: number }[];
-    metodoPagamento: string;
-    valorPago: number;
-    totalVenda: number;
-    dataVenda: string;
-  }
+  emitirNotaFiscal: boolean;
+  documentoCliente: string;
+  cliente: {
+    tipoPessoa: 'FISICA' | 'JURIDICA';
+    pessoaFisica?: {
+      nome: string;
+      cpf: string;
+      email: string;
+      telefone: string;
+      dataNascimento: string;
+      endereco: {
+        logradouro: string;
+        numero: string;
+        bairro: string;
+        cep: string;
+        codigoIbge?: string;
+        uf: string;
+      };
+    };
+    pessoaJuridica?: {
+      razaoSocial: string;
+      nomeFantasia: string;
+      cnpj: string;
+      email: string;
+      telefone: string;
+      endereco: {
+        logradouro: string;
+        numero: string;
+        bairro: string;
+        cep: string;
+        codigoIbge?: string;
+        uf: string;
+      };
+    };
+  };
+  emitente: {
+    razaoSocial: string;
+    nomeFantasia: string;
+    cnpj: string;
+    inscricaoEstadual: string;
+    endereco: {
+      logradouro: string;
+      numero: string;
+      bairro: string;
+      cep: string;
+      codigoIbge?: string;
+      uf: string;
+    };
+  };
+  itens: {
+    produto: {
+      id: number;
+      nome: string;
+      descricao: string;
+      ncm: string;
+      precoUnitario: number;
+    };
+    nomeProduto: string;
+    precoUnitario: number;
+    quantidade: number;
+    totalItem: number;
+  }[];
+  totalVenda: number;
+  totalDesconto: number;
+  totalPagamento: number;
+  formaPagamento: string;
+  dataVenda: string;
+  status: 'PAGO' | 'PENDENTE' | 'CANCELADO';
+  numeroParcelas: number;
+};
+
 
 export interface ResponseData {
   status: number;

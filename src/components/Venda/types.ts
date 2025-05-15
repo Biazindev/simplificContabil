@@ -1,12 +1,3 @@
-export interface Endereco {
-  logradouro: string
-  numero: string
-  bairro: string
-  municipio: string
-  uf: string
-  cep: string
-}
-
 export interface PessoaFisica {
   nome: string
   cpf: string
@@ -17,12 +8,14 @@ export interface PessoaFisica {
 }
 
 export interface Cliente {
+  nomeFantasia: string | number | readonly string[] | undefined
   pessoaJuridica: any
   telefone: string | number | readonly string[] | undefined
   email: string | number | readonly string[] | undefined
   nome: string | number | readonly string[] | undefined
   id: number
   pessoaFisica: PessoaFisica
+  municipio: string
 }
 
 export interface Produto {
@@ -37,18 +30,26 @@ export interface Produto {
   imagem?: string | null
 }
 
-export interface PayloadVenda {
-  documentoCliente: string
-  itensVenda: {
-    produtoId: number
-    quantidade: number
-    precoUnitario: number
-  }[]
-  totalVenda: number
-  totalDesconto: number
-  totalPagamento: number
-  formaPagamento: string
-  dataVenda: string
-  status: string
-  clienteId: number
+interface Endereco {
+  municipio: string
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  cep: string;
+  codigoIbge?: string;
+  uf: string;
+}
+
+interface ItemVenda {
+  produto: {
+    id: number;
+    nome: string;
+    descricao: string;
+    ncm: string;
+    precoUnitario: number;
+  };
+  nomeProduto: string;
+  precoUnitario: number;
+  quantidade: number;
+  totalItem: number;
 }

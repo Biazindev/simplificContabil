@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
-import api, { useLoginMutation, useForgotPasswordMutation, LoginResponse } from '../../services/api'
+import { useLoginMutation, useForgotPasswordMutation, LoginResponse } from '../../services/api'
+import { api } from '../../services/api'
 import { loginSuccess } from '../../store/reducers/authSlice'
 
 import logo from '../../assets/image/logo.png'
