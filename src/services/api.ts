@@ -271,7 +271,10 @@ export const api = createApi({
       query: () => 'venda/totais-diario',
       providesTags: ['Venda'],
     }),
-
+    getTotalDiaSingle: builder.query<number, void>({
+      query: () => 'venda/total-dia',
+      providesTags: ['Venda'],
+    }),
     getTotalSemana: builder.query<number, void>({
       query: () => '/venda/total-semana',
       providesTags: ['Venda'],
@@ -467,6 +470,7 @@ export const api = createApi({
 })
 
 export const {
+  useGetTotalDiaSingleQuery,
   useImportarProdutosXmlFilialMutation,
   useGetTotalDiaSingQuery,
   useLoginMutation,

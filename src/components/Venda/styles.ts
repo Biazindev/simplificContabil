@@ -94,3 +94,53 @@ export const ContainerButton = styled.div`
     justify-content: end;
     align-items: center;
 `
+export const Form = styled.form`
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+`;
+
+export const Label = styled.label`
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+export const Input = styled.input`
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 1.2rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    border-color: #4f46e5;
+    outline: none;
+  }
+`;
+
+export const CheckboxContainer = styled.div`
+  margin: 1.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: #4f46e5;
+    cursor: pointer;
+  }
+
+  label {
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+  }
+`;

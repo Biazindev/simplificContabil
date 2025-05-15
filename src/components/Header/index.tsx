@@ -89,8 +89,6 @@ const Header = ({ toggleTheme, isDarkMode }: HeaderProps) => {
         <h2 style={{ marginBottom: "2rem", color: theme.colors.text }}>ERP</h2>
         <SidebarItem href="/dashboard" onClick={closeSidebar}><RxDashboard /> Dashboard</SidebarItem>
         <SidebarItem href="/clientes" onClick={closeSidebar}><RxPerson /> Vendas</SidebarItem>
-        <SidebarItem href="/produtos" onClick={closeSidebar}><RxBox /> Produtos</SidebarItem>
-        <SidebarItem href="/clientes" onClick={closeSidebar}><RxPerson /> Clientes</SidebarItem>
         <SidebarItem href="/stock" onClick={closeSidebar}><PiCodesandboxLogoLight /> Estoque</SidebarItem>
         <SidebarItem href="/sale-list" onClick={closeSidebar}><IoReceiptOutline /> Relatório de vendas</SidebarItem>
         <SidebarItem href="/delivery" onClick={closeSidebar}><FaMotorcycle /> Entregas</SidebarItem>

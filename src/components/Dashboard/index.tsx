@@ -25,6 +25,7 @@ import {
   useGetTotalDiaSingQuery,
   useGetTotalSemanasQuery,
   useGetTotalMesesQuery,
+  useGetTotalDiaSingleQuery,
 } from "../../services/api"
 
 import {
@@ -45,6 +46,7 @@ const Dashboard = () => {
   const { data: weeklyData, isLoading: loadingSemana, error: errorSemana } = useGetTotalSemanaQuery()
   const { data: weeklySingData, isLoading: loadingSemanas, error: errorSemanas } = useGetTotalSemanasQuery()
   const { data: monthlySingData, isLoading: loadingMeses, error: errorMeses } = useGetTotalMesesQuery()
+  const { data: dailySingleData, isLoading: loadingDiaSingle, error: errorDiaSingle } = useGetTotalDiaSingleQuery()
 
   const vendasHoje = dailySingData ?? 0;
   const vendasSemana = weeklySingData ?? 0;
@@ -134,7 +136,7 @@ const Dashboard = () => {
                   Valor total de vendas diárias:{" "}
                   <span className="valor">
                     {formatCurrency(
-                      Object.values(dailySingData ?? {}).reduce((acc, val) => acc + val, 0)
+                      Object.values(dailySingleData ?? {}).reduce((acc, val) => acc + val, 0)
                     )}
                   </span>
                 </h4>

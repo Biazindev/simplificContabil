@@ -48,7 +48,7 @@ const Credentials = () => {
       if (err?.status === 401) {
         setMensagem('Credenciais inválidas.')
       } else {
-        setMensagem('Erro ao tentar logar. Tente novamente mais tarde.')
+        setMensagem('Erro ao tentar logar, Tente novamente mais tarde!')
       }
     }
   }
@@ -89,13 +89,12 @@ const Credentials = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </InputField>
-
-        <ForgotButton type="button" onClick={handleLogin} disabled={isLoggingIn}>
+        <ForgotButton style={{
+          whiteSpace: 'nowrap'
+        }} type="button" onClick={handleLogin} disabled={isLoggingIn}>
           {isLoggingIn ? 'Entrando…' : 'Login'}
         </ForgotButton>
-
-        {mensagem && <p style={{ color: 'red' }}>{mensagem}</p>}
-
+        {mensagem && <p style={{ color: '#fff' }}>{mensagem}</p>}
         <ForgotButton
           type="button"
           onClick={handleForgot}
@@ -111,9 +110,8 @@ const Credentials = () => {
         >
           {isSendingReset ? 'Enviando link…' : 'Esqueci a Senha'}
         </ForgotButton>
-
-        {forgotMessage && <p style={{ color: '#555' }}>{forgotMessage}</p>}
       </CredentialsForm>
+      {forgotMessage && <p style={{ color: '#555' }}>{forgotMessage}</p>}
     </CredentialsContainer>
   )
 }

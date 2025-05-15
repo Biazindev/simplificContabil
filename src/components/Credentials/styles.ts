@@ -98,7 +98,6 @@ export const CredentialsForm = styled.section`
 
   button {
     width: 100%;
-    height: 100%;
   }
 
   p {
@@ -149,6 +148,9 @@ export const ForgotButton = styled.button`
   font-size: 0.9rem;
   text-align: center;
   transition: opacity 0.2s;
+  min-width: 160px;
+  gap: 12px;   
+  min-height: 44px;
 
   &:hover {
     opacity: 0.8;

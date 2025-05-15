@@ -16,26 +16,52 @@ import {
   SuccessMessage,
   ErrorMessage,
   ContainerButton,
-  ContainerSpace
+  ContainerSpace,
+  Form,
+  Label,
+  Input,
+  CheckboxContainer
 } from './styles';
-import Delivery from '../Delivery';
 
 const Venda = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const cliente: Cliente | null = useSelector((state: RootState) => state.venda.cliente);
   const produtos: Produto[] = useSelector((state: RootState) => state.venda.produtos);
 
   const [enviarVenda, { isLoading, isSuccess, isError, error }] = useAddVendaMutation();
   const [mostrarEntrega, setMostrarEntrega] = useState(false);
-  const navigate = useNavigate();
+  const [emitirNotaFiscal, setEmitirNotaFiscal] = useState(false);
+
+  const [nome, setNome] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [razaoSocial, setRazaoSocial] = useState('');
+  const [cnpj, setCnpj] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
 
   useEffect(() => {
     const clienteString = localStorage.getItem('clienteSelecionado');
     const produtosString = localStorage.getItem('produtosSelecionados');
 
     if (clienteString) {
-      dispatch(setCliente(JSON.parse(clienteString)));
+      const parsedCliente = JSON.parse(clienteString);
+      dispatch(setCliente(parsedCliente));
+
+      if (parsedCliente?.pessoaFisica) {
+        setNome(parsedCliente.pessoaFisica.nome);
+        setCpf(parsedCliente.pessoaFisica.cpf);
+        setEmail(parsedCliente.pessoaFisica.email);
+        setTelefone(parsedCliente.pessoaFisica.telefone);
+      }
+
+      if (parsedCliente?.pessoaJuridica) {
+        setRazaoSocial(parsedCliente.pessoaJuridica.razaoSocial);
+        setCnpj(parsedCliente.pessoaJuridica.cnpj);
+        setEmail(parsedCliente.pessoaJuridica.email);
+        setTelefone(parsedCliente.pessoaJuridica.telefone);
+      }
     }
 
     if (produtosString) {
@@ -94,56 +120,47 @@ const Venda = () => {
         state: { cliente, produtos, total }
       });
     }
-  }
-
-  const handleAbrirNotaFiscal = () => {
-  if (!cliente || produtos.length === 0) return;
-
-  const dataAtual = new Date().toLocaleDateString(); // formato mais amigável
-
-  // Montar objeto cliente "plano"
-  const clienteNota = {
-    tipo: cliente.pessoaFisica ? 'pf' : 'pj',
-    nome: cliente.pessoaFisica?.nome ?? '',
-    cpf: cliente.pessoaFisica?.cpf ?? '',
-    dataNascimento: cliente.pessoaFisica?.dataNascimento ?? '',
-    razaoSocial: cliente.pessoaJuridica?.razaoSocial ?? '',
-    nomeFantasia: cliente.pessoaJuridica?.nomeFantasia ?? '',
-    cnpj: cliente.pessoaJuridica?.cnpj ?? '',
-    email: cliente.email,
-    telefone: cliente.telefone
   };
 
-  // Produtos normalizados
-  const produtosNota = produtos.map(p => ({
-    nome: p.nome,
-    preco: p.precoUnitario,
-    quantidade: p.quantidade
-  }));
+  const handleEmitirNotaFiscal = () => {
+    const dataAtual = new Date().toLocaleDateString();
 
-  // Venda no formato esperado
-  const vendaNota = {
-    data: dataAtual,
-    formaPagamento: 'DINHEIRO',
-    total: produtosNota.reduce((acc, p) => acc + p.preco * p.quantidade, 0)
+    const clienteNota = {
+      tipo: cliente?.pessoaFisica ? 'pf' : 'pj',
+      nome,
+      cpf,
+      dataNascimento: cliente?.pessoaFisica?.dataNascimento ?? '',
+      razaoSocial,
+      nomeFantasia: cliente?.pessoaJuridica?.nomeFantasia ?? '',
+      cnpj,
+      email,
+      telefone
+    };
+
+    const produtosNota = produtos.map(p => ({
+      nome: p.nome,
+      preco: p.precoUnitario,
+      quantidade: p.quantidade
+    }));
+
+    const vendaNota = {
+      data: dataAtual,
+      formaPagamento: 'DINHEIRO',
+      total: produtosNota.reduce((acc, p) => acc + p.preco * p.quantidade, 0)
+    };
+
+    localStorage.setItem('cliente', JSON.stringify(clienteNota));
+    localStorage.setItem('produtos', JSON.stringify(produtosNota));
+    localStorage.setItem('venda', JSON.stringify(vendaNota));
+
+    navigate('/nfe', {
+      state: {
+        cliente: clienteNota,
+        produtos: produtosNota,
+        venda: vendaNota
+      }
+    });
   };
-
-  // Salvar no localStorage
-  localStorage.setItem('cliente', JSON.stringify(clienteNota));
-  localStorage.setItem('produtos', JSON.stringify(produtosNota));
-  localStorage.setItem('venda', JSON.stringify(vendaNota));
-
-  // Navegar
-  navigate('/nfe', {
-    state: {
-      cliente: clienteNota,
-      produtos: produtosNota,
-      venda: vendaNota
-    }
-  });
-};
-
-
 
   return (
     <Container>
@@ -151,16 +168,13 @@ const Venda = () => {
 
       <SectionTitle>Cliente</SectionTitle>
 
+      {/* Dados do cliente - igual ao original */}
       {cliente?.pessoaFisica && (
         <div>
           <Text><strong>Nome:</strong> {cliente.pessoaFisica.nome}</Text>
           <Text><strong>CPF:</strong> {cliente.pessoaFisica.cpf}</Text>
           <Text><strong>Email:</strong> {cliente.pessoaFisica.email}</Text>
           <Text><strong>Telefone:</strong> {cliente.pessoaFisica.telefone}</Text>
-          <Text>
-            <strong>Endereço:</strong>{' '}
-            {`${cliente.pessoaFisica.endereco.logradouro}, nº ${cliente.pessoaFisica.endereco.numero} – ${cliente.pessoaFisica.endereco.bairro}, ${cliente.pessoaFisica.endereco.municipio} - ${cliente.pessoaFisica.endereco.uf} – CEP: ${cliente.pessoaFisica.endereco.cep}`}
-          </Text>
         </div>
       )}
 
@@ -170,10 +184,6 @@ const Venda = () => {
           <Text><strong>CNPJ:</strong> {cliente.pessoaJuridica.cnpj}</Text>
           <Text><strong>Email:</strong> {cliente.pessoaJuridica.email}</Text>
           <Text><strong>Telefone:</strong> {cliente.pessoaJuridica.telefone}</Text>
-          <Text>
-            <strong>Endereço:</strong>{' '}
-            {`${cliente.pessoaJuridica.endereco.logradouro}, nº ${cliente.pessoaJuridica.endereco.numero} – ${cliente.pessoaJuridica.endereco.bairro}, ${cliente.pessoaJuridica.endereco.municipio} - ${cliente.pessoaJuridica.endereco.uf} – CEP: ${cliente.pessoaJuridica.endereco.cep}`}
-          </Text>
         </div>
       )}
 
@@ -187,6 +197,51 @@ const Venda = () => {
       </ul>
 
       <Total>Total: R$ {total.toFixed(2)}</Total>
+
+      <CheckboxContainer>
+        <input
+          type="checkbox"
+          id="emitirNotaFiscal"
+          checked={emitirNotaFiscal}
+          onChange={() => setEmitirNotaFiscal(!emitirNotaFiscal)}
+        />
+        <label htmlFor="emitirNotaFiscal">Emitir Nota Fiscal</label>
+      </CheckboxContainer>
+
+      {emitirNotaFiscal && (
+        <Form>
+          <SectionTitle>Nota Fiscal</SectionTitle>
+
+          {cliente?.pessoaFisica && (
+            <>
+              <Label>Nome</Label>
+              <Input value={nome} onChange={(e) => setNome(e.target.value)} />
+              <Label>CPF</Label>
+              <Input value={cpf} onChange={(e) => setCpf(e.target.value)} />
+            </>
+          )}
+
+          {cliente?.pessoaJuridica && (
+            <>
+              <Label>Razão Social</Label>
+              <Input value={razaoSocial} onChange={(e) => setRazaoSocial(e.target.value)} />
+              <Label>CNPJ</Label>
+              <Input value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
+            </>
+          )}
+
+          <Label>Email</Label>
+          <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+
+          <Label>Telefone</Label>
+          <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+
+          <ContainerButton>
+            <Button onClick={handleEmitirNotaFiscal}>Emitir Nota</Button>
+          </ContainerButton>
+        </Form>
+      )}
+
       <ContainerSpace>
         <ContainerButton>
           <Button onClick={handleEnviarVenda} disabled={isLoading}>
@@ -194,30 +249,12 @@ const Venda = () => {
           </Button>
         </ContainerButton>
         <ContainerButton>
-          <Button onClick={handleAbrirNotaFiscal}>
-            Nota Fiscal
-          </Button>
-        </ContainerButton>
-        <ContainerButton>
-          <Button onClick={handleAbrirEntrega}>
-            Entrega
-          </Button>
+          <Button onClick={handleAbrirEntrega}>Entrega</Button>
         </ContainerButton>
       </ContainerSpace>
 
       {isSuccess && <SuccessMessage>Venda enviada com sucesso!</SuccessMessage>}
       {isError && <ErrorMessage>Erro: {JSON.stringify(error)}</ErrorMessage>}
-
-      {mostrarEntrega && cliente && produtos.length > 0 && (
-        navigate('/delivery', {
-          state: {
-            cliente,
-            produtos,
-            total,
-          },
-        })
-      )}
-
     </Container>
   );
 };
