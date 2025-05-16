@@ -28,8 +28,34 @@ export const CredentialsContainer = styled.div`
     background: #1e272e;
   }
 `;
+export const FormFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: ${({ theme }) => theme.spacing(2)};
 
+  a {
+    font-size: 0.875rem;
+    color: ${({ theme }) => theme.colors.primary};
+    text-decoration: none;
 
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: ${({ theme }) => theme.colors.text};
+
+    input {
+      margin-right: 6px;
+    }
+  }
+`;
 
 export const CredentialsImage = styled.div`
   display: flex;
@@ -59,7 +85,7 @@ export const CredentialsImage = styled.div`
   }
 `;
 
-export const CredentialsForm = styled.section`
+export const CredentialsForm = styled.form`
   background: #1e272e;
   padding: ${({ theme }) => theme.spacing(6)};
   border-radius: ${({ theme }) => theme.radii.md};
@@ -161,3 +187,42 @@ export const ForgotButton = styled.button`
     cursor: not-allowed;
   }
 `
+export const ContainerForm = styled.div`
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  margin-top: 1rem;
+
+  button {
+    font-size: 14px;
+    background: transparent;
+    border: none;
+    color: #06c;
+    cursor: pointer;
+    padding: 0;
+    min-width: unset;
+    min-height: unset;
+    width: auto;
+    height: auto;
+    color: #7158e2;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #fff;
+    cursor: pointer;
+
+    span {
+    color: #7158e2;
+    }
+
+    input {
+      margin-right: 0.5rem;
+      
+    }
+  }
+`;
+

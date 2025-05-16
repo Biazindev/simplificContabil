@@ -1,120 +1,168 @@
-import { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import * as Yup from 'yup';
+import { useFormik } from 'formik';
 
-import { useLoginMutation, useForgotPasswordMutation, LoginResponse } from '../../services/api'
-import { api } from '../../services/api'
-import { loginSuccess } from '../../store/reducers/authSlice'
+import {
+  useLoginMutation,
+  useForgotPasswordMutation,
+  LoginResponse,
+} from '../../services/api';
+import { api } from '../../services/api';
+import { loginSuccess } from '../../store/reducers/authSlice';
 
-import logo from '../../assets/image/logo.png'
+import logo from '../../assets/image/logo.png';
 
 import {
   CredentialsContainer,
   CredentialsForm,
   InputField,
-  ForgotButton
-} from './styles'
+  ForgotButton,
+  ContainerForm,
+} from './styles';
 
 const Credentials = () => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const [mensagem, setMensagem] = useState<string | null>(null);
-  const [forgotMessage, setForgotMessage] = useState<string | null>(null)
+  const [forgotMessage, setForgotMessage] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState<boolean>(false); // novo estado
 
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const [login, { isLoading: isLoggingIn }] = useLoginMutation()
-  const [forgotPassword, { isLoading: isSendingReset }] = useForgotPasswordMutation()
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+  const [forgotPassword, { isLoading: isSendingReset }] = useForgotPasswordMutation();
 
-  const handleLogin = async () => {
-    setMensagem(null)
-    try {
-      const response: LoginResponse = await login({
-        username, password,
-        accessToken: ''
-      }).unwrap()
+  const formik = useFormik({
+    initialValues: {
+      username: '',
+      password: '',
+    },
+    validationSchema: Yup.object({
+      username: Yup.string().required('Usuário ou e-mail é obrigatório'),
+      password: Yup.string().required('Senha é obrigatória'),
+    }),
+    onSubmit: async (values) => {
+      setMensagem(null);
+      try {
+        const response: LoginResponse = await login({
+          username: values.username,
+          password: values.password,
+          accessToken: '',
+        }).unwrap();
 
-      if (response.accessToken && response.id) {
-        localStorage.setItem('ACCESS_TOKEN', response.accessToken)
-        localStorage.setItem('USER_ID', String(response.id))
+        if (response.accessToken && response.id) {
+          localStorage.setItem('ACCESS_TOKEN', response.accessToken);
+          localStorage.setItem('USER_ID', String(response.id));
 
-        dispatch(loginSuccess(response.accessToken))
-        dispatch(api.util.resetApiState())
-        navigate('/dashboard')
-      } else {
-        setMensagem('Dados de login inválidos.')
+          dispatch(loginSuccess(response.accessToken));
+          dispatch(api.util.resetApiState());
+          navigate('/dashboard');
+        } else {
+          setMensagem('Dados de login inválidos.');
+        }
+      } catch (err: any) {
+        if (err?.status === 401) {
+          setMensagem('Credenciais inválidas.');
+        } else {
+          setMensagem('Erro ao tentar logar. Tente novamente mais tarde!');
+        }
       }
-    } catch (err: any) {
-      if (err?.status === 401) {
-        setMensagem('Credenciais inválidas.')
-      } else {
-        setMensagem('Erro ao tentar logar, Tente novamente mais tarde!')
-      }
-    }
-  }
-
+    },
+  });
 
   const handleForgot = async () => {
-    if (!username) {
-      setForgotMessage('Digite seu usuário ou e-mail acima para receber o link.')
+    const emailOrUser = formik.values.username;
+    if (!emailOrUser) {
+      setForgotMessage('Digite seu usuário ou e-mail acima para receber o link.');
       return;
     }
+
     setForgotMessage(null);
     try {
-      const { message } = await forgotPassword({ email: username }).unwrap()
-      setForgotMessage(message)
+      const { message } = await forgotPassword({ email: emailOrUser }).unwrap();
+      setForgotMessage(message);
     } catch {
-      setForgotMessage('Falha ao enviar e-mail de recuperação.')
+      setForgotMessage('Falha ao enviar e-mail de recuperação.');
     }
-  }
+  };
 
   return (
     <CredentialsContainer>
-      <CredentialsForm>
+      <CredentialsForm onSubmit={formik.handleSubmit}>
         <img src={logo} alt="logo" />
+
         <InputField>
           <input
             type="text"
+            name="username"
             placeholder="Usuário ou e-mail"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.username}
           />
+          {formik.touched.username && formik.errors.username && (
+            <p style={{ color: 'red' }}>{formik.errors.username}</p>
+          )}
         </InputField>
 
         <InputField>
           <input
-            type="password"
+            type={showPassword ? 'text' : 'password'}
+            name="password"
             placeholder="Senha"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.password}
           />
+          {formik.touched.password && formik.errors.password && (
+            <p style={{ color: 'red' }}>{formik.errors.password}</p>
+          )}
         </InputField>
-        <ForgotButton style={{
-          whiteSpace: 'nowrap'
-        }} type="button" onClick={handleLogin} disabled={isLoggingIn}>
+        <ForgotButton
+          type="submit"
+          disabled={isLoggingIn}
+          style={{ whiteSpace: 'nowrap' }}
+        >
           {isLoggingIn ? 'Entrando…' : 'Login'}
         </ForgotButton>
+
         {mensagem && <p style={{ color: '#fff' }}>{mensagem}</p>}
-        <ForgotButton
-          type="button"
-          onClick={handleForgot}
-          disabled={isSendingReset}
-          style={{
-            marginTop: '0.5rem',
-            background: 'none',
-            border: 'none',
-            color: '#06c',
-            cursor: 'pointer',
-            fontSize: '14px',
-          }}
-        >
-          {isSendingReset ? 'Enviando link…' : 'Esqueci a Senha'}
-        </ForgotButton>
+        <ContainerForm>
+          <ForgotButton
+            type="button"
+            onClick={handleForgot}
+            disabled={isSendingReset}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#06c',
+              cursor: 'pointer',
+              fontSize: '14px',
+              padding: 0,
+              minWidth: 'unset',
+              minHeight: 'unset',
+              width: 'auto',
+              height: 'auto',
+            }}
+          >
+            {isSendingReset ? 'Enviando link…' : 'Esqueci a Senha'}
+          </ForgotButton>
+
+          <label style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={showPassword}
+              onChange={(e) => setShowPassword(e.target.checked)}
+              style={{ marginRight: '0.5rem' }}
+            />
+           <span>Mostrar senha</span>
+          </label>
+        </ContainerForm>
       </CredentialsForm>
       {forgotMessage && <p style={{ color: '#555' }}>{forgotMessage}</p>}
     </CredentialsContainer>
-  )
-}
+  );
+};
 
-export default Credentials
+export default Credentials;
