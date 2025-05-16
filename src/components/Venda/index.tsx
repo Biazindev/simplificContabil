@@ -84,6 +84,7 @@ const Venda = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+
   const cliente: Cliente | null = useSelector((state: RootState) => state.venda.cliente);
   const produtos: Produto[] = useSelector((state: RootState) => state.venda.produtos);
 
@@ -145,46 +146,67 @@ const Venda = () => {
   const total = produtos.reduce((acc, p) => acc + p.precoUnitario * p.quantidade, 0);
 
   const handleEnviarVenda = async () => {
-  if (!cliente || produtos.length === 0) return;
+    if (!cliente) {
+      console.error("Cliente não informado.");
+      return;
+    }
 
-  const dataAtual = new Date().toISOString();
+    if (produtos.length === 0) {
+      console.error("Nenhum produto adicionado.");
+      return;
+    }
 
-  const payload = {
-    emitirNotaFiscal: emitirNotaFiscal,
-    documentoCliente: cliente.pessoaFisica?.cpf ?? cliente.pessoaJuridica?.cnpj ?? '',
-    clienteId: cliente.id,
-    cliente: {
-      id: cliente.id
-    },
-    ...(emitirNotaFiscal && {
-      emitente: {
-        id: 1 
-      }
-    }),
-    itens: produtos.map((p) => ({
-      produtoId: p.id,
-      quantidade: p.quantidade,
-      valorUnitario: p.precoUnitario,
-      valorTotal: p.precoUnitario * p.quantidade
-    })),
-    totalVenda: total,
-    totalDesconto: 0.00,
-    totalPagamento: total,
-    formaPagamento: "DINHEIRO",
-    dataVenda: dataAtual,
-    status: "PAGO",
-    numeroParcelas: 1
+    const documentoCliente = cliente.pessoaFisica?.cpf ?? cliente.pessoaJuridica?.cnpj;
+
+    if (!documentoCliente) {
+      console.error("Documento do cliente está ausente.");
+      return;
+    }
+
+    const dataVenda = new Date().toISOString();
+
+    const totalVenda = produtos.reduce(
+      (total, produto) => total + produto.precoUnitario * produto.quantidade,
+      0
+    );
+
+    const payload = {
+      emitirNotaFiscal: false,
+      documentoCliente,
+      cliente: null,
+      emitenteId: null,
+      modelo: null,
+      itens: produtos.map((p) => ({
+        produtoId: p.id,
+        nomeProduto: p.nome,
+        precoUnitario: p.precoUnitario,
+        quantidade: p.quantidade
+      })),
+      pagamento: {
+        formaPagamento: "DINHEIRO",
+        valorPago: totalVenda,
+        valorRestante: 0.00,
+        status: "PAGO",
+        numeroParcelas: 1
+      },
+      totalVenda,
+      totalDesconto: 0.00,
+      totalPagamento: totalVenda,
+      formaPagamento: "DINHEIRO",
+      dataVenda,
+      status: "PAGO",
+      numeroParcelas: 1
+    };
+
+    try {
+      const response: any = await enviarVenda(payload).unwrap();
+      const blob = new Blob([response], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (e) {
+      console.error("Erro ao enviar venda:", e);
+    }
   };
-
-  try {
-    const response: any = await enviarVenda(payload).unwrap();
-    const blob = new Blob([response], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(blob);
-    window.open(url, '_blank');
-  } catch (e) {
-    console.error('Erro ao enviar venda:', e);
-  }
-};
 
 
   const handleAbrirEntrega = () => {
@@ -204,7 +226,7 @@ const Venda = () => {
     const documentoCliente = cliente.pessoaFisica?.cpf ?? cliente.pessoaJuridica?.cnpj ?? '';
 
     const payload: EmitirNotaPayload = {
-      emitirNotaFiscal: true,
+      emitirNotaFiscal,
       documentoCliente,
       cliente: {
         tipoPessoa: cliente.pessoaFisica ? 'FISICA' : 'JURIDICA',
@@ -216,9 +238,9 @@ const Venda = () => {
             telefone: cliente.pessoaFisica.telefone,
             dataNascimento: cliente.pessoaFisica.dataNascimento,
             endereco: {
-              logradouro: "Rua Exemplo",
-              numero: "100",
-              bairro: "Centro",
+              logradouro: cliente.pessoaFisica.endereco.logradouro,
+              numero: cliente.pessoaFisica.endereco.numero,
+              bairro: cliente.pessoaFisica.endereco.bairro,
               cep: "87240000",
               codigoIbge: "4127205",
               uf: "PR"
@@ -315,13 +337,18 @@ const Venda = () => {
       <Total>Total: R$ {total.toFixed(2)}</Total>
 
       <CheckboxContainer>
-        <input
-          type="checkbox"
-          id="emitirNotaFiscal"
-          checked={emitirNotaFiscal}
-          onChange={() => setEmitirNotaFiscal(!emitirNotaFiscal)}
-        />
-        <label htmlFor="emitirNotaFiscal">Emitir Nota Fiscal</label>
+        <label htmlFor="emitirNotaFiscal">
+          <div className="switch">
+            <input
+              type="checkbox"
+              id="emitirNotaFiscal"
+              checked={emitirNotaFiscal}
+              onChange={() => setEmitirNotaFiscal(!emitirNotaFiscal)}
+            />
+            <span className="slider" />
+          </div>
+          Emitir Nota Fiscal
+        </label>
       </CheckboxContainer>
 
       {emitirNotaFiscal && (

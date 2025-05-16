@@ -129,18 +129,59 @@ export const CheckboxContainer = styled.div`
   margin: 1.5rem 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-
-  input[type="checkbox"] {
-    width: 1.1rem;
-    height: 1.1rem;
-    accent-color: #4f46e5;
-    cursor: pointer;
-  }
+  gap: 0.75rem;
+  justify-content: end;
 
   label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     font-size: 1rem;
     color: #333;
     cursor: pointer;
+  }
+
+  .switch {
+    position: relative;
+    width: 48px;
+    height: 24px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 999px;
+  }
+
+  .slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+  }
+
+  input:checked + .slider {
+    background-color: #4f46e5;
+  }
+
+  input:checked + .slider::before {
+    transform: translateX(24px);
   }
 `;

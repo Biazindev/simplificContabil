@@ -260,10 +260,17 @@ export const api = createApi({
       }),
       invalidatesTags: ['Produto']
     }),
-    getVendas: builder.query<VendaProps[], void>({
-      query: () => '/venda',
-      providesTags: ['Venda']
+    getVendas: builder.query<VendaProps[], { inicio?: string; fim?: string } | void>({
+      query: (params) => {
+        const { inicio, fim } = params || {};
+        return {
+          url: '/venda',
+          params: inicio && fim ? { inicio, fim } : undefined,
+        };
+      },
+      providesTags: ['Venda'],
     }),
+
     getTotalDia: builder.query<number, void>({
       query: () => '/venda/totais-semana',
       providesTags: ['Venda'],
@@ -293,14 +300,23 @@ export const api = createApi({
       query: () => '/venda/totais-mensais',
       providesTags: ['Venda'],
     }),
-
+    getByTime: builder.query<number, void>({
+      query: () => '/venda/totais-mensais',
+      providesTags: ['Venda'],
+    }),
     getTotalAno: builder.query<number, void>({
       query: () => '/venda/total-ano',
       providesTags: ['Venda'],
     }),
+    getVendasPorPeriodo: builder.query<VendaProps[], { inicio: string; fim: string }>({
+      query: ({ inicio, fim }) => `vendas-por-periodo?inicio=${inicio}&fim=${fim}`,
+    }),
+    getTotalPorPeriodo: builder.query<number, { inicio: string; fim: string }>({
+      query: ({ inicio, fim }) => `total-por-periodo?inicio=${inicio}&fim=${fim}`,
+    }),
     addVenda: builder.mutation<Blob, any>({
       query: (venda) => ({
-        url: '/venda',
+        url: '/venda/finalizar',
         method: 'POST',
         body: venda,
         responseHandler: (response) => response.blob(),
@@ -477,6 +493,8 @@ export const api = createApi({
 
 export const {
   useAddNfeMutation,
+  useGetTotalPorPeriodoQuery,
+  useGetByTimeQuery,
   useGetTotalDiaSingleQuery,
   useImportarProdutosXmlFilialMutation,
   useGetTotalDiaSingQuery,
@@ -523,5 +541,6 @@ export const {
   useCriarUsuarioMutation,
   useImportarProdutosXmlMutation,
   useListarFiliaisQuery,
+  useGetTotalAnoQuery
 } = api
 

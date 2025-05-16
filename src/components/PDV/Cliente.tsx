@@ -386,7 +386,7 @@ const Cliente = () => {
 
     const clienteFormatado = {
       id: cliente.id,
-      tipoPessoa: isCPF ? "PF" : "PJ",
+      tipoPessoa: isCPF ? "FISICA" : "JURIDICA",
       pessoaFisica: clientePayload.pessoaFisica,
       pessoaJuridica: clientePayload.pessoaJuridica
     };

@@ -1,6 +1,6 @@
-import { Briefcase, UserPlus } from "lucide-react"
-import { CodesandboxLogo } from "phosphor-react"
-import { PiMoneyBold } from "react-icons/pi"
+import { Briefcase, UserPlus } from "lucide-react";
+import { CodesandboxLogo } from "phosphor-react";
+import { PiMoneyBold } from "react-icons/pi";
 
 import {
   ComposedChart,
@@ -13,10 +13,10 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Legend,
-} from "recharts"
+  Cell,  // Importar Cell para colorir barras individualmente
+} from "recharts";
 
-
-import { Card, CardContent } from "../ui/card"
+import { Card, CardContent } from "../ui/card";
 
 import {
   useGetTotalDiaQuery,
@@ -26,48 +26,61 @@ import {
   useGetTotalSemanasQuery,
   useGetTotalMesesQuery,
   useGetTotalDiaSingleQuery,
-} from "../../services/api"
+  useGetTotalAnoQuery,
+} from "../../services/api";
 
 import {
   Container,
   DashboardContainer,
   ContainerDash,
   CardContainer,
-} from "./styles"
+} from "./styles";
 
-const COLORS = ["#FACC15", "#FB7185", "#60A5FA", "#22D3EE", "#34D399", "#EF4444", "#8B5CF6"]
+const COLORS = [
+  "#EF4444", // Vermelho forte
+  "#3B82F6", // Azul vivo
+  "#F59E0B", // Amarelo brilhante
+  "#10B981", // Verde vibrante
+  "#8B5CF6", // Roxo intenso
+  "#EC4899", // Rosa forte
+  "#F97316", // Laranja vibrante
+];
 
 const formatCurrency = (value: number) =>
-  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const Dashboard = () => {
-  const { data: dailySingData, isLoading: loadingDiaSing, error: errorDiaSing } = useGetTotalDiaSingQuery()
-  const { data: dailyData, isLoading: loadingDia, error: errorDia } = useGetTotalDiaQuery()
-  const { data: weeklyData, isLoading: loadingSemana, error: errorSemana } = useGetTotalSemanaQuery()
-  const { data: weeklySingData, isLoading: loadingSemanas, error: errorSemanas } = useGetTotalSemanasQuery()
-  const { data: monthlySingData, isLoading: loadingMeses, error: errorMeses } = useGetTotalMesesQuery()
-  const { data: dailySingleData, isLoading: loadingDiaSingle, error: errorDiaSingle } = useGetTotalDiaSingleQuery()
+  const { data: dailySingData } = useGetTotalDiaSingQuery();
+  const { data: dailySingleData } = useGetTotalDiaSingleQuery();
+  const { data: weeklySingData } = useGetTotalSemanasQuery();
+  const { data: weeklyData } = useGetTotalSemanaQuery();
+  const { data: monthlySingData } = useGetTotalMesesQuery();
+  const { data: monthlyData } = useGetTotalMesQuery();
+  const { data: yearData } = useGetTotalAnoQuery();
 
-  const vendasHoje = dailySingData ?? 0;
-  const vendasSemana = weeklySingData ?? 0;
-  const vendasDia = weeklyData ?? 0;
-  const vendasMeses = monthlySingData ?? 0;
+  const vendasHoje = typeof dailySingData === "number" ? dailySingData : 0;
+  const vendasDia = typeof dailySingleData === "number" ? dailySingleData : 0;
+  const vendasSemana = typeof weeklySingData === "number" ? weeklySingData : 0;
+  const vendasSemanas = typeof weeklyData === "number" ? weeklyData : 0;
+  const vendasMeses = typeof monthlySingData === "number" ? monthlySingData : 0;
+  const vendasMes = typeof monthlyData === "number" ? monthlyData : 0;
+  const vendasAno = typeof yearData === "number" ? yearData : 0;
 
   const formatChartDataFromObject = (
     dataObj: Record<string, number> | number | undefined,
     fallbackLabel: string
   ) => {
     if (typeof dataObj === "number") {
-      return [{ name: fallbackLabel, vendas: dataObj }]
+      return [{ name: fallbackLabel, vendas: dataObj }];
     }
 
-    if (!dataObj) return [{ name: fallbackLabel, vendas: 0 }]
+    if (!dataObj || typeof dataObj !== "object") return [];
 
     return Object.entries(dataObj).map(([label, valor]) => ({
       name: label,
       vendas: valor,
-    }))
-  }
+    }));
+  };
 
   return (
     <ContainerDash>
@@ -76,7 +89,7 @@ const Dashboard = () => {
           <p>22</p>
           <div>
             <span>
-              <Briefcase style={{ fontSize: "40px", marginRight: "8px" }} />
+              <Briefcase size={40} />
               <p>Novas Vendas</p>
             </span>
           </div>
@@ -85,7 +98,7 @@ const Dashboard = () => {
           <p>1890</p>
           <div>
             <span>
-              <CodesandboxLogo style={{ fontSize: "40px", marginRight: "8px" }} />
+              <CodesandboxLogo size={40} />
               <p>Produtos em estoque</p>
             </span>
           </div>
@@ -94,7 +107,7 @@ const Dashboard = () => {
           <p>38</p>
           <div>
             <span>
-              <UserPlus style={{ fontSize: "40px", marginRight: "8px" }} />
+              <UserPlus size={40} />
               <p>Novos Clientes</p>
             </span>
           </div>
@@ -103,7 +116,7 @@ const Dashboard = () => {
           <p>{formatCurrency(vendasHoje)}</p>
           <div>
             <span>
-              <PiMoneyBold style={{ fontSize: "40px", marginRight: "8px" }} />
+              <PiMoneyBold size={40} />
               <p>Total hoje</p>
             </span>
           </div>
@@ -111,102 +124,117 @@ const Dashboard = () => {
       </DashboardContainer>
 
       <Container>
+        {/* Vendas Diárias */}
         <Card>
           <CardContent>
-            <h3 className="text-lg font-semibold mb-4">Vendas Diárias</h3>
-            {loadingDiaSing ? (
-              <p>Carregando...</p>
-            ) : errorDiaSing ? (
-              <p>Erro ao carregar dados diários.</p>
-            ) : (
-              <>
-                <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart data={formatChartDataFromObject(dailySingData, "Hoje")}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                    <Legend />
-                    <Area dataKey="vendas" fill={COLORS[0]} stroke={COLORS[0]} />
-                    <Bar dataKey="vendas" fill={COLORS[1]} />
-                    <Line type="monotone" dataKey="vendas" stroke={COLORS[2]} />
-                  </ComposedChart>
-                </ResponsiveContainer>
-                <h4 className="mt-2 text-sm font-medium">
-                  Valor total de vendas diárias:{" "}
-                  <span className="valor">
-                    {formatCurrency(
-                      Object.values(dailySingleData ?? {}).reduce((acc, val) => acc + val, 0)
-                    )}
-                  </span>
-                </h4>
-              </>
-            )}
+            <h3>Vendas Diárias</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <ComposedChart data={formatChartDataFromObject(dailySingData, "Hoje")}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                <Legend />
+                <Area dataKey="vendas" fill={COLORS[2]} stroke={COLORS[2]} />
+                <Bar dataKey="vendas">
+                  {formatChartDataFromObject(dailySingData, "Hoje").map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+                <Line type="monotone" dataKey="vendas" stroke={COLORS[1]} />
+              </ComposedChart>
+            </ResponsiveContainer>
+            <h4>
+              Valor total de vendas diárias:{" "}
+              <span>
+                {formatCurrency(
+                  Object.values(dailySingleData ?? {}).reduce((acc, val) => acc + val, 0)
+                )}
+              </span>
+            </h4>
           </CardContent>
         </Card>
 
+        {/* Vendas Semanais */}
         <Card>
           <CardContent>
-            <h3 className="text-lg font-semibold mb-4">Vendas Semanais</h3>
-            {loadingSemana ? (
-              <p>Carregando...</p>
-            ) : errorSemana ? (
-              <p>Erro ao carregar dados semanais.</p>
-            ) : (
-              <>
-                <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart data={formatChartDataFromObject(weeklySingData, "Semana")} >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                    <Legend />
-                    <Area dataKey="vendas" fill={COLORS[3]} stroke={COLORS[3]} />
-                    <Bar dataKey="vendas" fill={COLORS[4]} />
-                    <Line type="monotone" dataKey="vendas" stroke={COLORS[5]} />
-                  </ComposedChart>
-                </ResponsiveContainer>
-                <h4 className="mt-2 text-sm font-medium">
-                  Valor total de vendas semanais:{" "}
-                  <span className="valor">{formatCurrency(vendasSemana)}</span>
-                </h4>
-              </>
-            )}
+            <h3>Vendas Semanais</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <ComposedChart data={formatChartDataFromObject(weeklySingData, "Semana")}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                <Legend />
+                <Area dataKey="vendas" fill={COLORS[5]} stroke={COLORS[5]} />
+                <Bar dataKey="vendas">
+                  {formatChartDataFromObject(weeklySingData, "Semana").map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+                <Line type="monotone" dataKey="vendas" stroke={COLORS[4]} />
+              </ComposedChart>
+            </ResponsiveContainer>
+            <h4>
+              Valor total de vendas semanais: <span>{formatCurrency(vendasSemanas)}</span>
+            </h4>
           </CardContent>
         </Card>
 
+        {/* Vendas Mensais */}
         <Card>
           <CardContent>
-            <h3 className="text-lg font-semibold mb-4">Vendas Mensais</h3>
-            {loadingMeses ? (
-              <p>Carregando...</p>
-            ) : errorMeses ? (
-              <p>Erro ao carregar dados mensais.</p>
-            ) : (
-              <>
-                <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart data={formatChartDataFromObject(monthlySingData, "Mês")}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                    <Legend />
-                    <Area dataKey="vendas" fill={COLORS[6]} stroke={COLORS[6]} />
-                    <Bar dataKey="vendas" fill={COLORS[0]} />
-                    <Line type="monotone" dataKey="vendas" stroke={COLORS[1]} />
-                  </ComposedChart>
-                </ResponsiveContainer>
-                <h4 className="mt-2 text-sm font-medium">
-                  Valor total de vendas mensais:{" "}
-                  <span className="valor">{formatCurrency(vendasMeses)}</span>
-                </h4>
-              </>
-            )}
+            <h3>Vendas Mensais</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <ComposedChart data={formatChartDataFromObject(monthlySingData, "Mês")}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                <Legend />
+                <Area dataKey="vendas" fill={COLORS[6]} stroke={COLORS[6]} />
+                <Bar dataKey="vendas">
+                  {formatChartDataFromObject(monthlySingData, "Mês").map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+                <Line type="monotone" dataKey="vendas" stroke={COLORS[1]} />
+              </ComposedChart>
+            </ResponsiveContainer>
+            <h4>
+              Valor total de vendas mensais: <span>{formatCurrency(vendasMes)}</span>
+            </h4>
+          </CardContent>
+        </Card>
+
+        {/* Vendas Anuais */}
+        <Card>
+          <CardContent>
+            <h3>Vendas Anuais</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <ComposedChart data={formatChartDataFromObject(yearData, "Mês")}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                <Legend />
+                <Area dataKey="vendas" fill={COLORS[6]} stroke={COLORS[6]} />
+                <Bar dataKey="vendas">
+                  {formatChartDataFromObject(yearData, "Mês").map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+                <Line type="monotone" dataKey="vendas" stroke={COLORS[1]} />
+              </ComposedChart>
+            </ResponsiveContainer>
+            <h4>
+              Valor total de vendas anuais: <span>{formatCurrency(vendasAno)}</span>
+            </h4>
           </CardContent>
         </Card>
       </Container>
     </ContainerDash>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;
