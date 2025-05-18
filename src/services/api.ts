@@ -483,7 +483,7 @@ export const api = createApi({
     }),
     addNfe: builder.mutation<any, EmitirNotaPayload>({
       query: (body) => ({
-        url: '/nfe/emitir  ',
+        url: 'api/nfse/dps/emitir?empresaId=1',
         method: 'POST',
         body
       })

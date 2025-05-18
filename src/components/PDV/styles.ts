@@ -45,7 +45,7 @@ export const Card = styled.section`
    -8px -8px 16px ${({ theme }) => theme.colors.neoShadowLight};
   padding: ${({ theme }) => theme.spacing(6)};
   width: 100%;
-  max-width: 600px;
+  max-width: 650px;
   animation: ${fadeIn} 0.4s ease-out;
   display: flex;
   flex-direction: column;
@@ -110,30 +110,34 @@ export const Label = styled.label`
 
 export const Input = styled.input`
   background: ${({ theme }) => theme.colors.surface};
-  border: none;
   border-radius: ${({ theme }) => theme.radii.sm};
   padding: ${({ theme }) => theme.spacing(2)};
   font-size: 1rem;
   width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
+  border: 1px solid transparent;
   box-shadow:
-    inset 4px 4px 8px ${({ theme }) => theme.colors.neoShadowDark},
-    inset -4px -4px 8px ${({ theme }) => theme.colors.neoShadowLight};
-  transition: box-shadow 0.2s ease;
+    inset 2px 2px 5px ${({ theme }) => theme.colors.neoShadowDark},
+    inset -2px -2px 5px ${({ theme }) => theme.colors.neoShadowLight};
+  transition: all 0.25s ease-in-out;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primaryAccent};
+  }
 
   &:focus {
     outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
     box-shadow:
-      0 0 0 3px ${({ theme }) => theme.colors.primaryAccent},
-      inset 4px 4px 8px ${({ theme }) => theme.colors.neoShadowDark},
-      inset -4px -4px 8px ${({ theme }) => theme.colors.neoShadowLight};
+      0 0 0 2px ${({ theme }) => theme.colors.primaryAccent},
+      inset 2px 2px 5px ${({ theme }) => theme.colors.neoShadowDark},
+      inset -2px -2px 5px ${({ theme }) => theme.colors.neoShadowLight};
   }
-        @media (max-width: 523px) {
-        max-width: 230px;
+
+  @media (max-width: 523px) {
+    max-width: 100%;
   }
 `;
+
 
 
 export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`

@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../store/reducers';
 import { useEffect, useState } from 'react';
 import { setCliente, setProdutos } from '../../store/reducers/vendaSlice';
-import { useAddVendaMutation, useAddNfeMutation } from '../../services/api';
-import { Cliente, Produto } from './types';
+import { useAddVendaMutation, useAddNfeMutation, ProdutoProps } from '../../services/api';
+import { Cliente } from './types';
+import { Produto } from '../../store/reducers/vendaSlice'
 import {
   Container,
   SectionTitle,
@@ -23,50 +24,141 @@ import {
   CheckboxContainer
 } from './styles';
 
-
-export interface EmitirNotaPayload {
+export interface EmitirNotaPayloadPf {
   emitirNotaFiscal: boolean;
   documentoCliente: string;
-  cliente: ClientePayload | null;
-  emitente: Emitente;
-  modelo: string | null;
-  itens: ItemVenda[];
-  totalVenda: number;
-  totalDesconto: number;
-  totalPagamento: number;
-  formaPagamento: string;
-  dataVenda: string; // ISO: ex. "2025-05-17T17:06:20.770Z"
-  status: string;    // ex. "PAGO"
-  numeroParcelas: number;
+  cliente: ClientePayload;
+  emitenteId: number;
+  modelo: 'NFE' | 'NFSE' | string;
+  itens: Item[];
   pagamento: Pagamento;
+  dataVenda: string; // ISO 8601 datetime
+  status: 'CONCLUIDO' | 'PENDENTE' | string;
+  vendaAnonima: boolean;
 }
+
 export interface ClientePayload {
   tipoPessoa: 'FISICA' | 'JURIDICA';
-  pessoaFisica?: {
-    nome: string;
-    cpf: string;
-    email: string;
-    telefone: string;
-    dataNascimento: string;
-    endereco: Endereco;
-  };
-  pessoaJuridica?: {
-    razaoSocial: string;
-    nomeFantasia: string;
-    cnpj: string;
-    email: string;
-    telefone: string;
-    endereco: Endereco;
-  };
+  pessoaFisica?: PessoaFisica | null;
+  pessoaJuridica?: PessoaJuridica | null;
+}
+
+export interface PessoaFisica {
+  nome: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+  dataNascimento: string;
+  endereco: Endereco;
+}
+
+export interface PessoaJuridica {
+  razaoSocial: string;
+  cnpj: string;
+  inscricaoMunicipal?: string;
+  inscricaoEstadual?: string;
+  email: string;
+  telefone: string;
+  endereco: Endereco;
 }
 
 export interface Endereco {
+  cep: string;
+  bairro: string;
+  municipio: string;
   logradouro: string;
   numero: string;
-  bairro: string;
-  cep: string;
-  codigoIbge?: string;
   uf: string;
+  complemento?: string;
+  codigoIbge: string;
+}
+
+export interface Item {
+  produtoId: number;
+  nomeProduto: string;
+  precoUnitario: number;
+  quantidade: number;
+  totalItem: number;
+}
+
+export interface Pagamento {
+  formaPagamento: 'DINHEIRO' | 'CARTAO' | 'PIX' | string;
+  valorPago: number;
+  valorRestante: number;
+  dataPagamento: string;
+  status: 'PAGO' | 'PENDENTE' | string;
+  numeroParcelas: number;
+  totalVenda: number;
+  totalDesconto: number;
+  totalPagamento: number;
+}
+
+
+export interface EmitirNotaPayload {
+  cpfCnpjTomador: string;
+  nomeTomador: string;
+  telefone: string;
+  email: string;
+  endereco: {
+    cep: string;
+    bairro: string;
+    municipio: string;
+    logradouro: string;
+    numero: string;
+    uf: string;
+    complemento: string | null;
+    codigoIbge: string;
+  }
+  servico: {
+    descricao: string;
+    valor: number;
+    codigoTributacaoMunicipal: string;
+    codigoTributacaoNacional: string;
+    cnae: string;
+    nbs: string;
+    informacoesComplementares: string;
+
+    locPrest: {
+      cLocPrestacao: string;
+      cPaisPrestacao: string;
+    },
+    cServ: {
+      cTribNac: string;
+      cTribMun: string;
+      CNAE: string;
+      xDescServ: string;
+      cNBS: string;
+    },
+    infoCompl: {
+      xInfComp: string;
+      idDocTec: string | null,
+      docRef: string | null
+  }
+ }
+}
+
+export interface ClientePayload {
+  pessoaFisica?: PessoaFisica | null;
+  pessoaJuridica?: PessoaJuridica | null;
+  tipoPessoa: 'FISICA' | 'JURIDICA';
+}
+
+export interface PessoaFisica {
+  nome: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+  dataNascimento: string;
+  endereco: Endereco;
+}
+
+export interface PessoaJuridica {
+  razaoSocial: string;
+  nomeFantasia: string;
+  cnpj: string;
+  email: string;
+  telefone: string;
+  endereco: Endereco;
 }
 
 export interface ItemVenda {
@@ -74,23 +166,10 @@ export interface ItemVenda {
   nomeProduto: string;
   precoUnitario: number;
   quantidade: number;
+  totalItem: number;
 }
 
-export interface Pagamento {
-  formaPagamento: string;
-  valorPago: number;
-  valorRestante: number;
-  status: string;         // ex. "PAGO"
-  numeroParcelas: number;
-}
 
-export interface Emitente {
-  razaoSocial: string;
-  nomeFantasia: string;
-  cnpj: string;
-  inscricaoEstadual: string;
-  endereco: Endereco;
-}
 const Venda = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -205,64 +284,64 @@ const Venda = () => {
       0
     );
 
-    const payload: EmitirNotaPayload = {
-      emitirNotaFiscal: false,
-      documentoCliente,
-      cliente: cliente && {
-        pessoaFisica: cliente.pessoaFisica && {
-          nome: cliente.pessoaFisica.nome,
-          cpf: cliente.pessoaFisica.cpf,
-          email: cliente.pessoaFisica.email,
-          telefone: cliente.pessoaFisica.telefone,
-          dataNascimento: cliente.pessoaFisica.dataNascimento,
+    const payload: EmitirNotaPayloadPf = {
+      emitirNotaFiscal: true,
+      documentoCliente: "60648632573",
+      cliente: {
+        tipoPessoa: "FISICA",
+        pessoaFisica: {
+          nome: "Lucas Cliente",
+          cpf: "60648632573",
+          email: "lucas@email.com",
+          telefone: "44999999999",
+          dataNascimento: "1990-01-01",
           endereco: {
-            logradouro: cliente.pessoaFisica.endereco.logradouro,
-            numero: cliente.pessoaFisica.endereco.numero,
-            bairro: cliente.pessoaFisica.endereco.bairro,
-            cep: cliente.pessoaFisica.endereco.cep,
-            codigoIbge: "4127205",
-            uf: cliente.pessoaFisica.endereco.uf
+            cep: "87240000",
+            bairro: "Centro",
+            municipio: "Terra Boa",
+            logradouro: "Rua das Rosas",
+            numero: "123",
+            uf: "PR",
+            complemento: "Apto 101",
+            codigoIbge: "4127205"
           }
         },
-        pessoaJuridica: cliente.pessoaJuridica && {
-          razaoSocial: cliente.pessoaJuridica.razaoSocial,
-          nomeFantasia: cliente.pessoaJuridica.nomeFantasia,
-          cnpj: cliente.pessoaJuridica.cnpj,
-          email: cliente.pessoaJuridica.email,
-          telefone: cliente.pessoaJuridica.telefone,
-          endereco: {
-            logradouro: cliente.pessoaJuridica.endereco.logradouro,
-            numero: cliente.pessoaJuridica.endereco.numero,
-            bairro: cliente.pessoaJuridica.endereco.bairro,
-            cep: cliente.pessoaJuridica.endereco.cep,
-            codigoIbge: "4127205",
-            uf: cliente.pessoaJuridica.endereco.uf
-          }
-        }
-      },
-      modelo: "NFCE", // ou "NFE", dependendo da sua configuração
-      itens: produtos.map((p) => ({
-        produtoId: p.id,
-        nomeProduto: p.nome,
-        precoUnitario: p.precoUnitario,
-        quantidade: p.quantidade
-      })),
-      totalVenda: total,
-      totalDesconto: 0.00,
-      totalPagamento: total,
-      formaPagamento: "DINHEIRO",
-      dataVenda: new Date().toISOString(),
-      status: "PAGO",
-      numeroParcelas: 1,
-      pagamento: {
-        formaPagamento: "DINHEIRO",
-        valorPago: total,
-        valorRestante: 0,
-        status: "PAGO",
-        numeroParcelas: 1
+        pessoaJuridica: null
       },
       emitenteId: 1,
-    }
+      modelo: "NFE",
+      itens: [
+        {
+          produtoId: 1,
+          nomeProduto: "Pizza Calabresa",
+          precoUnitario: 40.00,
+          quantidade: 1,
+          totalItem: 40.00
+        },
+        {
+          produtoId: 2,
+          nomeProduto: "Coca-Cola 2L",
+          precoUnitario: 10.00,
+          quantidade: 1,
+          totalItem: 10.00
+        }
+      ],
+      pagamento: {
+        formaPagamento: "DINHEIRO",
+        valorPago: 50.00,
+        valorRestante: 0.00,
+        dataPagamento: "2025-05-17",
+        status: "PAGO",
+        numeroParcelas: 5,
+        totalVenda: 50.00,
+        totalDesconto: 0.00,
+        totalPagamento: 50.00
+      },
+      dataVenda: "2025-05-17T23:45:00",
+      status: "CONCLUIDO",
+      vendaAnonima: false
+    };
+
     try {
       const response: any = await enviarVenda(payload).unwrap();
       const blob = new Blob([response], { type: "application/pdf" });
@@ -291,58 +370,47 @@ const Venda = () => {
     const documentoCliente = cliente.pessoaFisica?.cpf ?? cliente.pessoaJuridica?.cnpj ?? '';
 
     const payload: EmitirNotaPayload = {
-  emitirNotaFiscal: false,
-  documentoCliente,
-  cliente: cliente && {
-    pessoaFisica: cliente.pessoaFisica && {
-      nome: cliente.pessoaFisica.nome,
-      cpf: cliente.pessoaFisica.cpf,
-      email: cliente.pessoaFisica.email,
-      telefone: cliente.pessoaFisica.telefone,
-      dataNascimento: cliente.pessoaFisica.dataNascimento,
-      endereco: {
-        logradouro: cliente.pessoaFisica.endereco.logradouro,
-        numero: cliente.pessoaFisica.endereco.numero,
-        bairro: cliente.pessoaFisica.endereco.bairro,
-        cep: cliente.pessoaFisica.endereco.cep,
-        codigoIbge: "4127205",
-        uf: cliente.pessoaFisica.endereco.uf
-      }
-    },
-    pessoaJuridica: cliente.pessoaJuridica && {
-      razaoSocial: cliente.pessoaJuridica.razaoSocial,
-      nomeFantasia: cliente.pessoaJuridica.nomeFantasia,
-      cnpj: cliente.pessoaJuridica.cnpj,
-      email: cliente.pessoaJuridica.email,
-      telefone: cliente.pessoaJuridica.telefone,
-      endereco: {
-        logradouro: cliente.pessoaJuridica.endereco.logradouro,
-        numero: cliente.pessoaJuridica.endereco.numero,
-        bairro: cliente.pessoaJuridica.endereco.bairro,
-        cep: cliente.pessoaJuridica.endereco.cep,
-        codigoIbge: "4127205",
-        uf: cliente.pessoaJuridica.endereco.uf
-      }
-    }
+  cpfCnpjTomador: "06548386906",
+  nomeTomador: "Tiago Gofredo Biazin",
+  telefone: "17981716648",
+  email: "tiago.biazin02@gmail.com",
+  endereco: {
+    cep: "87240000",
+    bairro: "Tartarelli",
+    municipio: "Terra Boa",
+    logradouro: "Belluno",
+    numero: "50",
+    uf: "PR",
+    complemento: null, // ou null, se preferir
+    codigoIbge: "4127205"
   },
-  itens: produtos.map((p) => ({
-    produtoId: p.id,
-    nomeProduto: p.nome,
-    precoUnitario: p.precoUnitario,
-    quantidade: p.quantidade
-  })),
-  totalVenda: total,
-  totalDesconto: 0.0,
-  totalPagamento: total,
-  formaPagamento: "DINHEIRO",
-  dataVenda: new Date().toISOString(),
-  status: "PAGO",
-  numeroParcelas: 1,
-  emitente: { id: 1 } // Se `emitente` é uma entidade, ou só: emitenteId: 1
+  servico: {
+    descricao: "Programação de sistemas sob demanda",
+    valor: 7284.13,
+    codigoTributacaoMunicipal: "103",
+    codigoTributacaoNacional: "103",
+    cnae: "6209100",
+    nbs: "123456000",
+    informacoesComplementares: "Sistema ERP desenvolvido sob demanda e entregue via repositório Git privado.",
+    
+    locPrest: {
+      cLocPrestacao: "4127205",
+      cPaisPrestacao: "BR"
+    },
+    cServ: {
+      cTribNac: "103",
+      cTribMun: "103",
+      CNAE: "6209100",
+      xDescServ: "Programação de sistemas sob demanda",
+      cNBS: "123456000"
+    },
+    infoCompl: {
+      xInfComp: "Sistema ERP desenvolvido sob demanda e entregue via repositório Git privado.",
+      idDocTec: null,
+      docRef: null
+    }
+  }
 };
-
-
-
     try {
       const resposta = await enviarNota(payload).unwrap();
       setRespostaNota(JSON.stringify(resposta, null, 2));

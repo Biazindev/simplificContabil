@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from './index';
 import { api } from '../../services/api';
 
-type Produto = {
+export type Produto = {
   id: number;
   nome: string;
   descricao: string;

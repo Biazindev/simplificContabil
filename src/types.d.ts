@@ -34,6 +34,7 @@ export interface EmitirNotaPayload {
     cnpj: string;
     inscricaoEstadual: string;
     endereco: Endereco;
+    emitenteId: number;
   };
   itens: ItemVenda[];
   totalVenda: number;
