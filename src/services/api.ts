@@ -7,7 +7,7 @@ import {
   FetchArgs,
 } from '@reduxjs/toolkit/query/react'
 import { Mutex } from 'async-mutex'
-import { EmitirNotaPayload } from '../components/Venda/index';
+import { EmitirNotaPayload } from '../components/Venda/types'
 
 export interface ForgotPasswordRequest { email: string }
 export interface ResetPasswordRequest { token: string; newPassword: string }

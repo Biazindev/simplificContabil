@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../store/reducers';
 import { useEffect, useState } from 'react';
 import { setCliente, setProdutos } from '../../store/reducers/vendaSlice';
-import { useAddVendaMutation, useAddNfeMutation, ProdutoProps } from '../../services/api';
-import { Cliente } from './types';
+import { useAddVendaMutation, useAddNfeMutation } from '../../services/api';
+import { Cliente, EmitirNotaPayload, EmitirNotaPayloadPf } from './types';
 import { Produto } from '../../store/reducers/vendaSlice'
 import {
   Container,
@@ -23,151 +23,8 @@ import {
   Input,
   CheckboxContainer
 } from './styles';
+import NfContainer from '../NotaFiscal';
 
-export interface EmitirNotaPayloadPf {
-  emitirNotaFiscal: boolean;
-  documentoCliente: string;
-  cliente: ClientePayload;
-  emitenteId: number;
-  modelo: 'NFE' | 'NFSE' | string;
-  itens: Item[];
-  pagamento: Pagamento;
-  dataVenda: string; // ISO 8601 datetime
-  status: 'CONCLUIDO' | 'PENDENTE' | string;
-  vendaAnonima: boolean;
-}
-
-export interface ClientePayload {
-  tipoPessoa: 'FISICA' | 'JURIDICA';
-  pessoaFisica?: PessoaFisica | null;
-  pessoaJuridica?: PessoaJuridica | null;
-}
-
-export interface PessoaFisica {
-  nome: string;
-  cpf: string;
-  email: string;
-  telefone: string;
-  dataNascimento: string;
-  endereco: Endereco;
-}
-
-export interface PessoaJuridica {
-  razaoSocial: string;
-  cnpj: string;
-  inscricaoMunicipal?: string;
-  inscricaoEstadual?: string;
-  email: string;
-  telefone: string;
-  endereco: Endereco;
-}
-
-export interface Endereco {
-  cep: string;
-  bairro: string;
-  municipio: string;
-  logradouro: string;
-  numero: string;
-  uf: string;
-  complemento?: string;
-  codigoIbge: string;
-}
-
-export interface Item {
-  produtoId: number;
-  nomeProduto: string;
-  precoUnitario: number;
-  quantidade: number;
-  totalItem: number;
-}
-
-export interface Pagamento {
-  formaPagamento: 'DINHEIRO' | 'CARTAO' | 'PIX' | string;
-  valorPago: number;
-  valorRestante: number;
-  dataPagamento: string;
-  status: 'PAGO' | 'PENDENTE' | string;
-  numeroParcelas: number;
-  totalVenda: number;
-  totalDesconto: number;
-  totalPagamento: number;
-}
-
-
-export interface EmitirNotaPayload {
-  cpfCnpjTomador: string;
-  nomeTomador: string;
-  telefone: string;
-  email: string;
-  endereco: {
-    cep: string;
-    bairro: string;
-    municipio: string;
-    logradouro: string;
-    numero: string;
-    uf: string;
-    complemento: string | null;
-    codigoIbge: string;
-  }
-  servico: {
-    descricao: string;
-    valor: number;
-    codigoTributacaoMunicipal: string;
-    codigoTributacaoNacional: string;
-    cnae: string;
-    nbs: string;
-    informacoesComplementares: string;
-
-    locPrest: {
-      cLocPrestacao: string;
-      cPaisPrestacao: string;
-    },
-    cServ: {
-      cTribNac: string;
-      cTribMun: string;
-      CNAE: string;
-      xDescServ: string;
-      cNBS: string;
-    },
-    infoCompl: {
-      xInfComp: string;
-      idDocTec: string | null,
-      docRef: string | null
-  }
- }
-}
-
-export interface ClientePayload {
-  pessoaFisica?: PessoaFisica | null;
-  pessoaJuridica?: PessoaJuridica | null;
-  tipoPessoa: 'FISICA' | 'JURIDICA';
-}
-
-export interface PessoaFisica {
-  nome: string;
-  cpf: string;
-  email: string;
-  telefone: string;
-  dataNascimento: string;
-  endereco: Endereco;
-}
-
-export interface PessoaJuridica {
-  razaoSocial: string;
-  nomeFantasia: string;
-  cnpj: string;
-  email: string;
-  telefone: string;
-  endereco: Endereco;
-}
-
-export interface ItemVenda {
-  produtoId: number;
-  nomeProduto: string;
-  precoUnitario: number;
-  quantidade: number;
-  totalItem: number;
-}
 
 
 const Venda = () => {
@@ -211,7 +68,7 @@ const Venda = () => {
       codigoIbge: "4127205",
       uf: "PR"
     }
-  };
+  }
 
   useEffect(() => {
     const clienteString = localStorage.getItem('clienteSelecionado');
@@ -370,47 +227,47 @@ const Venda = () => {
     const documentoCliente = cliente.pessoaFisica?.cpf ?? cliente.pessoaJuridica?.cnpj ?? '';
 
     const payload: EmitirNotaPayload = {
-  cpfCnpjTomador: "06548386906",
-  nomeTomador: "Tiago Gofredo Biazin",
-  telefone: "17981716648",
-  email: "tiago.biazin02@gmail.com",
-  endereco: {
-    cep: "87240000",
-    bairro: "Tartarelli",
-    municipio: "Terra Boa",
-    logradouro: "Belluno",
-    numero: "50",
-    uf: "PR",
-    complemento: null, // ou null, se preferir
-    codigoIbge: "4127205"
-  },
-  servico: {
-    descricao: "Programação de sistemas sob demanda",
-    valor: 7284.13,
-    codigoTributacaoMunicipal: "103",
-    codigoTributacaoNacional: "103",
-    cnae: "6209100",
-    nbs: "123456000",
-    informacoesComplementares: "Sistema ERP desenvolvido sob demanda e entregue via repositório Git privado.",
-    
-    locPrest: {
-      cLocPrestacao: "4127205",
-      cPaisPrestacao: "BR"
-    },
-    cServ: {
-      cTribNac: "103",
-      cTribMun: "103",
-      CNAE: "6209100",
-      xDescServ: "Programação de sistemas sob demanda",
-      cNBS: "123456000"
-    },
-    infoCompl: {
-      xInfComp: "Sistema ERP desenvolvido sob demanda e entregue via repositório Git privado.",
-      idDocTec: null,
-      docRef: null
-    }
-  }
-};
+      cpfCnpjTomador: "06548386906",
+      nomeTomador: "Tiago Gofredo Biazin",
+      telefone: "17981716648",
+      email: "tiago.biazin02@gmail.com",
+      endereco: {
+        cep: "87240000",
+        bairro: "Tartarelli",
+        municipio: "Terra Boa",
+        logradouro: "Belluno",
+        numero: "50",
+        uf: "PR",
+        complemento: null,
+        codigoIbge: "4127205"
+      },
+      servico: {
+        descricao: "Programação de sistemas sob demanda",
+        valor: 7284.13,
+        codigoTributacaoMunicipal: "103",
+        codigoTributacaoNacional: "103",
+        cnae: "6209100",
+        nbs: "123456000",
+        informacoesComplementares: "Sistema ERP desenvolvido sob demanda e entregue via repositório Git privado.",
+
+        locPrest: {
+          cLocPrestacao: "4127205",
+          cPaisPrestacao: "BR"
+        },
+        cServ: {
+          cTribNac: "103",
+          cTribMun: "103",
+          CNAE: "6209100",
+          xDescServ: "Programação de sistemas sob demanda",
+          cNBS: "123456000"
+        },
+        infoCompl: {
+          xInfComp: "Sistema ERP desenvolvido sob demanda e entregue via repositório Git privado.",
+          idDocTec: null,
+          docRef: null
+        }
+      }
+    };
     try {
       const resposta = await enviarNota(payload).unwrap();
       setRespostaNota(JSON.stringify(resposta, null, 2));
@@ -450,105 +307,24 @@ const Venda = () => {
           </ProdutoItem>
         ))}
       </ul>
-
       <Total>Total: R$ {total.toFixed(2)}</Total>
-
-      <CheckboxContainer>
-        <label htmlFor="emitirNotaFiscal">
-          <div className="switch">
-            <input
-              type="checkbox"
-              id="emitirNotaFiscal"
-              checked={emitirNotaFiscal}
-              onChange={() => setEmitirNotaFiscal(!emitirNotaFiscal)}
-            />
-            <span className="slider" />
-          </div>
-          Emitir Nota Fiscal
-        </label>
-      </CheckboxContainer>
-
-      {emitirNotaFiscal && (
-        <Form>
-          <SectionTitle>Nota Fiscal</SectionTitle>
-
-          {cliente?.pessoaFisica && (
-            <>
-              <Label>Nome</Label>
-              <Input value={nome} onChange={(e) => setNome(e.target.value)} />
-              <Label>CPF</Label>
-              <Input value={cpf} onChange={(e) => setCpf(e.target.value)} />
-              <Label>Data de Nascimento</Label>
-              <Input
-                type="date"
-                value={dataNascimento || ''}
-                onChange={(e) => setDataNascimento(e.target.value)}
+      <>
+        <CheckboxContainer>
+          <label htmlFor="emitirNotaFiscal">
+            <div className="switch">
+              <input
+                type="checkbox"
+                id="emitirNotaFiscal"
+                checked={emitirNotaFiscal}
+                onChange={() => setEmitirNotaFiscal(!emitirNotaFiscal)}
               />
-            </>
-          )}
-
-          {cliente?.pessoaJuridica && (
-            <>
-              <Label>Razão Social</Label>
-              <Input value={razaoSocial} onChange={(e) => setRazaoSocial(e.target.value)} />
-              <Label>Nome Fantasia</Label>
-              <Input
-                value={nomeFantasia}
-                onChange={(e) => setNomeFantasia(e.target.value)}
-              />
-              <Label>CNPJ</Label>
-              <Input value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
-            </>
-          )}
-
-          <Label>Email</Label>
-          <Input value={email} onChange={(e) => setEmail(e.target.value)} />
-
-          <Label>Telefone</Label>
-          <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
-
-          {/* Endereço (comum a ambos tipos) */}
-          <Label>Logradouro</Label>
-          <Input value={logradouro} onChange={(e) => setLogradouro(e.target.value)} />
-
-          <Label>Número</Label>
-          <Input value={numero} onChange={(e) => setNumero(e.target.value)} />
-
-          <Label>Bairro</Label>
-          <Input value={bairro} onChange={(e) => setBairro(e.target.value)} />
-
-          <Label>CEP</Label>
-          <Input value={cep} onChange={(e) => setCep(e.target.value)} />
-
-          <Label>UF</Label>
-          <Input value={uf} onChange={(e) => setUf(e.target.value)} />
-
-          {/* Emitente - dados fixos, mas pode adicionar se quiser */}
-          <SectionTitle>Emitente</SectionTitle>
-          <Label>Razão Social</Label>
-          <Input value={emitente.razaoSocial} readOnly />
-
-          <Label>Nome Fantasia</Label>
-          <Input value={emitente.nomeFantasia} readOnly />
-
-          <Label>CNPJ</Label>
-          <Input value={emitente.cnpj} readOnly />
-
-          <Label>Inscrição Estadual</Label>
-          <Input value={emitente.inscricaoEstadual} readOnly />
-          <ContainerButton>
-            <Button type="button" onClick={handleEmitirNotaFiscal}>Emitir Nota</Button>
-            {isLoadingNota && <Text>Emitindo nota...</Text>}
-            {isSuccessNota && respostaNota && (
-              <SuccessMessage>Nota emitida com sucesso: <pre>{respostaNota}</pre></SuccessMessage>
-            )}
-            {isErrorNota && (
-              <ErrorMessage>Erro ao emitir nota: {JSON.stringify(errorNota)}</ErrorMessage>
-            )}
-          </ContainerButton>
-        </Form>
-      )}
-
+              <span className="slider" />
+            </div>
+            Emitir Nota Fiscal
+          </label>
+        </CheckboxContainer>
+        {emitirNotaFiscal && <NfContainer />}
+      </>
       <ContainerSpace>
         <ContainerButton>
           <Button onClick={handleEnviarVenda} disabled={isLoading}>
