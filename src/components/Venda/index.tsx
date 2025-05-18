@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../store/reducers';
 import { useEffect, useState } from 'react';
 import { setCliente, setProdutos } from '../../store/reducers/vendaSlice';
-import { useAddVendaMutation, useAddNfeMutation } from '../../services/api';
-import { Cliente, EmitirNotaPayload, EmitirNotaPayloadPf } from './types';
-import { Produto } from '../../store/reducers/vendaSlice'
+import { useAddVendaMutation } from '../../services/api';
+import { Cliente, EmitirNotaPayloadPf } from './types';
+import { Produto } from '../../store/reducers/vendaSlice';
 import {
   Container,
   SectionTitle,
@@ -18,19 +18,18 @@ import {
   ErrorMessage,
   ContainerButton,
   ContainerSpace,
-  Form,
-  Label,
-  Input,
   CheckboxContainer
 } from './styles';
 import NfContainer from '../NotaFiscal';
 
+interface EmitirNotaButtonProps {
+  vendaId: string;
+  statusVenda: 'pendente' | 'concluida' | 'cancelada';
+}
 
-
-const Venda = () => {
+const Venda = ({ vendaId, statusVenda }: EmitirNotaButtonProps) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
 
   const cliente: Cliente | null = useSelector((state: RootState) => state.venda.cliente);
   const produtos: Produto[] = useSelector((state: RootState) => state.venda.produtos);
@@ -51,24 +50,9 @@ const Venda = () => {
   const [bairro, setBairro] = useState('');
   const [cep, setCep] = useState('');
   const [uf, setUf] = useState('');
-  const [enviarNota, { isLoading: isLoadingNota, isSuccess: isSuccessNota, isError: isErrorNota, error: errorNota }] = useAddNfeMutation();
-  const [respostaNota, setRespostaNota] = useState<string | null>(null);
+  const [vendaConcluida, setVendaConcluida] = useState(statusVenda === 'concluida');
+  const isVendaConcluida = vendaConcluida;
 
-  const emitente = {
-    nome: "Biazin Sistemas LTDA",
-    nomeFantasia: "Biazin Sistemas",
-    cnpj: "47397316000122",
-    razaoSocial: 'Biazin&Biazin',
-    inscricaoEstadual: "ISENTO",
-    endereco: {
-      logradouro: "Rua Belluno",
-      numero: "50",
-      bairro: "Tartarelli",
-      cep: "87240000",
-      codigoIbge: "4127205",
-      uf: "PR"
-    }
-  }
 
   useEffect(() => {
     const clienteString = localStorage.getItem('clienteSelecionado');
@@ -94,11 +78,11 @@ const Venda = () => {
       }
 
       if (parsedCliente?.pessoaJuridica) {
-        setRazaoSocial(parsedCliente.pessoaJuridica.razaoSocial)
-        setNomeFantasia(parsedCliente.nomeFantasia)
-        setCnpj(parsedCliente.pessoaJuridica.cnpj)
-        setEmail(parsedCliente.pessoaJuridica.email)
-        setTelefone(parsedCliente.pessoaJuridica.telefone)
+        setRazaoSocial(parsedCliente.pessoaJuridica.razaoSocial);
+        setNomeFantasia(parsedCliente.nomeFantasia);
+        setCnpj(parsedCliente.pessoaJuridica.cnpj);
+        setEmail(parsedCliente.pessoaJuridica.email);
+        setTelefone(parsedCliente.pessoaJuridica.telefone);
 
         const end = parsedCliente.endereco || {};
         setLogradouro(end.logradouro || '');
@@ -134,13 +118,6 @@ const Venda = () => {
       return;
     }
 
-    const dataVenda = new Date().toISOString();
-
-    const totalVenda = produtos.reduce(
-      (total, produto) => total + produto.precoUnitario * produto.quantidade,
-      0
-    );
-
     const payload: EmitirNotaPayloadPf = {
       emitirNotaFiscal: true,
       documentoCliente: "60648632573",
@@ -171,28 +148,28 @@ const Venda = () => {
         {
           produtoId: 1,
           nomeProduto: "Pizza Calabresa",
-          precoUnitario: 40.00,
+          precoUnitario: 40.0,
           quantidade: 1,
-          totalItem: 40.00
+          totalItem: 40.0
         },
         {
           produtoId: 2,
           nomeProduto: "Coca-Cola 2L",
-          precoUnitario: 10.00,
+          precoUnitario: 10.0,
           quantidade: 1,
-          totalItem: 10.00
+          totalItem: 10.0
         }
       ],
       pagamento: {
         formaPagamento: "DINHEIRO",
-        valorPago: 50.00,
-        valorRestante: 0.00,
+        valorPago: 50.0,
+        valorRestante: 0.0,
         dataPagamento: "2025-05-17",
         status: "PAGO",
         numeroParcelas: 5,
-        totalVenda: 50.00,
-        totalDesconto: 0.00,
-        totalPagamento: 50.00
+        totalVenda: 50.0,
+        totalDesconto: 0.0,
+        totalPagamento: 50.0
       },
       dataVenda: "2025-05-17T23:45:00",
       status: "CONCLUIDO",
@@ -207,8 +184,18 @@ const Venda = () => {
     } catch (e) {
       console.error("Erro ao enviar venda:", e);
     }
-  };
 
+    try {
+      const response: any = await enviarVenda(payload).unwrap();
+      const blob = new Blob([response], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+
+      setVendaConcluida(true);
+    } catch (e) {
+      console.error("Erro ao enviar venda:", e);
+    }
+  }
 
   const handleAbrirEntrega = () => {
     if (cliente && produtos.length > 0) {
@@ -218,63 +205,6 @@ const Venda = () => {
     }
   };
 
-  const handleEmitirNotaFiscal = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-
-    if (!cliente || produtos.length === 0) return;
-
-    const dataVenda = new Date().toISOString();
-    const documentoCliente = cliente.pessoaFisica?.cpf ?? cliente.pessoaJuridica?.cnpj ?? '';
-
-    const payload: EmitirNotaPayload = {
-      cpfCnpjTomador: "06548386906",
-      nomeTomador: "Tiago Gofredo Biazin",
-      telefone: "17981716648",
-      email: "tiago.biazin02@gmail.com",
-      endereco: {
-        cep: "87240000",
-        bairro: "Tartarelli",
-        municipio: "Terra Boa",
-        logradouro: "Belluno",
-        numero: "50",
-        uf: "PR",
-        complemento: null,
-        codigoIbge: "4127205"
-      },
-      servico: {
-        descricao: "Programação de sistemas sob demanda",
-        valor: 7284.13,
-        codigoTributacaoMunicipal: "103",
-        codigoTributacaoNacional: "103",
-        cnae: "6209100",
-        nbs: "123456000",
-        informacoesComplementares: "Sistema ERP desenvolvido sob demanda e entregue via repositório Git privado.",
-
-        locPrest: {
-          cLocPrestacao: "4127205",
-          cPaisPrestacao: "BR"
-        },
-        cServ: {
-          cTribNac: "103",
-          cTribMun: "103",
-          CNAE: "6209100",
-          xDescServ: "Programação de sistemas sob demanda",
-          cNBS: "123456000"
-        },
-        infoCompl: {
-          xInfComp: "Sistema ERP desenvolvido sob demanda e entregue via repositório Git privado.",
-          idDocTec: null,
-          docRef: null
-        }
-      }
-    };
-    try {
-      const resposta = await enviarNota(payload).unwrap();
-      setRespostaNota(JSON.stringify(resposta, null, 2));
-    } catch (e) {
-      console.error('Erro ao emitir nota fiscal:', e);
-    }
-  };
 
   return (
     <Container>
@@ -308,23 +238,7 @@ const Venda = () => {
         ))}
       </ul>
       <Total>Total: R$ {total.toFixed(2)}</Total>
-      <>
-        <CheckboxContainer>
-          <label htmlFor="emitirNotaFiscal">
-            <div className="switch">
-              <input
-                type="checkbox"
-                id="emitirNotaFiscal"
-                checked={emitirNotaFiscal}
-                onChange={() => setEmitirNotaFiscal(!emitirNotaFiscal)}
-              />
-              <span className="slider" />
-            </div>
-            Emitir Nota Fiscal
-          </label>
-        </CheckboxContainer>
-        {emitirNotaFiscal && <NfContainer />}
-      </>
+
       <ContainerSpace>
         <ContainerButton>
           <Button onClick={handleEnviarVenda} disabled={isLoading}>
@@ -335,8 +249,41 @@ const Venda = () => {
           <Button onClick={handleAbrirEntrega}>Entrega</Button>
         </ContainerButton>
       </ContainerSpace>
+
       {isSuccess && <SuccessMessage>Venda enviada com sucesso!</SuccessMessage>}
       {isError && <ErrorMessage>Erro: {JSON.stringify(error)}</ErrorMessage>}
+
+      <CheckboxContainer>
+        <div style={{ display: 'block' }}>
+          <label
+            htmlFor="emitirNotaFiscal"
+            onClick={(e) => {
+              if (!isVendaConcluida) {
+                e.preventDefault(); 
+                alert('Conclua a venda antes de emitir a nota fiscal.');
+              }
+            }}
+            style={{ cursor: !isVendaConcluida ? 'not-allowed' : 'pointer' }}
+          >
+            <div className="switch">
+              <input
+                type="checkbox"
+                id="emitirNotaFiscal"
+                checked={emitirNotaFiscal}
+                onChange={() => setEmitirNotaFiscal(!emitirNotaFiscal)}
+                disabled={!isVendaConcluida || isLoading}
+              />
+              <span className="slider" />
+            </div>
+            <span style={{ marginLeft: '8px' }}>
+              {isLoading ? 'Emitindo...' : 'Emitir Nota Fiscal'}
+            </span>
+          </label>
+
+          {emitirNotaFiscal && <NfContainer />}
+        </div>
+      </CheckboxContainer>
+
     </Container>
   );
 };

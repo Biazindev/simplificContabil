@@ -127,10 +127,10 @@ export const Input = styled.input`
 
 export const CheckboxContainer = styled.div`
   margin: 1.5rem 0;
-  display: flex;
+  display: block;
   align-items: center;
   gap: 0.75rem;
-  justify-content: end;
+  justify-content: center;
 
   label {
     display: flex;
@@ -139,6 +139,7 @@ export const CheckboxContainer = styled.div`
     font-size: 1rem;
     color: #333;
     cursor: pointer;
+    margin-bottom: 24px;
   }
 
   .switch {

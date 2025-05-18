@@ -171,7 +171,7 @@ const NfContainer = () => {
 
             {selectedType === 'Nota Fiscal de Serviço' && (
                 <Form>
-                    <SectionTitle>Nota Fiscal</SectionTitle>
+                    <SectionTitle>Nota Fiscal de serviço - NFS-e</SectionTitle>
 
                     {cliente?.pessoaFisica && (
                         <>
@@ -238,8 +238,142 @@ const NfContainer = () => {
                 </Form>
             )}
 
-            {selectedType === 'Nota Fiscal' && <Message>Formulário de NF será implementado aqui.</Message>}
-            {selectedType === 'Cupom Fiscal' && <Message>Formulário de CF será implementado aqui.</Message>}
+            {selectedType === 'Nota Fiscal' && (
+                <Form>
+                    <SectionTitle>Nota Fiscal - NF-e</SectionTitle>
+
+                    {cliente?.pessoaFisica && (
+                        <>
+                            <Label>Nome</Label>
+                            <Input value={nome} onChange={(e) => setNome(e.target.value)} />
+                            <Label>CPF</Label>
+                            <Input value={cpf} onChange={(e) => setCpf(e.target.value)} />
+                            <Label>Data de Nascimento</Label>
+                            <Input type="date" value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)} />
+                        </>
+                    )}
+
+                    {cliente?.pessoaJuridica && (
+                        <>
+                            <Label>Razão Social</Label>
+                            <Input value={razaoSocial} onChange={(e) => setRazaoSocial(e.target.value)} />
+                            <Label>Nome Fantasia</Label>
+                            <Input value={nomeFantasia} onChange={(e) => setNomeFantasia(e.target.value)} />
+                            <Label>CNPJ</Label>
+                            <Input value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
+                        </>
+                    )}
+
+                    <Label>Email</Label>
+                    <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+
+                    <Label>Telefone</Label>
+                    <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+
+                    <Label>Logradouro</Label>
+                    <Input value={logradouro} onChange={(e) => setLogradouro(e.target.value)} />
+
+                    <Label>Número</Label>
+                    <Input value={numero} onChange={(e) => setNumero(e.target.value)} />
+
+                    <Label>Bairro</Label>
+                    <Input value={bairro} onChange={(e) => setBairro(e.target.value)} />
+
+                    <Label>CEP</Label>
+                    <Input value={cep} onChange={(e) => setCep(e.target.value)} />
+
+                    <Label>UF</Label>
+                    <Input value={uf} onChange={(e) => setUf(e.target.value)} />
+
+                    <SectionTitle>Emitente</SectionTitle>
+                    <Label>Razão Social</Label>
+                    <Input value={emitente.razaoSocial} readOnly />
+                    <Label>Nome Fantasia</Label>
+                    <Input value={emitente.nomeFantasia} readOnly />
+                    <Label>CNPJ</Label>
+                    <Input value={emitente.cnpj} readOnly />
+                    <Label>Inscrição Estadual</Label>
+                    <Input value={emitente.inscricaoEstadual} readOnly />
+
+                    <ContainerButton>
+                        <Button type="button" onClick={handleEmitirNotaFiscal}>
+                            Emitir Nota
+                        </Button>
+                    </ContainerButton>
+
+                    {isLoading && <Message>Emitindo nota...</Message>}
+                    {isSuccess && resposta && <SuccessMessage>Nota emitida com sucesso</SuccessMessage>}
+                    {isError && <ErrorMessage>Erro ao emitir nota: {JSON.stringify(error)}</ErrorMessage>}
+                </Form>
+            )}
+            {selectedType === 'Cupom Fiscal' && (
+                <Form>
+                    <SectionTitle>Cupom Fiscal - CF-e</SectionTitle>
+
+                    {cliente?.pessoaFisica && (
+                        <>
+                            <Label>Nome</Label>
+                            <Input value={nome} onChange={(e) => setNome(e.target.value)} />
+                            <Label>CPF</Label>
+                            <Input value={cpf} onChange={(e) => setCpf(e.target.value)} />
+                            <Label>Data de Nascimento</Label>
+                            <Input type="date" value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)} />
+                        </>
+                    )}
+
+                    {cliente?.pessoaJuridica && (
+                        <>
+                            <Label>Razão Social</Label>
+                            <Input value={razaoSocial} onChange={(e) => setRazaoSocial(e.target.value)} />
+                            <Label>Nome Fantasia</Label>
+                            <Input value={nomeFantasia} onChange={(e) => setNomeFantasia(e.target.value)} />
+                            <Label>CNPJ</Label>
+                            <Input value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
+                        </>
+                    )}
+
+                    <Label>Email</Label>
+                    <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+
+                    <Label>Telefone</Label>
+                    <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+
+                    <Label>Logradouro</Label>
+                    <Input value={logradouro} onChange={(e) => setLogradouro(e.target.value)} />
+
+                    <Label>Número</Label>
+                    <Input value={numero} onChange={(e) => setNumero(e.target.value)} />
+
+                    <Label>Bairro</Label>
+                    <Input value={bairro} onChange={(e) => setBairro(e.target.value)} />
+
+                    <Label>CEP</Label>
+                    <Input value={cep} onChange={(e) => setCep(e.target.value)} />
+
+                    <Label>UF</Label>
+                    <Input value={uf} onChange={(e) => setUf(e.target.value)} />
+
+                    <SectionTitle>Emitente</SectionTitle>
+                    <Label>Razão Social</Label>
+                    <Input value={emitente.razaoSocial} readOnly />
+                    <Label>Nome Fantasia</Label>
+                    <Input value={emitente.nomeFantasia} readOnly />
+                    <Label>CNPJ</Label>
+                    <Input value={emitente.cnpj} readOnly />
+                    <Label>Inscrição Estadual</Label>
+                    <Input value={emitente.inscricaoEstadual} readOnly />
+
+                    <ContainerButton>
+                        <Button type="button" onClick={handleEmitirNotaFiscal}>
+                            Emitir Nota
+                        </Button>
+                    </ContainerButton>
+
+                    {isLoading && <Message>Emitindo nota...</Message>}
+                    {isSuccess && resposta && <SuccessMessage>Nota emitida com sucesso</SuccessMessage>}
+                    {isError && <ErrorMessage>Erro ao emitir nota: {JSON.stringify(error)}</ErrorMessage>}
+                </Form>
+            )}
         </Container>
     );
 };

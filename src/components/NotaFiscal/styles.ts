@@ -3,9 +3,9 @@ import styled from 'styled-components';
 export const Navbar = styled.nav`
   display: flex;
   justify-content: center;
+  margin-top: 24px;
   gap: ${({ theme }) => theme.spacing(3)};
   background-color: ${({ theme }) => theme.colors.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.textLight};
   padding: ${({ theme }) => theme.spacing(2)} 0;
   border-radius: ${({ theme }) => theme.radii.md};
 `;

@@ -37,7 +37,7 @@ const Rotas = ({ toggleTheme, isDarkMode }: AppRoutesProps) => (
         <Route path="/clientes" element={<Cliente />} />
         <Route path="/stock" element={<Stock />} />
         <Route path="/get" element={<GetClientes />} />
-        <Route path="/venda" element={<Venda />} />
+        <Route path="/venda" element={<Venda vendaId={""} statusVenda={"pendente"} />} />
         <Route path="/user" element={<User />} />
         <Route path="/sale-list" element={<SaleList/>} />
         <Route path="/delivery" element={<Delivery/>} />
