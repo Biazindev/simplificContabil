@@ -17,6 +17,8 @@ import CriarPedido from "./pages/dashboardpizzaria/pedido/novo/CriarPedido"
 import DashboardPizzaria from "./pages/dashboardpizzaria/DashboardPizzaria"
 import PedidosEntrega from "./pages/dashboardpizzaria/PedidosEntrega"
 import NfContainer from "./components/NotaFiscal"
+import ServiceOrder from "./components/ServiceOrder"
+import VendaLanc from "./components/VendaLanc"
 
 interface AppRoutesProps {
   toggleTheme: () => void;
@@ -45,6 +47,8 @@ const Rotas = ({ toggleTheme, isDarkMode }: AppRoutesProps) => (
         <Route path="/pizzariadash" element={<DashboardPizzaria />} />
         <Route path="/pedidos-entrega" element={<PedidosEntrega />} />
         <Route path="/nf" element={<NfContainer />} />
+        <Route path="/service-order" element={<ServiceOrder />} />
+        <Route path="/pdv-lanc" element={<VendaLanc />} />
       </Route>
     </Route>
   </Routes>

@@ -8,6 +8,7 @@ import {
 } from '@reduxjs/toolkit/query/react'
 import { Mutex } from 'async-mutex'
 import { EmitirNotaPayload } from '../components/Venda/types'
+import { OrdemServicoDTO } from '../Enum/enum'
 
 export interface ForgotPasswordRequest { email: string }
 export interface ResetPasswordRequest { token: string; newPassword: string }
@@ -346,7 +347,11 @@ export const api = createApi({
     getClienteByDocumento: builder.query<ClienteProps, string>({
       query: (documento) => `/clientes/buscar-documento?documento=${documento}`,
     }),
-
+    getClientesByPhone: builder.query<ClienteProps, string>({
+      query: (telefone) => `/clientes/buscar-telefone?telefone=${telefone}`,
+      providesTags: ['Cliente']
+    }),
+    
     addCliente: builder.mutation<ClienteProps, CreateClienteRequest>({
       query: (cliente) => ({
         url: '/clientes',
@@ -487,11 +492,22 @@ export const api = createApi({
         method: 'POST',
         body
       })
-    })
+    }),
+    CreateServiceOrder: builder.mutation<OrdemServicoDTO, Partial<OrdemServicoDTO>>({
+      query: (novoProduto) => ({
+        url: '/ordens-servico',
+        method: 'POST',
+        body: novoProduto
+      }),
+      invalidatesTags: ['Produto']
+    }),
   })
 })
 
 export const {
+  useLazyGetClientesByPhoneQuery,
+  useGetClientesByPhoneQuery,
+  useCreateServiceOrderMutation,
   useAddNfeMutation,
   useGetTotalPorPeriodoQuery,
   useGetByTimeQuery,

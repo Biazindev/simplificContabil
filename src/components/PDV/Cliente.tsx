@@ -28,6 +28,7 @@ import {
   ErrorText
 } from './styles';
 import { setCliente } from '../../store/reducers/vendaSlice'
+import SaleNavigationMenu from '../../hooks/index'
 
 export interface ClienteForm {
   pessoaFisica: (PessoaFisica & { endereco: Endereco }) | null
@@ -56,6 +57,8 @@ const Cliente = () => {
   const [cep, setCep] = useState('');
   const [enderecoCep, setEnderecoCep] = useState<EnderecoCep | null>(null)
   const [camposAutoPreenchidos, setCamposAutoPreenchidos] = useState<string[]>([])
+  const [clienteSalvo, setClienteSalvo] = useState(false);
+
 
 
 
@@ -405,7 +408,7 @@ const Cliente = () => {
         dispatch(setCliente(clienteFormatado));
 
         console.log("✅ Cliente atualizado armazenado no Redux e localStorage");
-        navigate('/produtos');
+        setClienteSalvo(true);
 
       } else {
         if (isCPF && form.pessoaFisica) {
@@ -971,6 +974,7 @@ const Cliente = () => {
                 </Button>
               </ButtonGroup>
             </FormGrid>
+            {clienteSalvo && <SaleNavigationMenu />}
           </>
         )}
       </Card>
