@@ -22,10 +22,10 @@ import VendaLanc from "./components/VendaLanc"
 
 interface AppRoutesProps {
   toggleTheme: () => void;
-  isDarkMode: boolean;
+  isLightTheme: boolean;
 }
 
-const Rotas = ({ toggleTheme, isDarkMode }: AppRoutesProps) => (
+const Rotas = ({ toggleTheme, isLightTheme }: AppRoutesProps) => (
   <Routes>
     <Route path="/" element={<Credentials />} />
     <Route path="/recuperar-senha" element={<ForgotPassword />} />
@@ -33,7 +33,7 @@ const Rotas = ({ toggleTheme, isDarkMode }: AppRoutesProps) => (
     <Route path="/login" element={<Credentials />} />
 
     <Route element={<PrivateRoute />}>
-      <Route element={<Header toggleTheme={toggleTheme} isDarkMode={isDarkMode} />}>
+      <Route element={<Header toggleTheme={toggleTheme} isLightTheme={isLightTheme} />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/produtos" element={<Produtos />} />
         <Route path="/clientes" element={<Cliente />} />

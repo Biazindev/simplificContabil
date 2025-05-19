@@ -10,10 +10,10 @@ import { darkTheme, lightTheme } from './theme'
 import { useState } from 'react'
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isLightTheme, setIsLightTheme] = useState(false);
 
   const toggleTheme = () => {
-    setIsDarkMode((prev) => !prev);
+    setIsLightTheme((prev) => !prev);
   };
   return (
     <ThemeProvider theme={usePrefersDark() ? darkTheme : lightTheme}>
@@ -21,7 +21,7 @@ function App() {
       <BrowserRouter>
         <GlobalStyle />
         <AuthInitializer />
-        <Rotas toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
+        <Rotas toggleTheme={toggleTheme} isLightTheme={isLightTheme} />
       </BrowserRouter>
     </Provider>
     </ThemeProvider>

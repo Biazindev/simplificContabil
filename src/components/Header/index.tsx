@@ -25,10 +25,10 @@ import {useBuscarUsuarioPorIdQuery,  useLogoutMutation }  from "../../services/a
 
 interface HeaderProps {
   toggleTheme: () => void;
-  isDarkMode: boolean;
+  isLightTheme: boolean;
 }
 
-const Header = ({ toggleTheme, isDarkMode }: HeaderProps) => {
+const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
   const navigate = useNavigate();
   const [logout] = useLogoutMutation();
   const [showUserInfo, setShowUserInfo] = useState(false);
@@ -129,7 +129,7 @@ const Header = ({ toggleTheme, isDarkMode }: HeaderProps) => {
             }}
             aria-label="Alternar tema"
           >
-            {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
+            {isLightTheme ? <FaSun size={20} /> : <FaMoon size={20} />}
           </button>
 
           {/* Exibe as informações do usuário quando o toggleUserInfo é ativado */}
