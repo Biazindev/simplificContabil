@@ -25,16 +25,16 @@ export const lightTheme: DefaultTheme = {
 export const darkTheme: DefaultTheme = {
   colors: {
     bg: '#121212',
-    surface: 'rgba(30, 30, 30, 0.9)',
+    surface: 'rgba(255, 255, 255, 0.8)',
     primary: '#5A4AE3',
     primaryAccent: '#A78BFA',
     secondary: '#10B981',
     text: '#E5E7EB',
     textLight: '#9CA3AF',
     error: '#F87171',
-    glassShadow: 'rgba(0, 0, 0, 0.25)',
-    neoShadowLight: 'rgba(255, 255, 255, 0.05)',
-    neoShadowDark: 'rgba(0, 0, 0, 0.6)',
+    glassShadow: 'rgba(255, 255, 255, 0.25)',
+    neoShadowLight: 'rgba(255, 255, 255, 0.7)',
+    neoShadowDark: 'rgba(0, 0, 0, 0.1)',
   },
   radii: lightTheme.radii,
   spacing: lightTheme.spacing
