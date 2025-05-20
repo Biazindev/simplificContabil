@@ -18,7 +18,9 @@ import DashboardPizzaria from "./pages/dashboardpizzaria/DashboardPizzaria"
 import PedidosEntrega from "./pages/dashboardpizzaria/PedidosEntrega"
 import NfContainer from "./components/NotaFiscal"
 import ServiceOrder from "./components/ServiceOrder"
-import VendaLanc from "./components/VendaLanc"
+import VendaMesa from "./components/PDVmesa/index"
+import VendaEntrega from "./components/PDVentrega"
+import VendaBalcao from "./components/PDVbalcao"
 
 interface AppRoutesProps {
   toggleTheme: () => void;
@@ -48,7 +50,9 @@ const Rotas = ({ toggleTheme, isLightTheme }: AppRoutesProps) => (
         <Route path="/pedidos-entrega" element={<PedidosEntrega />} />
         <Route path="/nf" element={<NfContainer />} />
         <Route path="/service-order" element={<ServiceOrder />} />
-        <Route path="/pdv-lanc" element={<VendaLanc />} />
+        <Route path="/pdv-mesa" element={<VendaMesa />} />
+        <Route path="/pdv-entrega" element={<VendaEntrega />} />
+        <Route path="/pdv-entrega" element={<VendaBalcao />} />
       </Route>
     </Route>
   </Routes>

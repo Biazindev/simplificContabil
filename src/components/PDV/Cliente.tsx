@@ -21,7 +21,6 @@ import {
   FormGrid,
   Fieldset,
   Label,
-  Input,
   Button,
   ButtonGroup,
   SectionHeader,
@@ -29,6 +28,7 @@ import {
 } from './styles';
 import { setCliente } from '../../store/reducers/vendaSlice'
 import SaleNavigationMenu from '../../hooks/index'
+import { Input } from '../../styles'
 
 export interface ClienteForm {
   pessoaFisica: (PessoaFisica & { endereco: Endereco }) | null

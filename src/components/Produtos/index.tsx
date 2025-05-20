@@ -7,6 +7,7 @@ import {
 
 import { FaArrowRight } from "react-icons/fa"
 import * as S from './styles'
+import { Input } from '../../styles'
 import { useNavigate } from 'react-router-dom'
 
 const parseCurrency = (value: string): number => {
@@ -194,7 +195,7 @@ const Produtos = () => {
       )}
       <S.GridContent>
         <div>
-          <S.Input
+          <Input
             type="text"
             placeholder="Digite o nome do produto"
             value={searchTerm}
@@ -205,7 +206,7 @@ const Produtos = () => {
               {produtosFiltrados.map((produto) => (
                 <div key={produto.id}>
                   {produto.nome} - R$ {produto.precoUnitario.toFixed(2)}
-                  <S.Input
+                  <Input
                     type="text"
                     min={1}
                     placeholder="Qtd"
@@ -234,7 +235,7 @@ const Produtos = () => {
           <div>
             <S.Form onSubmit={handleSubmit}>
               <S.Label htmlFor="nome">Nome</S.Label>
-              <S.Input
+              <Input
                 type="text"
                 name="nome"
                 placeholder="Nome"
@@ -251,7 +252,7 @@ const Produtos = () => {
                 required
               />
               <S.Label htmlFor="precoUnitario">Preço Unitário</S.Label>
-              <S.Input
+              <Input
                 type="number"
                 name="precoUnitario"
                 placeholder="Preço Unitário"
@@ -260,7 +261,7 @@ const Produtos = () => {
                 required
               />
               <S.Label htmlFor="precoUnitario">Data de Vencimento </S.Label>
-              <S.Input
+              <Input
                 type="text"
                 name="dataVencimento"
                 placeholder="Data de vencimento"
@@ -269,7 +270,7 @@ const Produtos = () => {
                 required
               />
               <S.Label htmlFor="ncm">NCM</S.Label>
-              <S.Input
+              <Input
                 type="text"
                 name="ncm"
                 placeholder="NCM"
@@ -277,7 +278,7 @@ const Produtos = () => {
                 onChange={handleChange}
                 required
               />
-              <S.Input
+              <Input
                 type="text"
                 name="EAN"
                 placeholder="EAN"
@@ -286,7 +287,7 @@ const Produtos = () => {
                 required
               />
               <S.Label htmlFor="quantidade">Quantidade</S.Label>
-              <S.Input
+              <Input
                 type="number"
                 name="quantidade"
                 placeholder="Quantidade"
@@ -303,7 +304,7 @@ const Produtos = () => {
               />
               <S.Label>
                 Ativo:
-                <S.Input
+                <Input
                   type="checkbox"
                   name="ativo"
                   checked={produto.ativo}
@@ -312,7 +313,7 @@ const Produtos = () => {
               </S.Label>
               <S.Label>
                 Imagem:
-                <S.Input type="file" accept="image/*" onChange={handleImageChange} />
+                <Input type="file" accept="image/*" onChange={handleImageChange} />
               </S.Label>
               {produto.imagem && <S.ImgPreview src={produto.imagem} alt="Preview" />}
               <S.Button type="submit">Cadastrar</S.Button>
@@ -338,7 +339,7 @@ const Produtos = () => {
                 <tr key={produto.id}>
                   <td>{produto.nome}</td>
                   <td>
-                    <S.Input
+                    <Input
                       type="number"
                       min={1}
                       value={produto.quantidade}

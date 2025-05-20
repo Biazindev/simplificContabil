@@ -72,3 +72,57 @@ interface ResetPasswordRequest {
   token: string
   newPassword: string
 }
+
+interface Mesa {
+  id: number;
+  numero: number;
+  aberta: boolean;
+  // você pode adicionar mais campos que existam na sua entidade Mesa
+}
+
+interface Pedido {
+  id: number;
+  mesaId: number;
+  status: StatusPedido;
+  itens: PedidoItem[];
+  // adicione outros campos conforme seu modelo
+}
+
+interface PedidoItem {
+  produtoId: number;
+  quantidade: number;
+  // outros campos se existirem, ex: preço, nome, etc
+}
+
+interface PedidoMesaDTO {
+  numeroMesa: number;
+  pedido: {
+    itens: PedidoItem[];
+    // outros campos que compõem o pedido para adicionar à mesa
+  };
+}
+
+interface ItemMesaDTO {
+  produtoId: number;
+  nomeProduto: string;
+  quantidade: number;
+  precoUnitario: number;
+  totalItem: number;
+}
+
+export enum StatusPedido {
+  ABERTO = 'ABERTO',
+  CONCLUIDO = 'CONCLUIDO',
+  CANCELADO = 'CANCELADO',
+  // adicione outros status conforme seu enum Java
+}
+
+interface enderecoEntrega {
+    rua: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    cep: string;
+    estado: string;
+    complemento: string;
+}

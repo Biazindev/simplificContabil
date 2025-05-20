@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { RxAvatar, RxDashboard, RxBox, RxPerson, RxExit } from "react-icons/rx";
-import { PiCodesandboxLogoLight } from "react-icons/pi";
+import { PiCodesandboxLogoLight, PiSuitcaseSimpleLight  } from "react-icons/pi";
 import { IoReceiptOutline } from "react-icons/io5";
 import { FaMotorcycle } from "react-icons/fa6";
 import { FaFileInvoiceDollar } from "react-icons/fa";
@@ -89,6 +89,7 @@ const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
         <h2 style={{ marginBottom: "2rem", color: theme.colors.text }}>ERP</h2>
         <SidebarItem href="/dashboard" onClick={closeSidebar}><RxDashboard /> Dashboard</SidebarItem>
         <SidebarItem href="/clientes" onClick={closeSidebar}><RxPerson /> Vendas</SidebarItem>
+        <SidebarItem href="/pdv-mesa" onClick={closeSidebar}><PiSuitcaseSimpleLight /> PDV</SidebarItem>
         <SidebarItem href="/stock" onClick={closeSidebar}><PiCodesandboxLogoLight /> Estoque</SidebarItem>
         <SidebarItem href="/sale-list" onClick={closeSidebar}><IoReceiptOutline /> Relatório de vendas</SidebarItem>
         <SidebarItem href="/delivery" onClick={closeSidebar}><FaMotorcycle /> Entregas</SidebarItem>

@@ -6,6 +6,7 @@ import {
   useImportarProdutosXmlMutation,
 } from '../../services/api';
 import { BrowserMultiFormatReader } from '@zxing/browser';
+import { Input } from './styles';
 
 const Stock = () => {
   const [activeTab, setActiveTab] = useState<'manual' | 'xml' | 'codigo'>('manual');
@@ -145,10 +146,10 @@ const pararLeituraCodigo = () => {
 
         {activeTab === 'manual' && (
           <S.Form onSubmit={(e) => e.preventDefault()}>
-            <S.Input type="text" placeholder="Nome do produto" required />
-            <S.Input type="text" placeholder="Código" required />
-            <S.Input type="text" placeholder="Preço" required />
-            <S.Input type="text" placeholder="Quantidade" required />
+            <Input type="text" placeholder="Nome do produto" required />
+            <Input type="text" placeholder="Código" required />
+            <Input type="text" placeholder="Preço" required />
+            <Input type="text" placeholder="Quantidade" required />
             <S.Img>
               <h4>Adicione Imagem</h4>
               <S.Input type="file" accept="image/*" />
@@ -178,7 +179,7 @@ const pararLeituraCodigo = () => {
               </S.Input>
             )}
 
-            <S.Input
+            <Input
               type="file"
               accept=".xml"
               onChange={handleXmlUpload}
@@ -197,7 +198,7 @@ const pararLeituraCodigo = () => {
             ) : errorFiliais ? (
               <p>Erro ao carregar filiais</p>
             ) : (
-              <S.Input
+              <Input
                 as="select"
                 id="filial-select-codigo"
                 value={filialId ?? ''}
@@ -207,24 +208,24 @@ const pararLeituraCodigo = () => {
                 {filiais?.map((f: any) => (
                   <option key={f.id} value={f.id}>{f.nome}</option>
                 ))}
-              </S.Input>
+              </Input>
             )}
 
-            <S.Input
+            <Input
               type="text"
               placeholder="Código de barras"
               value={codigoBarras}
               onChange={(e) => setCodigoBarras(e.target.value)}
               required
             />
-            <S.Input
+            <Input
               type="text"
               placeholder="Nome do produto"
               value={produtoNome}
               onChange={(e) => setProdutoNome(e.target.value)}
               required
             />
-            <S.Input
+            <Input
               type="text"
               placeholder="Preço"
               value={produtoPreco}

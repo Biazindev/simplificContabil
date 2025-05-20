@@ -19,6 +19,14 @@ interface LocationState {
   total: number;
 }
 
+export type DadosEntregaProps = {
+  clienteBusca: string;
+  produtosSelecionados: Produto[];
+};
+type Props = {
+  dadosEntrega: DadosEntregaProps;
+};
+
 const Delivery = () => {
   const location = useLocation();
 

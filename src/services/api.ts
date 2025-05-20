@@ -15,6 +15,48 @@ export interface ResetPasswordRequest { token: string; newPassword: string }
 export interface Endereco {
   cep: string; bairro: string; municipio: string; logradouro: string; numero: string; uf: string; complemento?: string
 }
+
+interface Mesa {
+  id: number;
+  numero: number;
+  aberta: boolean;
+  // você pode adicionar mais campos que existam na sua entidade Mesa
+}
+
+interface Pedido {
+  id: number;
+  mesaId: number;
+  status: StatusPedido;
+  itens: PedidoItem[];
+  // adicione outros campos conforme seu modelo
+}
+
+interface PedidoItem {
+  produtoId: number;
+  quantidade: number;
+  // outros campos se existirem, ex: preço, nome, etc
+}
+
+interface PedidoMesaDTO {
+  numeroMesa: number;
+  itens: PedidoItem[];
+}
+
+interface ItemMesaDTO {
+  produtoId: number;
+  nomeProduto: string;
+  quantidade: number;
+  precoUnitario: number;
+  totalItem: number;
+}
+
+export enum StatusPedido {
+  ABERTO = 'ABERTO',
+  CONCLUIDO = 'CONCLUIDO',
+  CANCELADO = 'CANCELADO',
+  // adicione outros status conforme seu enum Java
+}
+
 export interface PessoaFisica {
   nome: string;
   cpf: string;
@@ -23,6 +65,15 @@ export interface PessoaFisica {
   dataNascimento: string;
   endereco: Endereco;
 }
+
+export interface PedidoPayload {
+  itens: {
+    produtoId: number;
+    quantidade: number;
+    fone: string;
+  }[];
+}
+
 
 export interface Endereco {
   cep: string;
@@ -175,7 +226,7 @@ export const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Auth', 'Produto', 'Venda', 'Cliente', 'Filial'],
+  tagTypes: ['Auth', 'Produto', 'Venda', 'Cliente', 'Filial', 'Mesa', 'Pedido'],
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (creds) => ({
@@ -315,15 +366,33 @@ export const api = createApi({
     getTotalPorPeriodo: builder.query<number, { inicio: string; fim: string }>({
       query: ({ inicio, fim }) => `total-por-periodo?inicio=${inicio}&fim=${fim}`,
     }),
-    addVenda: builder.mutation<Blob, any>({
-      query: (venda) => ({
-        url: '/venda/finalizar',
-        method: 'POST',
-        body: venda,
-        responseHandler: (response) => response.blob(),
-      }),
-      invalidatesTags: ['Venda']
-    }),
+    addVenda: builder.mutation<{ id?: number; blob?: Blob }, any>({
+  query: (venda) => ({
+    url: '/venda/finalizar',
+    method: 'POST',
+    body: venda,
+    responseHandler: (response) => response.blob(), // Sempre trata como Blob primeiro
+  }),
+  transformResponse: async (blob: Blob): Promise<{ id?: number; blob?: Blob }> => {
+    try {
+      const text = await blob.text();
+      const json = JSON.parse(text);
+
+      // Se conseguir converter em JSON com id, retornamos o id
+      if (json && typeof json.id === 'number') {
+        return { id: json.id };
+      }
+
+      // Se não tiver id, assumimos que não é um JSON de id válido
+      return { blob };
+    } catch (e) {
+      // Se falhar ao parsear, é realmente um blob (ex: PDF)
+      return { blob };
+    }
+  },
+  invalidatesTags: ['Venda'],
+}),
+
     updateVenda: builder.mutation<VendaProps, VendaProps>({
       query: (venda) => ({
         url: `'/venda'${venda.id}`,
@@ -351,7 +420,7 @@ export const api = createApi({
       query: (telefone) => `/clientes/buscar-telefone?telefone=${telefone}`,
       providesTags: ['Cliente']
     }),
-    
+
     addCliente: builder.mutation<ClienteProps, CreateClienteRequest>({
       query: (cliente) => ({
         url: '/clientes',
@@ -501,11 +570,108 @@ export const api = createApi({
       }),
       invalidatesTags: ['Produto']
     }),
-  })
+    addPedidoEntrega: builder.mutation<{ id: number }, PedidoPayload>({
+      query: (body) => ({
+        url: '/pedidos',
+        method: 'POST',
+        body,
+      }),
+    }),
+    finalizarPedido: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/pedidos/${id}/entregar`,
+        method: 'POST',
+      }),
+    }),
+    // Criar nova mesa
+    criarMesa: builder.mutation<{ id: number }, { numero: number; aberta: boolean }>({
+      query: (payload) => ({
+        url: 'mesas/criar-ou-reutilizar',      // ou a rota correta do backend
+        method: 'POST',
+        body: payload,      // aqui vai { numero: x, aberta: true }
+      }),
+    }),
+
+    // Criar ou reutilizar mesa por número
+    criarOuReutilizarMesa: builder.mutation({
+      query: (numero: number) => ({
+        url: `mesas/criar-ou-reutilizar?numero=${numero}`,
+        method: 'POST',
+      }),
+    }),
+
+    // Listar mesas abertas
+    listarMesasAbertas: builder.query<Mesa[], void>({
+      query: () => 'ativas',
+      providesTags: ['Mesa'],
+    }),
+
+    // Calcular total da mesa
+    calcularTotalMesa: builder.query<number, number>({
+      query: (numeroMesa: any) => `${numeroMesa}/total`,
+    }),
+
+    // Finalizar mesa e obter PDF (retorno em blob)
+    finalizarMesa: builder.mutation<Blob, number>({
+      query: (numeroMesa: any) => ({
+        url: `${numeroMesa}/finalizar`,
+        method: 'POST',
+        responseHandler: async (response: { blob: () => any }) => {
+          const blob = await response.blob();
+          return blob;
+        },
+      }),
+      invalidatesTags: ['Mesa'],
+    }),
+
+    // Listar itens da mesa
+    listarItensDaMesa: builder.query<ItemMesaDTO[], number>({
+      query: (numeroMesa: any) => `${numeroMesa}/itens`,
+      providesTags: ['Mesa'],
+    }),
+
+    // Listar pedidos com filtros opcionais
+    listarPedidos: builder.query<Pedido[], { status?: string; mesaId?: number }>({
+      query: ({ status, mesaId }) => {
+        const params = new URLSearchParams();
+        if (status) params.append('status', status);
+        if (mesaId) params.append('mesaId', mesaId.toString());
+        return `?${params.toString()}`;
+      },
+      providesTags: ['Pedido'],
+    }),
+
+    // Adicionar pedido à mesa
+    adicionarPedido: builder.mutation<void, PedidoMesaDTO>({
+      query: (dto: any) => ({
+        url: 'mesas/pedido',
+        method: 'POST',
+        body: dto,
+      }),
+      invalidatesTags: ['Mesa', 'Pedido'],
+    }),
+    sairParaEntrega: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/pedidos/${id}/entregar`,
+        method: 'PUT',
+      }),
+    }),
+  }),
 })
 
 export const {
+  useSairParaEntregaMutation,
+  useCriarMesaMutation,
+  useCriarOuReutilizarMesaMutation,
+  useListarMesasAbertasQuery,
+  useCalcularTotalMesaQuery,
+  useFinalizarMesaMutation,
+  useListarItensDaMesaQuery,
+  useListarPedidosQuery,
+  useAdicionarPedidoMutation,
   useLazyGetClientesByPhoneQuery,
+  useAddPedidoEntregaMutation,
+  useFinalizarPedidoMutation,
   useGetClientesByPhoneQuery,
   useCreateServiceOrderMutation,
   useAddNfeMutation,
@@ -557,6 +723,6 @@ export const {
   useCriarUsuarioMutation,
   useImportarProdutosXmlMutation,
   useListarFiliaisQuery,
-  useGetTotalAnoQuery
+  useGetTotalAnoQuery,
 } = api
 
