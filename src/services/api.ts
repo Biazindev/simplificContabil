@@ -9,6 +9,7 @@ import {
 import { Mutex } from 'async-mutex'
 import { EmitirNotaPayload } from '../components/Venda/types'
 import { OrdemServicoDTO } from '../Enum/enum'
+import { ItemMesa } from '../components/PDVmesa/index'
 
 export interface ForgotPasswordRequest { email: string }
 export interface ResetPasswordRequest { token: string; newPassword: string }
@@ -146,17 +147,17 @@ export interface Endereco {
 export interface ClienteProps {
   tipoPessoa: string;
   cliente: void | ClienteProps;
-  id: number; 
-  nome: string; 
+  id: number;
+  nome: string;
   cpf?: string;
   documento: string;
-  cnpj?: string; 
-  email?: string; 
+  cnpj?: string;
+  email?: string;
   telefone?: string;
-  endereco?: Endereco; 
-  dataNascimento?: string; 
+  endereco?: Endereco;
+  dataNascimento?: string;
   razaoSocial?: string;
-  pessoaFisica?: PessoaFisica; 
+  pessoaFisica?: PessoaFisica;
   pessoaJuridica?: PessoaJuridica;
   municipio: string
 }
@@ -377,31 +378,31 @@ export const api = createApi({
       query: ({ inicio, fim }) => `total-por-periodo?inicio=${inicio}&fim=${fim}`,
     }),
     addVenda: builder.mutation<{ id?: number; blob?: Blob }, any>({
-  query: (venda) => ({
-    url: '/venda/finalizar',
-    method: 'POST',
-    body: venda,
-    responseHandler: (response) => response.blob(), // Sempre trata como Blob primeiro
-  }),
-  transformResponse: async (blob: Blob): Promise<{ id?: number; blob?: Blob }> => {
-    try {
-      const text = await blob.text();
-      const json = JSON.parse(text);
+      query: (venda) => ({
+        url: '/venda/finalizar',
+        method: 'POST',
+        body: venda,
+        responseHandler: (response) => response.blob(), // Sempre trata como Blob primeiro
+      }),
+      transformResponse: async (blob: Blob): Promise<{ id?: number; blob?: Blob }> => {
+        try {
+          const text = await blob.text();
+          const json = JSON.parse(text);
 
-      // Se conseguir converter em JSON com id, retornamos o id
-      if (json && typeof json.id === 'number') {
-        return { id: json.id };
-      }
+          // Se conseguir converter em JSON com id, retornamos o id
+          if (json && typeof json.id === 'number') {
+            return { id: json.id };
+          }
 
-      // Se não tiver id, assumimos que não é um JSON de id válido
-      return { blob };
-    } catch (e) {
-      // Se falhar ao parsear, é realmente um blob (ex: PDF)
-      return { blob };
-    }
-  },
-  invalidatesTags: ['Venda'],
-}),
+          // Se não tiver id, assumimos que não é um JSON de id válido
+          return { blob };
+        } catch (e) {
+          // Se falhar ao parsear, é realmente um blob (ex: PDF)
+          return { blob };
+        }
+      },
+      invalidatesTags: ['Venda'],
+    }),
 
     updateVenda: builder.mutation<VendaProps, VendaProps>({
       query: (venda) => ({
@@ -635,7 +636,7 @@ export const api = createApi({
     }),
 
     // Listar itens da mesa
-    listarItensDaMesa: builder.query<ItemMesaDTO[], number>({
+    listarItensDaMesa: builder.query<ItemMesa[], number>({
       query: (numeroMesa: any) => `${numeroMesa}/itens`,
       providesTags: ['Mesa'],
     }),
@@ -666,10 +667,31 @@ export const api = createApi({
         method: 'PUT',
       }),
     }),
+
+    // GET /ativas
+    getMesasAtivas: builder.query<Mesa[], void>({
+      query: () => '/ativas',
+      providesTags: ['Mesa'],
+    }),
+
+    // GET /{numeroMesa}/total
+    getTotalMesa: builder.query<number, number>({
+      query: (numeroMesa) => `/${numeroMesa}/total`,
+    }),
+    // GET /{numeroMesa}/itens
+    getItensMesa: builder.query<ItemMesaDTO[], number>({
+      query: (numeroMesa) => `/${numeroMesa}/itens`,
+      providesTags: ['Pedido'],
+    }),
   }),
 })
 
 export const {
+  useLazyGetItensMesaQuery,
+  useLazyListarPedidosQuery,
+  useGetMesasAtivasQuery,
+  useGetTotalMesaQuery,
+  useGetItensMesaQuery,
   useSairParaEntregaMutation,
   useCriarMesaMutation,
   useCriarOuReutilizarMesaMutation,

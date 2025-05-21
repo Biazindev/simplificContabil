@@ -80,13 +80,6 @@ interface Mesa {
   // você pode adicionar mais campos que existam na sua entidade Mesa
 }
 
-interface Pedido {
-  id: number;
-  mesaId: number;
-  status: StatusPedido;
-  itens: PedidoItem[];
-  // adicione outros campos conforme seu modelo
-}
 
 interface PedidoItem {
   produtoId: number;

@@ -90,16 +90,16 @@ interface CardProps {
     className?: string
 }
 
-  type VendaProps = {
-    id: number
-    cliente: string
-    produtos: { id: number
-    quantidade: number }[]
-    metodoPagamento: string
-    valorPago: number
-    totalVenda: number
-    dataVenda: string
-  }
+  // type VendaProps = {
+  //   id: number
+  //   cliente: string
+  //   produtos: { id: number
+  //   quantidade: number }[]
+  //   metodoPagamento: string
+  //   valorPago: number
+  //   totalVenda: number
+  //   dataVenda: string
+  // }
   
 interface Endereco {
     cep: string;
@@ -199,75 +199,75 @@ interface ClienteProps {
 
   
  export type VendaProps = {
-  emitirNotaFiscal: boolean;
-  documentoCliente: string;
-  cliente: {
-    tipoPessoa: 'FISICA' | 'JURIDICA';
+  emitirNotaFiscal?: boolean;
+  documentoCliente?: string;
+  cliente?: {
+    tipoPessoa?: 'FISICA' | 'JURIDICA';
     pessoaFisica?: {
-      nome: string;
-      cpf: string;
-      email: string;
-      telefone: string;
-      dataNascimento: string;
-      endereco: {
-        logradouro: string;
-        numero: string;
-        bairro: string;
-        cep: string;
+      nome?: string;
+      cpf?: string;
+      email?: string;
+      telefone?: string;
+      dataNascimento?: string;
+      endereco?: {
+        logradouro?: string;
+        numero?: string;
+        bairro?: string;
+        cep?: string;
         codigoIbge?: string;
-        uf: string;
+        uf?: string;
       };
     };
     pessoaJuridica?: {
-      razaoSocial: string;
-      nomeFantasia: string;
-      cnpj: string;
-      email: string;
-      telefone: string;
-      endereco: {
-        logradouro: string;
-        numero: string;
-        bairro: string;
-        cep: string;
+      razaoSocial?: string;
+      nomeFantasia?: string;
+      cnpj?: string;
+      email?: string;
+      telefone?: string;
+      endereco?: {
+        logradouro?: string;
+        numero?: string;
+        bairro?: string;
+        cep?: string;
         codigoIbge?: string;
-        uf: string;
+        uf?: string;
       };
     };
   };
   emitente: {
-    razaoSocial: string;
-    nomeFantasia: string;
-    cnpj: string;
-    inscricaoEstadual: string;
-    endereco: {
-      logradouro: string;
-      numero: string;
-      bairro: string;
-      cep: string;
+    razaoSocial?: string;
+    nomeFantasia?: string;
+    cnpj?: string;
+    inscricaoEstadual?: string;
+    endereco?: {
+      logradouro?: string;
+      numero?: string;
+      bairro?: string;
+      cep?: string;
       codigoIbge?: string;
-      uf: string;
+      uf?: string;
     };
   };
-  itens: {
-    produto: {
-      id: number;
-      nome: string;
-      descricao: string;
-      ncm: string;
-      precoUnitario: number;
+  itens?: {
+    produto?: {
+      id?: number;
+      nome?: string;
+      descricao?: string;
+      ncm?: string;
+      precoUnitario?: number;
     };
-    nomeProduto: string;
-    precoUnitario: number;
-    quantidade: number;
-    totalItem: number;
+    nomeProduto?: string;
+    precoUnitario?: number;
+    quantidade?: number;
+    totalItem?: number;
   }[];
-  totalVenda: number;
-  totalDesconto: number;
-  totalPagamento: number;
-  formaPagamento: string;
-  dataVenda: string;
-  status: 'PAGO' | 'PENDENTE' | 'CANCELADO';
-  numeroParcelas: number;
+  totalVenda?: number;
+  totalDesconto?: number;
+  totalPagamento?: number;
+  formaPagamento?: string;
+  dataVenda?: string;
+  status?: 'PAGO' | 'PENDENTE' | 'CANCELADO';
+  numeroParcelas?: number;
 };
 
 

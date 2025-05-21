@@ -26,19 +26,51 @@ import {
     useFinalizarMesaMutation,
     useAdicionarPedidoMutation,
     useSairParaEntregaMutation,
+    useGetItensMesaQuery,
+    useLazyGetItensMesaQuery,
+    useLazyListarPedidosQuery,
 } from '../../services/api';
 import NfContainer from '../NotaFiscal'
 import plus from '../../assets/image/plus.svg'
 import VendaEntrega from '../PDVentrega';
 import VendaBalcao from '../PDVbalcao';
 
-type ItemVenda = {
-    produtoId: number;
-    nomeProduto: string;
+export interface ItemMesa {
+  produto: {
+    id: number;
+    nome: string;
     precoUnitario: number;
-    quantidade: number;
-    totalItem: number;
-};
+  };
+  quantidade: number;
+}
+
+export interface ClientePessoaFisica {
+  cpf: string;
+}
+
+export interface ClientePessoaJuridica {
+  cnpj: string;
+}
+
+export interface Cliente {
+  tipoPessoa: 'FISICA' | 'JURIDICA';
+  pessoaFisica?: ClientePessoaFisica;
+  pessoaJuridica?: ClientePessoaJuridica;
+}
+
+export interface Pedido {
+  cliente: Cliente;
+}
+
+export interface ProdutoSelecionado {
+  produtoId: number;
+  nome: string;
+  preco: number;
+  quantidade: number;
+  formPagamento: string;
+  numeroParcelas: number;
+}
+
 
 type Pagamento = {
     formaPagamento: string;
@@ -51,10 +83,6 @@ type Pagamento = {
     totalDesconto: number;
     totalPagamento: number;
 };
-
-
-
-
 
 const VendaMesa: React.FC = () => {
     const [showNf, setShowNf] = useState(false);
@@ -75,8 +103,11 @@ const VendaMesa: React.FC = () => {
     const [adicionarPedido] = useAdicionarPedidoMutation();
     const [tipoAtendimento, setTipoAtendimento] = useState<'mesa' | 'entrega' | 'balcao'>('mesa');
     const [sairParaEntrega] = useSairParaEntregaMutation()
+    const [getItensMesa] = useLazyGetItensMesaQuery();
+    const [listarPedidos] = useLazyListarPedidosQuery();
 
     type ProdutoSelecionado = ProdutoProps & { quantidade: number };
+
 
     type VendaData = {
         emitirNotaFiscal: boolean;
@@ -169,30 +200,57 @@ const VendaMesa: React.FC = () => {
     }, [clienteBusca, buscarCliente]);
 
     useEffect(() => {
-    if (mesaAtual !== null) {
-        const dadosMesa = vendasPorMesa[mesaAtual];
-        setClienteBusca(dadosMesa?.clienteBusca || '');
-        setProdutosSelecionados(dadosMesa?.produtosSelecionados || []);
-    }
-}, [mesaAtual, vendasPorMesa]);
+        if (mesaAtual !== null) {
+            const dadosMesa = vendasPorMesa[mesaAtual];
+            setClienteBusca(dadosMesa?.clienteBusca || '');
+            setProdutosSelecionados(dadosMesa?.produtosSelecionados || []);
+        }
+    }, [mesaAtual, vendasPorMesa]);
 
     useEffect(() => {
-        if (showEnt) {
-            const clienteSalvo = localStorage.getItem('clienteBusca');
-            const produtosSalvos = localStorage.getItem('produtosSelecionados');
+    const carregarDadosMesa = async () => {
+        if (mesaAtual !== null) {
+            try {
+                // 1. Buscar os itens da mesa tipados
+                const itensResponse: ItemMesa[] = await getItensMesa(mesaAtual).unwrap();
 
-            if (clienteSalvo && produtosSalvos) {
-                setDadosEntrega({
-                    clienteBusca: clienteSalvo,
-                    produtosSelecionados: JSON.parse(produtosSalvos),
-                });
+                const produtosMapeados: ProdutoSelecionado[] = itensResponse.map((item) => ({
+                    produtoId: item.produto.id,
+                    nome: item.produto.nome,
+                    preco: item.produto.precoUnitario,
+                    quantidade: item.quantidade,
+                    formPagamento: pagamento.formaPagamento,
+                    numeroParcelas: pagamento.numeroParcelas,
+                }));
+
+                setProdutosSelecionados(produtosMapeados);
+
+                // 2. Buscar os pedidos da mesa tipados
+                const pedidosResponse: Pedido[] = await listarPedidos({ mesaId: mesaAtual }).unwrap();
+                const ultimoPedido = pedidosResponse.at(-1);
+
+                const clienteCpf =
+                    ultimoPedido?.cliente?.pessoaFisica?.cpf ||
+                    ultimoPedido?.cliente?.pessoaJuridica?.cnpj;
+
+                if (clienteCpf) {
+                    setClienteBusca(clienteCpf);
+                }
+
+            } catch (error) {
+                console.error('Erro ao buscar dados da mesa:', error);
             }
         }
-    }, [showEnt]);
+    };
+
+    carregarDadosMesa();
+}, [mesaAtual]);
+
 
     useEffect(() => {
         if (clienteEncontrado) {
             localStorage.setItem('clienteEncontrado', JSON.stringify(clienteEncontrado));
+            console.log('📦 clienteBusca salvo no localStorage:', clienteBusca);
         }
     }, [clienteEncontrado]);
 
@@ -202,12 +260,15 @@ const VendaMesa: React.FC = () => {
 
     useEffect(() => {
         localStorage.setItem('produtosSelecionados', JSON.stringify(produtosSelecionados));
+        console.log('📦 produtosSelecionados salvos no localStorage:', produtos);
     }, [produtosSelecionados]);
 
     useEffect(() => {
         const clienteSalvo = localStorage.getItem('clienteBusca');
         const produtosSalvos = localStorage.getItem('produtosSelecionados');
 
+        console.log('📥 clienteBusca recuperado do localStorage:', clienteSalvo);
+        console.log('📥 produtosSelecionados recuperados do localStorage:', produtosSalvos);
         if (clienteSalvo) setClienteBusca(clienteSalvo);
         if (produtosSalvos) setProdutosSelecionados(JSON.parse(produtosSalvos));
     }, []);
@@ -215,33 +276,38 @@ const VendaMesa: React.FC = () => {
     const mesas = Array.from({ length: 24 }, (_, i) => i + 1);
 
     const salvarDadosMesaAtual = () => {
-    if (mesaAtual !== null) {
-        const payload = gerarPayloadVenda(
-            clienteEncontrado ?? null,
-            produtosSelecionados,
-            pagamento,
-            somaProdutos,
-            showNf,
-        );
+        if (mesaAtual !== null) {
+            const payload = gerarPayloadVenda(
+                clienteEncontrado ?? null,
+                produtosSelecionados,
+                pagamento,
+                somaProdutos,
+                showNf
+            );
 
-        setVendasPorMesa((prev) => ({
-            ...prev,
-            [mesaAtual]: payload,
-        }));
-    }
-};
+            setVendasPorMesa((prev) => ({
+                ...prev,
+                [mesaAtual]: {
+                    ...payload,
+                    clienteBusca,
+                    produtosSelecionados,
+                },
+            }));
+        }
+    };
+
     const handleSelecionarMesa = async (mesa: number) => {
-    if (mesa !== mesaAtual) {
-        salvarDadosMesaAtual();
-        setMesaAtual(mesa);
-    }
+        if (mesa !== mesaAtual) {
+            salvarDadosMesaAtual(); // salvar antes de mudar a mesa
+            setTimeout(() => setMesaAtual(mesa), 0); // deferir update da mesa para garantir ordem
+        }
 
-    try {
-        await criarOuReutilizarMesa(mesa).unwrap();
-    } catch (error) {
-        console.error(`Erro ao criar mesa ${mesa}:`, error);
-    }
-};
+        try {
+            await criarOuReutilizarMesa(mesa).unwrap();
+        } catch (error) {
+            console.error(`Erro ao criar mesa ${mesa}:`, error);
+        }
+    };
 
 
 
@@ -348,6 +414,25 @@ const VendaMesa: React.FC = () => {
 
     const totalComDesconto = somaProdutos - (isNaN(descontoNumerico) ? 0 : descontoNumerico);
 
+    const formatarTelefone = (telefone: string) => {
+        if (!telefone) return '';
+        const numeros = telefone.replace(/\D/g, '');
+        if (numeros.length === 11) {
+            return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+        }
+        return telefone;
+    }
+
+    const formatarCpf = (cpf: string) => {
+        if (!cpf) return '';
+        const numeros = cpf.replace(/\D/g, '');
+        if (numeros.length === 11) {
+            return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
+        }
+        return cpf;
+    };
+
+
     return (
         <>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
@@ -440,43 +525,13 @@ const VendaMesa: React.FC = () => {
                                     clienteEncontrado ? (
                                         <>
                                             <div>
-                                                <Input
-                                                    type="text"
-                                                    id="nome"
-                                                    value={clienteEncontrado?.pessoaFisica?.nome || ''}
-                                                    readOnly
-                                                    placeholder='Nome'
-                                                />
+                                                <p>{clienteEncontrado?.pessoaFisica?.nome}</p>
                                             </div>
                                             <div>
-                                                <InputMask
-                                                    mask="999.999.999-99"
-                                                    value={clienteEncontrado?.pessoaFisica?.cpf || ''}
-                                                    onChange={(e) => setClienteBusca(formatarApenasNumeros(e.target.value))}
-                                                >
-                                                    {(inputProps: any) => (
-                                                        <Input
-                                                            {...inputProps}
-                                                            type="text"
-                                                            placeholder="telefone"
-                                                        />
-                                                    )}
-                                                </InputMask>
+                                                <p>{formatarCpf(clienteEncontrado?.pessoaFisica?.cpf || '')}</p>
                                             </div>
                                             <div>
-                                                <InputMask
-                                                    mask="(99) 99999-9999"
-                                                    value={clienteEncontrado?.pessoaFisica?.telefone || ''}
-                                                    onChange={(e) => setClienteBusca(formatarApenasNumeros(e.target.value))}
-                                                >
-                                                    {(inputProps: any) => (
-                                                        <Input
-                                                            {...inputProps}
-                                                            type="text"
-                                                            placeholder="telefone"
-                                                        />
-                                                    )}
-                                                </InputMask>
+                                                <p>{formatarTelefone(clienteEncontrado?.pessoaFisica?.telefone || '')}</p>
                                                 <div>
                                                     <Select
                                                         options={opcoesPagamento}
