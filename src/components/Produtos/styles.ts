@@ -77,20 +77,6 @@ export const Form = styled.form`
   gap: ${({ theme }) => theme.spacing(4)};
 `;
 
-export const Input = styled.input`
-  width: 100%;
-  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(2)}; /* Ajuste na proporção do padding */
-  border: 1px solid ${({ theme }) => theme.colors.textLight};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  font-size: 1rem;
-  transition: border-color 0.2s;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    outline: none;
-  }
-`;
-
 export const TextArea = styled.textarea`
   width: 100%;
   padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};

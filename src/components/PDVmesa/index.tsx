@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Container, 
-    LeftPane, 
-    ProductList, 
-    RightPane, 
-    TableSelector, 
-    PdvButton, 
-    Wrapper, 
-    SwitchContainer, 
-    ToggleSwitch, 
-    Slider, 
-    Input, 
+import React, { useState, useEffect } from 'react'
+import InputMask from 'react-input-mask';
+import Select from 'react-select';
+import {
+    Container,
+    LeftPane,
+    ProductList,
+    RightPane,
+    TableSelector,
+    PdvButton,
+    Wrapper,
+    SwitchContainer,
+    ToggleSwitch,
+    Slider,
+    Input,
     Title,
     Top
 } from './styles';
@@ -29,10 +32,29 @@ import plus from '../../assets/image/plus.svg'
 import VendaEntrega from '../PDVentrega';
 import VendaBalcao from '../PDVbalcao';
 
-type VendaData = {
-    clienteBusca: string;
-    produtosSelecionados: ProdutoProps[];
+type ItemVenda = {
+    produtoId: number;
+    nomeProduto: string;
+    precoUnitario: number;
+    quantidade: number;
+    totalItem: number;
 };
+
+type Pagamento = {
+    formaPagamento: string;
+    valorPago: number;
+    valorRestante: number;
+    dataPagamento: string;
+    status: string;
+    numeroParcelas: number;
+    totalVenda: number;
+    totalDesconto: number;
+    totalPagamento: number;
+};
+
+
+
+
 
 const VendaMesa: React.FC = () => {
     const [showNf, setShowNf] = useState(false);
@@ -42,9 +64,10 @@ const VendaMesa: React.FC = () => {
     const [produtoBusca, setProdutoBusca] = useState('');
     const [vendasPorMesa, setVendasPorMesa] = useState<Record<number, VendaData>>({});
     const [addVenda, { isLoading: enviandoVenda, error: erroVenda }] = useAddVendaMutation();
+    const [selectedValue, setSelectedValue] = useState<string | null>(null);
+    const [selectedValuePag, setSelectedValuePag] = useState<string | null>(null);
 
     const [produtosSelecionados, setProdutosSelecionados] = useState<ProdutoSelecionado[]>([]);
-    const [setClienteEncontrado] = useState<ClienteProps | null>(null);
     const [dadosEntrega, setDadosEntrega] = useState<{ clienteBusca: string; produtosSelecionados: ProdutoSelecionado[] } | null>(null);
     const [addPedidoEntrega, { isLoading: enviandoPedido }] = useFinalizarMesaMutation();
     const [bloqueado, setBloqueado] = React.useState(false);
@@ -55,9 +78,79 @@ const VendaMesa: React.FC = () => {
 
     type ProdutoSelecionado = ProdutoProps & { quantidade: number };
 
+    type VendaData = {
+        emitirNotaFiscal: boolean;
+        vendaAnonima: boolean;
+        documentoCliente: string | null;
+        cliente: any | null;
+        emitenteId: number | null;
+        modelo: string | null;
+        itens: ItemVenda[];
+        pagamento: Pagamento;
+        dataVenda: string;
+        status: string;
+        clienteBusca?: string;
+        produtosSelecionados?: ProdutoSelecionado[];
+    };
+
+    const formatarApenasNumeros = (valor: string) => valor.replace(/\D/g, '');
+
+    const gerarPayloadVenda = (
+        clienteEncontrado: ClienteProps | null,
+        produtosSelecionados: ProdutoSelecionado[],
+        pagamento: Pagamento,
+        somaProdutos: number,
+        showNf: boolean,
+    ): VendaData => {
+        const agora = new Date().toISOString();
+
+        return {
+            emitirNotaFiscal: showNf,
+            vendaAnonima: !clienteEncontrado,
+            documentoCliente: clienteEncontrado?.documento || null,
+            cliente: clienteEncontrado?.nome || null,
+            emitenteId: 1,
+            modelo: 'NFE',
+            itens: produtosSelecionados.map((p) => ({
+                produtoId: p.id,
+                nomeProduto: p.nome,
+                precoUnitario: p.precoUnitario,
+                quantidade: p.quantidade,
+                totalItem: p.precoUnitario * p.quantidade,
+            })),
+            pagamento: {
+                formaPagamento: selectedValuePag || 'DINHEIRO',
+                valorPago: somaProdutos,
+                valorRestante: 0.00,
+                dataPagamento: agora,
+                status: 'PAGO',
+                numeroParcelas: Number(selectedValue) || 1,
+                totalVenda: somaProdutos,
+                totalDesconto: totalComDesconto,
+                totalPagamento: somaProdutos,
+            },
+            dataVenda: agora,
+            status: 'EM_PREPARO',
+        };
+    };
+
+    const pagamento: Pagamento = {
+        formaPagamento: '',
+        valorPago: 0,
+        valorRestante: 0,
+        dataPagamento: '',
+        status: '',
+        numeroParcelas: 0,
+        totalVenda: 0,
+        totalDesconto: 0,
+        totalPagamento: 0,
+    }
+
     const { data: produtos = [], isLoading, error } = useGetProdutosQuery();
     const [buscarCliente, { data: clienteEncontrado, isFetching: buscandoCliente, error: erroCliente }] =
         useLazyGetClientesByPhoneQuery();
+    const [totalDesconto, setTotalDesconto] = React.useState(pagamento?.totalDesconto || '');
+
 
 
     const somaProdutos = produtosSelecionados.reduce(
@@ -74,6 +167,14 @@ const VendaMesa: React.FC = () => {
 
         return () => clearTimeout(delayDebounce);
     }, [clienteBusca, buscarCliente]);
+
+    useEffect(() => {
+    if (mesaAtual !== null) {
+        const dadosMesa = vendasPorMesa[mesaAtual];
+        setClienteBusca(dadosMesa?.clienteBusca || '');
+        setProdutosSelecionados(dadosMesa?.produtosSelecionados || []);
+    }
+}, [mesaAtual, vendasPorMesa]);
 
     useEffect(() => {
         if (showEnt) {
@@ -103,7 +204,6 @@ const VendaMesa: React.FC = () => {
         localStorage.setItem('produtosSelecionados', JSON.stringify(produtosSelecionados));
     }, [produtosSelecionados]);
 
-    const agora = new Date().toISOString().slice(0, 16);
     useEffect(() => {
         const clienteSalvo = localStorage.getItem('clienteBusca');
         const produtosSalvos = localStorage.getItem('produtosSelecionados');
@@ -112,31 +212,38 @@ const VendaMesa: React.FC = () => {
         if (produtosSalvos) setProdutosSelecionados(JSON.parse(produtosSalvos));
     }, []);
 
-    const mesas = Array.from({ length: 20 }, (_, i) => i + 1);
+    const mesas = Array.from({ length: 24 }, (_, i) => i + 1);
 
-    const handleSelecionarMesa = async (mesa: number) => {
-        if (mesaAtual !== null) {
-            setVendasPorMesa((prev) => ({
-                ...prev,
-                [mesaAtual]: {
-                    clienteBusca,
-                    produtosSelecionados
-                }
-            }));
-        }
+    const salvarDadosMesaAtual = () => {
+    if (mesaAtual !== null) {
+        const payload = gerarPayloadVenda(
+            clienteEncontrado ?? null,
+            produtosSelecionados,
+            pagamento,
+            somaProdutos,
+            showNf,
+        );
 
-        const dadosMesa = vendasPorMesa[mesa];
-        setClienteBusca(dadosMesa?.clienteBusca || '');
-        setProdutosSelecionados(dadosMesa?.produtosSelecionados || []);
-        setMesaAtual(mesa);
-
-        try {
-            await criarOuReutilizarMesa(mesa).unwrap();
-            console.log(`Mesa ${mesa} registrada como aberta.`);
-        } catch (error) {
-            console.error(`Erro ao criar mesa ${mesa}:`, error);
-        }
+        setVendasPorMesa((prev) => ({
+            ...prev,
+            [mesaAtual]: payload,
+        }));
     }
+};
+    const handleSelecionarMesa = async (mesa: number) => {
+    if (mesa !== mesaAtual) {
+        salvarDadosMesaAtual();
+        setMesaAtual(mesa);
+    }
+
+    try {
+        await criarOuReutilizarMesa(mesa).unwrap();
+    } catch (error) {
+        console.error(`Erro ao criar mesa ${mesa}:`, error);
+    }
+};
+
+
 
     const handleFinalizarVenda = async () => {
         if (mesaAtual === null) {
@@ -144,40 +251,13 @@ const VendaMesa: React.FC = () => {
             return;
         }
 
-        const vendaAtual = vendasPorMesa[mesaAtual] || {
-            clienteBusca,
+        const payload = gerarPayloadVenda(
+            clienteEncontrado ?? null,
             produtosSelecionados,
-        };
-
-        const payload = {
-            emitirNotaFiscal: false,
-            vendaAnonima: true,
-            documentoCliente: null,
-            cliente: null,
-            emitenteId: null,
-            modelo: null,
-            itens: produtosSelecionados.map((p) => ({
-                produtoId: p.id,
-                nomeProduto: p.nome,
-                precoUnitario: p.precoUnitario,
-                quantidade: p.quantidade,
-                totalItem: p.precoUnitario * p.quantidade,
-            })),
-            pagamento: {
-                formaPagamento: 'DINHEIRO',
-                valorPago: somaProdutos,
-                valorRestante: 0.00,
-                dataPagamento: agora,
-                status: 'PAGO',
-                numeroParcelas: 1,
-                totalVenda: somaProdutos,
-                totalDesconto: 0.00,
-                totalPagamento: somaProdutos,
-            },
-            dataVenda: agora,
-            status: 'CONCLUIDO',
-        };
-
+            pagamento,
+            somaProdutos,
+            showNf,
+        )
         try {
             await addVenda(payload).unwrap();
             alert('Venda finalizada com sucesso!');
@@ -193,22 +273,21 @@ const VendaMesa: React.FC = () => {
             // setMesaAtual(null);
         } catch (error) {
             alert('Erro ao finalizar venda.');
-            console.error(error);
         }
     };
 
-    const limparEstado = () => {
-        setVendasPorMesa((prev) => {
-            const copy = { ...prev };
-            if (mesaAtual !== null) {
-                delete copy[mesaAtual];
-            }
-            return copy;
-        });
-        setClienteBusca('');
-        setProdutosSelecionados([]);
-        setMesaAtual(null);
-    };
+    // const limparEstado = () => {
+    //     setVendasPorMesa((prev) => {
+    //         const copy = { ...prev };
+    //         if (mesaAtual !== null) {
+    //             delete copy[mesaAtual];
+    //         }
+    //         return copy;
+    //     });
+    //     setClienteBusca('');
+    //     setProdutosSelecionados([]);
+    //     setMesaAtual(null);
+    // };
 
 
     const handleAdicionarProduto = async (produto: ProdutoProps) => {
@@ -229,9 +308,8 @@ const VendaMesa: React.FC = () => {
                 itens: [{ produtoId: produto.id, quantidade: 1 }]
             }).unwrap();
 
-            console.log('Pedido adicionado com sucesso');
         } catch (err) {
-            console.error('Erro ao adicionar pedido:', err);
+            console.error('Erro ao adicionar pedido:');
         }
     };
 
@@ -241,6 +319,34 @@ const VendaMesa: React.FC = () => {
         }
         return null;
     };
+
+    const opcoesPagamento = [
+        { value: 'PIX', label: 'Pix' },
+        { value: 'DINHEIRO', label: 'Dinheiro' },
+        { value: 'CARTAO_CREDITO', label: 'Cartão de Crédito' },
+        { value: 'CARTAO_DEBITO', label: 'Cartão de Débito' },
+        { value: 'PARCELADO_LOJA', label: 'Parcelado Loja' },
+        { value: 'CARTAO', label: 'Cartão Genérico' }
+    ]
+
+    const parcelas = [
+        { value: '1', label: '1x' },
+        { value: '2', label: '2x' },
+        { value: '3', label: '3x' },
+        { value: '4', label: '4x' },
+        { value: '5', label: '5x' },
+        { value: '6', label: '6x' }
+    ]
+
+    let descontoNumerico = 0;
+
+    if (typeof totalDesconto === 'string') {
+        descontoNumerico = parseFloat(totalDesconto.replace(',', '.')) || 0;
+    } else {
+        descontoNumerico = totalDesconto;
+    }
+
+    const totalComDesconto = somaProdutos - (isNaN(descontoNumerico) ? 0 : descontoNumerico);
 
     return (
         <>
@@ -288,12 +394,9 @@ const VendaMesa: React.FC = () => {
                     Entrega
                 </button>
             </div>
-
-            {/* Conteúdo abaixo da navbar */}
             <div style={{ padding: '1rem' }}>
                 <div>
                     {renderTableInfo(VendaMesa)}
-                    {/* Sua lógica de venda por mesa aqui */}
                 </div>
                 {tipoAtendimento === 'entrega' && <VendaEntrega />}
                 {tipoAtendimento === 'balcao' && <VendaBalcao />}
@@ -316,22 +419,94 @@ const VendaMesa: React.FC = () => {
                                     </button>
                                 ))}
                             </TableSelector>
-
                             <div>
-                                <Input
-                                    type="text"
-                                    placeholder="Buscar cliente por telefone"
-                                    value={clienteBusca}
-                                    onChange={(e) => setClienteBusca(e.target.value)}
-                                />
+                                <InputMask
+                                    mask="(99) 99999-9999"
+                                    value={(clienteBusca)}
+                                    onChange={(e) => setClienteBusca(formatarApenasNumeros(e.target.value))}
+                                >
+                                    {(inputProps: any) => (
+                                        <Input
+                                            {...inputProps}
+                                            type="text"
+                                            placeholder="Buscar cliente por telefone"
+                                        />
+                                    )}
+                                </InputMask>
                                 {buscandoCliente && <p>Buscando cliente...</p>}
                                 {Boolean(erroCliente) && <p>Erro ao buscar cliente.</p>}
 
                                 {clienteBusca.trim().length >= 3 && !buscandoCliente && (
                                     clienteEncontrado ? (
-                                        <p>
-                                            Cliente: <strong>{clienteEncontrado.pessoaFisica?.nome}</strong> (CPF: {clienteEncontrado.pessoaFisica?.cpf})
-                                        </p>
+                                        <>
+                                            <div>
+                                                <Input
+                                                    type="text"
+                                                    id="nome"
+                                                    value={clienteEncontrado?.pessoaFisica?.nome || ''}
+                                                    readOnly
+                                                    placeholder='Nome'
+                                                />
+                                            </div>
+                                            <div>
+                                                <InputMask
+                                                    mask="999.999.999-99"
+                                                    value={clienteEncontrado?.pessoaFisica?.cpf || ''}
+                                                    onChange={(e) => setClienteBusca(formatarApenasNumeros(e.target.value))}
+                                                >
+                                                    {(inputProps: any) => (
+                                                        <Input
+                                                            {...inputProps}
+                                                            type="text"
+                                                            placeholder="telefone"
+                                                        />
+                                                    )}
+                                                </InputMask>
+                                            </div>
+                                            <div>
+                                                <InputMask
+                                                    mask="(99) 99999-9999"
+                                                    value={clienteEncontrado?.pessoaFisica?.telefone || ''}
+                                                    onChange={(e) => setClienteBusca(formatarApenasNumeros(e.target.value))}
+                                                >
+                                                    {(inputProps: any) => (
+                                                        <Input
+                                                            {...inputProps}
+                                                            type="text"
+                                                            placeholder="telefone"
+                                                        />
+                                                    )}
+                                                </InputMask>
+                                                <div>
+                                                    <Select
+                                                        options={opcoesPagamento}
+                                                        value={opcoesPagamento.find(op => op.value === selectedValue)}
+                                                        onChange={option => setSelectedValuePag(option ? option.value : null)}
+                                                        placeholder="Selecione uma forma de pagamento"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Select
+                                                        options={parcelas}
+                                                        value={opcoesPagamento.find(op => op.value === selectedValue)}
+                                                        onChange={option => setSelectedValue(option ? option.value : null)}
+                                                        placeholder="Selecione parcelamento"
+                                                    />
+
+                                                </div>
+                                                <div>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={totalDesconto}
+                                                        placeholder="Valor desconto"
+                                                        onChange={e => setTotalDesconto(e.target.value)}
+                                                    />
+
+                                                </div>
+                                            </div>
+                                        </>
                                     ) : (
                                         <p>Nenhum cliente encontrado.</p>
                                     )
@@ -352,12 +527,18 @@ const VendaMesa: React.FC = () => {
                             </div>
 
                             <div>
-                                <strong>Total: R$ {somaProdutos.toFixed(2)}</strong>
+                                <strong>Total:</strong> R$ {somaProdutos.toFixed(2)}
+                            </div>
+                            <div>
+                                <strong>Desconto:</strong> R$ {(isNaN(descontoNumerico) ? 0 : descontoNumerico).toFixed(2)}
+                            </div>
+                            <div>
+                                <strong>Total com desconto:</strong> R$ {totalComDesconto.toFixed(2)}
                             </div>
                             <PdvButton onClick={handleFinalizarVenda} disabled={enviandoVenda}>
                                 {enviandoVenda ? 'Enviando...' : 'Finalizar Venda'}
                             </PdvButton>
-                            <PdvButton onClick={limparEstado}>Limpar mesa</PdvButton>
+                            {/* <PdvButton onClick={limparEstado}>Limpar mesa</PdvButton> */}
                         </LeftPane>
 
                         <RightPane>

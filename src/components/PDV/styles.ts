@@ -108,36 +108,6 @@ export const Label = styled.label`
   color: ${({ theme }) => theme.colors.textLight};
 `;
 
-export const Input = styled.input`
-  background: ${({ theme }) => theme.colors.surface};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  padding: ${({ theme }) => theme.spacing(2)};
-  font-size: 1rem;
-  width: 100%;
-  border: 1px solid transparent;
-  box-shadow:
-    inset 2px 2px 5px ${({ theme }) => theme.colors.neoShadowDark},
-    inset -2px -2px 5px ${({ theme }) => theme.colors.neoShadowLight};
-  transition: all 0.25s ease-in-out;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.primaryAccent};
-  }
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow:
-      0 0 0 2px ${({ theme }) => theme.colors.primaryAccent},
-      inset 2px 2px 5px ${({ theme }) => theme.colors.neoShadowDark},
-      inset -2px -2px 5px ${({ theme }) => theme.colors.neoShadowLight};
-  }
-
-  @media (max-width: 523px) {
-    max-width: 100%;
-  }
-`;
-
 
 
 export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`

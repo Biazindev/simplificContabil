@@ -38,7 +38,7 @@ interface PedidoItem {
 }
 
 interface PedidoMesaDTO {
-  numeroMesa: number;
+  numeroMesa?: number;
   itens: PedidoItem[];
 }
 
@@ -146,9 +146,19 @@ export interface Endereco {
 export interface ClienteProps {
   tipoPessoa: string;
   cliente: void | ClienteProps;
-  id: number; nome: string; cpf?: string; cnpj?: string; email?: string; telefone?: string;
-  endereco?: Endereco; dataNascimento?: string; razaoSocial?: string;
-  pessoaFisica?: PessoaFisica; pessoaJuridica?: PessoaJuridica; municipio: string
+  id: number; 
+  nome: string; 
+  cpf?: string;
+  documento: string;
+  cnpj?: string; 
+  email?: string; 
+  telefone?: string;
+  endereco?: Endereco; 
+  dataNascimento?: string; 
+  razaoSocial?: string;
+  pessoaFisica?: PessoaFisica; 
+  pessoaJuridica?: PessoaJuridica;
+  municipio: string
 }
 
 export interface CreateClienteRequest {

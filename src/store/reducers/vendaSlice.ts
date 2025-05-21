@@ -3,6 +3,8 @@ import { RootState } from './index';
 import { api } from '../../services/api';
 
 export type Produto = {
+  valor: number;
+  totalItem: number;
   id: number;
   nome: string;
   descricao: string;

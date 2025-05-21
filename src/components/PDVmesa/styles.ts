@@ -67,7 +67,7 @@ export const ProductList = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
-  max-height: 320px;
+  max-height: 830px;
   overflow-y: auto;
   padding: ${({ theme }) => theme.spacing(2)};
   background: ${({ theme }) => theme.colors.surface || '#fff'};
