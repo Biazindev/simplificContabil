@@ -3,6 +3,7 @@ import InputMask from 'react-input-mask';
 import Select from 'react-select';
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HiMiniMagnifyingGlass } from "react-icons/hi2";
+import { BiBarcodeReader } from "react-icons/bi";
 import {
     Container,
     LeftPane,
@@ -577,58 +578,80 @@ const VendaMesa: React.FC = () => {
 
     return (
         <>
-            <div style={{margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', width: '400px', padding: '3px 0 3px 0', height: '60px', backgroundColor: '#ccc', borderRadius: '24px' }}>
-                <button
-                    onClick={() => setTipoAtendimento('mesa')}
-                    style={{
-                        width: '130px',
-                        backgroundColor: tipoAtendimento === 'mesa' ? '#5f27cd' : '#ccc',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '24px',
-                        cursor: 'pointer',
-                        fontSize: '18px',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    Mesa
-                </button>
-                <button
-                    onClick={() => setTipoAtendimento('balcao')}
-                    style={{
-                        width: '130px',
-                        backgroundColor: tipoAtendimento === 'balcao' ? '#5f27cd' : '#ccc',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '24px',
-                        cursor: 'pointer',
-                        fontSize: '18px',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    Balcão
-                </button>
-                <button
-                    onClick={() => setTipoAtendimento('entrega')}
-                    style={{
-                        backgroundColor: tipoAtendimento === 'entrega' ? '#5f27cd' : '#ccc',
-                        width: '130px',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '24px',
-                        cursor: 'pointer',
-                        fontSize: '18px',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    Entrega
-                </button>
-            </div>
+            <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', width: '400px', padding: '3px 0 3px 0', height: '36px', backgroundColor: '#ccc', borderRadius: '24px' }}>
+                    <button
+                        onClick={() => setTipoAtendimento('mesa')}
+                        style={{
+                            width: '130px',
+                            backgroundColor: tipoAtendimento === 'mesa' ? '#5f27cd' : '#ccc',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            fontSize: '18px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Mesa
+                    </button>
+                    <button
+                        onClick={() => setTipoAtendimento('balcao')}
+                        style={{
+                            width: '130px',
+                            backgroundColor: tipoAtendimento === 'balcao' ? '#5f27cd' : '#ccc',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            fontSize: '18px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Balcão
+                    </button>
+                    <button
+                        onClick={() => setTipoAtendimento('entrega')}
+                        style={{
+                            backgroundColor: tipoAtendimento === 'entrega' ? '#5f27cd' : '#ccc',
+                            width: '130px',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            fontSize: '18px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Entrega
+                    </button>
+                </div>
             </div>
             <div style={{ padding: '1rem' }}>
                 <div>
                     {renderTableInfo(VendaMesa)}
+                </div>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'end',
+                    width: '100%',
+                    margin: '0 auto'
+                }}><div style={{
+                    borderRadius: '8px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    fontSize: '28px',
+                    alignItems: 'center',
+                    backgroundColor: '#ccc'
+                }}>
+                       <div style={{margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'px'}}>
+                         <BiBarcodeReader />
+                        <span style={{
+                            fontSize: '16px',
+                            marginRight: '56px'
+                        }}>Leitor</span>
+                       </div>
+                    </div>
                 </div>
                 {tipoAtendimento === 'entrega' && <VendaEntrega />}
                 {tipoAtendimento === 'balcao' && <VendaBalcao />}
@@ -754,20 +777,20 @@ const VendaMesa: React.FC = () => {
                         </LeftPane>
 
                         <RightPane>
-                           <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                            <h2><span></span>Catálogos de produtos</h2>
-                            <HiMiniMagnifyingGlass style={{color: '#ccc', fontSize: '28px', position: 'relative', left: '240px', top: '15px'}} />
-                             <div style={{width: '300px'}}>
-                                <Input
-                                style={{textAlign: 'right'}}
-                                type="text"
-                                placeholder="Buscar produto"
-                                value={produtoBusca}
-                                onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setProdutoBusca(e.target.value)}
-                            />
-                             </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <h2><span></span>Catálogos de produtos</h2>
+                                <HiMiniMagnifyingGlass style={{ color: '#ccc', fontSize: '28px', position: 'relative', left: '140px', top: '15px' }} />
+                                <div style={{ width: '300px' }}>
+                                    <Input
+                                        style={{ textAlign: 'right' }}
+                                        type="text"
+                                        placeholder="Buscar produto"
+                                        value={produtoBusca}
+                                        onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setProdutoBusca(e.target.value)}
+                                    />
+                                </div>
 
-                           </div>
+                            </div>
                             <div>
                                 {isLoading && <p>Carregando produtos...</p>}
                                 {Boolean(error) && <p>Erro ao carregar produtos.</p>}

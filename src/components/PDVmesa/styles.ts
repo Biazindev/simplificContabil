@@ -1,10 +1,20 @@
 import styled from 'styled-components';
 
+
+const breakpoints = {
+  sm: '768px',
+  md: '1024px',
+};
+
 export const Container = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 450px) 1fr;
   gap: 18px;
-  padding: 2rem;
+  padding: 16px;
+
+  @media (max-width: ${breakpoints.sm}) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const Title = styled.h1`
@@ -20,55 +30,64 @@ export const LeftPane = styled.div`
   padding: ${({ theme }) => theme.spacing(2)};
   border-radius: ${({ theme }) => theme.radii.md};
   display: flex;
-  max-width: 650px;
-  width: 100%;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(2)};
   box-shadow: 0 2px 6px ${({ theme }) => theme.colors.neoShadowDark};
-  font-size: 0.875rem; // menor
+  font-size: 0.875rem;
+
+  max-width: 430px;
+
+  @media (max-width: ${breakpoints.md}) {
+    max-width: 100%;
+    padding: ${({ theme }) => theme.spacing(1)};
+  }
 
   .container {
-  display: flex;
-  justify-content: start;
-  align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
 
-  span {
-  margin: 0 8px 0 8px;
-  font-size: 24px;
-  align-items: center;
+    span {
+      margin: 0 8px;
+      font-size: 20px;
 
-  h3 {
-  position: relative:
-  top: -2px;
-  font-size: 24px;
-  }
-  }
+      h3 {
+        font-size: 20px;
+        top: -2px;
+        position: relative;
+      }
+    }
   }
 `;
 
 export const RightPane = styled.div`
   flex: 1;
+  width: 100%;
+  max-width: 800px;
+  padding: 8px;
   border-radius: ${({ theme }) => theme.radii.lg};
   display: flex;
-  width: 1000px;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(4)};
+
+  @media (max-width: ${breakpoints.md}) {
+    padding: ${({ theme }) => theme.spacing(1)};
+    max-width: 100%;
+  }
 `;
 
 export const TableSelector = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  width: 400px;
   overflow-y: auto;
-  flex-wrap: wrap;
   gap: 16px;
-  padding: ${({ theme }) => theme.spacing(2)};
 
   button {
     all: unset;
     cursor: pointer;
     padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
     border-radius: ${({ theme }) => theme.radii.md};
-    max-width: 40x;
     text-align: center;
     font-size: 0.85rem;
     font-weight: 600;
@@ -109,10 +128,10 @@ export const TableSelector = styled.div`
 
 export const ProductList = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   margin: 0 auto;
   justify-content: center;
-  gap: 8px;
+  gap: 16px;
   max-height: 930px;
   position: relative;
   width: 100%;
@@ -120,6 +139,10 @@ export const ProductList = styled.div`
   padding: 8px;
   scrollbar-width: thin;
   scrollbar-color: ${({ theme }) => theme.colors.primary} transparent;
+
+  @media (max-width: ${breakpoints.sm}) {
+    grid-template-columns: 1fr 1fr;
+  }
 
   /* Estilo para scrollbar WebKit */
   &::-webkit-scrollbar {
@@ -144,11 +167,15 @@ export const ProductList = styled.div`
     font-size: 1rem;
     font-weight: 600;
     height: 300px;
-    width: 220px;
+    width: 180px;
     color: ${({ theme }) => theme.colors.textLight || '#222'};
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+
+    @media (max-width: ${breakpoints.sm}) {
+      font-size: 0.875rem;
+    }
 
     &:hover {
       background-color: ${({ theme }) => theme.colors.surface || '#e6f0ff'};
@@ -201,9 +228,10 @@ export const PdvButton = styled.button`
     padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(2)};
     border: none;
     border-radius: ${({ theme }) => theme.radii.sm};
-    font-size: 1rem; // menor
+    font-size: 0.95rem;
     font-weight: bold;
     min-width: 80px;
+    width: auto;
 
     &:hover {
       background: ${({ theme }) => theme.colors.secondary};
@@ -212,6 +240,10 @@ export const PdvButton = styled.button`
     &[style*="background-color: #ccc"] {
       background-color: #ccc !important;
       color: ${({ theme }) => theme.colors.text};
+
+      @media (max-width: ${breakpoints.sm}) {
+    width: 100%;
+  }
 `
 export const Input = styled.input`
   background: ${({ theme }) => theme.colors.surface};
@@ -236,10 +268,19 @@ export const Input = styled.input`
       0 0 0 2px ${({ theme }) => theme.colors.primaryAccent},
       inset 2px 2px 5px ${({ theme }) => theme.colors.neoShadowDark},
       inset -2px -2px 5px ${({ theme }) => theme.colors.neoShadowLight};
+
+      @media (max-width: ${breakpoints.sm}) {
+    font-size: 0.9rem;
+    padding: ${({ theme }) => theme.spacing(1)};
+  }
   }`
 
 export const Wrapper = styled.div`
   padding: 1rem;
+
+  @media (max-width: ${breakpoints.sm}) {
+    padding: 0.5rem;
+  }
 `;
 
 export const SwitchContainer = styled.div`
@@ -247,6 +288,7 @@ export const SwitchContainer = styled.div`
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 `;
 
 export const ToggleSwitch = styled.label`
@@ -299,19 +341,21 @@ width: 100%;
 display: flex;
 justify-content: center;
 align-items: center;
+flex-wrap: wrap;
 
 h1 {
-margin: 0 auto;
-width: 100%;
-display: flex;
-justify-content: center;
-align-items: center;
-}
+    font-size: 1.5rem;
+    text-align: center;
+  }
 `
 
 export const Titulo = styled.h1`
   font-size: 2rem;
   margin-bottom: 1rem;
+
+  @media (max-width: ${breakpoints.sm}) {
+    font-size: 1.5rem;
+  }
 `;
 
 export const FiltroContainer = styled.div`
@@ -331,6 +375,7 @@ export const InputBusca = styled.input`
 export const Filtros = styled.div`
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 `;
 
 export const FiltroBotao = styled.button`

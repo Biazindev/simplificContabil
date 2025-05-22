@@ -22,13 +22,13 @@ export const Layout = styled.div`
 export const ToggleSidebarButton = styled.button`
   background: none;
   border: none;
-  color: white;
+  color: #000;
   font-size: 1.5rem;
   cursor: pointer;
   position: absolute;
   top: 1rem;
   left: 1rem;
-  z-index: 110; // acima do sidebar
+  z-index: 110;
 
   @media (min-width: 769px) {
     display: none;
@@ -52,8 +52,8 @@ export const SidebarOverlay = styled.div`
 
 export const Sidebar = styled.nav<SidebarProps>`
   grid-area: sidebar;
-  background-color: #1e1e2f;
-  color: white;
+  background-color: #b2bec3;
+  color: #000;
   padding: 1rem 0.5rem;
   transition: width 0.3s ease-in-out;
   width: ${({ isOpen }) => (isOpen ? "240px" : "48px")};
@@ -85,7 +85,7 @@ export const SidebarItem = styled.a`
   align-items: center;
   gap: 2rem;
   padding: 0.75rem;
-  color: #ccc;
+  color: #000;
   text-decoration: none;
   border-radius: 8px;
   margin: 0.25rem 0;
@@ -116,8 +116,8 @@ export const SidebarItem = styled.a`
 export const HeaderContainer = styled.header`
   grid-area: header;
   width: 100%;
-  background-color: #1e1e2f;
-  color: #ffffff;
+  background-color: #b2bec3;
+  color: #000;
   padding: 0 2rem;
   display: flex;
   align-items: center;
