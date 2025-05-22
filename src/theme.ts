@@ -8,7 +8,7 @@ export const lightTheme: DefaultTheme = {
     primaryAccent: '#7C6EF6',
     secondary: '#10B981',
     text: '#1F2937',
-    textLight: '#6B7280',
+    textLight: '#f1f2f6',
     error: '#EF4444',
     glassShadow: 'rgba(255, 255, 255, 0.25)',
     neoShadowLight: 'rgba(255, 255, 255, 0.7)',

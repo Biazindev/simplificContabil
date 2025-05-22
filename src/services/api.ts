@@ -17,14 +17,15 @@ export interface Endereco {
   cep: string; bairro: string; municipio: string; logradouro: string; numero: string; uf: string; complemento?: string
 }
 
-interface Mesa {
+export interface Mesa {
   id: number;
   numero: number;
   aberta: boolean;
   // você pode adicionar mais campos que existam na sua entidade Mesa
 }
 
-interface Pedido {
+export interface Pedido {
+  cliente: string;
   id: number;
   mesaId: number;
   status: StatusPedido;
@@ -32,18 +33,18 @@ interface Pedido {
   // adicione outros campos conforme seu modelo
 }
 
-interface PedidoItem {
+export interface PedidoItem {
   produtoId: number;
   quantidade: number;
   // outros campos se existirem, ex: preço, nome, etc
 }
 
-interface PedidoMesaDTO {
+export interface PedidoMesaDTO {
   numeroMesa?: number;
   itens: PedidoItem[];
 }
 
-interface ItemMesaDTO {
+export interface ItemMesaDTO {
   produtoId: number;
   nomeProduto: string;
   quantidade: number;
@@ -613,19 +614,19 @@ export const api = createApi({
 
     // Listar mesas abertas
     listarMesasAbertas: builder.query<Mesa[], void>({
-      query: () => 'ativas',
+      query: () => 'mesas/ativas',
       providesTags: ['Mesa'],
     }),
 
     // Calcular total da mesa
     calcularTotalMesa: builder.query<number, number>({
-      query: (numeroMesa: any) => `${numeroMesa}/total`,
+      query: (numeroMesa: any) => `mesas${numeroMesa}/total`,
     }),
 
     // Finalizar mesa e obter PDF (retorno em blob)
     finalizarMesa: builder.mutation<Blob, number>({
       query: (numeroMesa: any) => ({
-        url: `${numeroMesa}/finalizar`,
+        url: `mesas${numeroMesa}/finalizar`,
         method: 'POST',
         responseHandler: async (response: { blob: () => any }) => {
           const blob = await response.blob();
@@ -637,20 +638,23 @@ export const api = createApi({
 
     // Listar itens da mesa
     listarItensDaMesa: builder.query<ItemMesa[], number>({
-      query: (numeroMesa: any) => `${numeroMesa}/itens`,
+      query: (numeroMesa: any) => `mesas${numeroMesa}/itens`,
       providesTags: ['Mesa'],
     }),
 
-    // Listar pedidos com filtros opcionais
     listarPedidos: builder.query<Pedido[], { status?: string; mesaId?: number }>({
       query: ({ status, mesaId }) => {
         const params = new URLSearchParams();
         if (status) params.append('status', status);
-        if (mesaId) params.append('mesaId', mesaId.toString());
-        return `?${params.toString()}`;
+        if (mesaId !== undefined) params.append('mesaId', mesaId.toString());
+        return {
+          url: '/mesas',
+          params,
+        };
       },
       providesTags: ['Pedido'],
     }),
+
 
     // Adicionar pedido à mesa
     adicionarPedido: builder.mutation<void, PedidoMesaDTO>({
@@ -670,7 +674,7 @@ export const api = createApi({
 
     // GET /ativas
     getMesasAtivas: builder.query<Mesa[], void>({
-      query: () => '/ativas',
+      query: () => 'mesas/ativas',
       providesTags: ['Mesa'],
     }),
 
@@ -680,7 +684,7 @@ export const api = createApi({
     }),
     // GET /{numeroMesa}/itens
     getItensMesa: builder.query<ItemMesaDTO[], number>({
-      query: (numeroMesa) => `/${numeroMesa}/itens`,
+      query: (numeroMesa) => `mesas/${numeroMesa}/itens`,
       providesTags: ['Pedido'],
     }),
   }),
@@ -689,6 +693,7 @@ export const api = createApi({
 export const {
   useLazyGetItensMesaQuery,
   useLazyListarPedidosQuery,
+  useLazyGetMesasAtivasQuery,
   useGetMesasAtivasQuery,
   useGetTotalMesaQuery,
   useGetItensMesaQuery,

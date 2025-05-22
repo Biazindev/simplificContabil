@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import InputMask from 'react-input-mask';
 import Select from 'react-select';
+import { GiHamburgerMenu } from "react-icons/gi";
+import { HiMiniMagnifyingGlass } from "react-icons/hi2";
 import {
     Container,
     LeftPane,
@@ -14,7 +16,11 @@ import {
     Slider,
     Input,
     Title,
-    Top
+    Top,
+    Legend,
+    ImgContainer,
+    Description,
+    Icon
 } from './styles';
 import {
     ProdutoProps,
@@ -26,50 +32,61 @@ import {
     useFinalizarMesaMutation,
     useAdicionarPedidoMutation,
     useSairParaEntregaMutation,
-    useGetItensMesaQuery,
+    useListarMesasAbertasQuery,
     useLazyGetItensMesaQuery,
     useLazyListarPedidosQuery,
+    StatusPedido,
+    PedidoItem,
 } from '../../services/api';
 import NfContainer from '../NotaFiscal'
 import plus from '../../assets/image/plus.svg'
 import VendaEntrega from '../PDVentrega';
 import VendaBalcao from '../PDVbalcao';
+import { ItemVenda } from '../../types';
+import Card from '../Card';
 
 export interface ItemMesa {
-  produto: {
-    id: number;
+    numeroParcelas: number;
+    formPagamento: number;
+    preco: number;
+    produtoId: number;
     nome: string;
-    precoUnitario: number;
-  };
-  quantidade: number;
+    produto: {
+        id: number;
+        nome: string;
+        precoUnitario: number;
+    };
+    quantidade: number;
 }
 
 export interface ClientePessoaFisica {
-  cpf: string;
+    cpf: string;
 }
 
 export interface ClientePessoaJuridica {
-  cnpj: string;
+    cnpj: string;
 }
 
 export interface Cliente {
-  tipoPessoa: 'FISICA' | 'JURIDICA';
-  pessoaFisica?: ClientePessoaFisica;
-  pessoaJuridica?: ClientePessoaJuridica;
+    tipoPessoa: 'FISICA' | 'JURIDICA';
+    pessoaFisica?: ClientePessoaFisica;
+    pessoaJuridica?: ClientePessoaJuridica;
 }
 
-export interface Pedido {
-  cliente: Cliente;
-}
 
 export interface ProdutoSelecionado {
-  produtoId: number;
-  nome: string;
-  preco: number;
-  quantidade: number;
-  formPagamento: string;
-  numeroParcelas: number;
+    produtoId?: number;
+    id?: number;
+    nome?: string;
+    nomeProduto?: string;
+    preco?: number;
+    precoUnitario?: number;
+    quantidade: number;
+    formPagamento?: string;
+    numeroParcelas?: number;
+    totalItem?: number;
 }
+
 
 
 type Pagamento = {
@@ -83,6 +100,28 @@ type Pagamento = {
     totalDesconto: number;
     totalPagamento: number;
 };
+
+type Mesa = {
+    id: number;
+    numero: number;
+    aberta: boolean;
+    sessao?: any;
+    pedidos?: any[];
+};
+
+type MesaLocal = {
+    numero: number;
+    ocupada: boolean;
+};
+
+interface Pedido {
+    id: number;
+    mesaId: number;
+    status: StatusPedido;
+    itens: PedidoItem[];
+    cliente?: string;
+}
+
 
 const VendaMesa: React.FC = () => {
     const [showNf, setShowNf] = useState(false);
@@ -105,9 +144,20 @@ const VendaMesa: React.FC = () => {
     const [sairParaEntrega] = useSairParaEntregaMutation()
     const [getItensMesa] = useLazyGetItensMesaQuery();
     const [listarPedidos] = useLazyListarPedidosQuery();
+    const { data: mesasAbertas } = useListarMesasAbertasQuery();
 
-    type ProdutoSelecionado = ProdutoProps & { quantidade: number };
 
+    const numerosMesasAtivas = mesasAbertas?.map((mesa) => mesa.numero) ?? [];
+
+    const [mesas, setMesas] = useState<MesaLocal[]>(
+        () =>
+            Array.from({ length: 20 }, (_, i) => ({
+                numero: i + 1,
+                ocupada: false,
+            }))
+    );
+
+    const numerosMesasAbertas = mesasAbertas?.filter(m => m.aberta).map(m => m.numero) ?? [];
 
     type VendaData = {
         emitirNotaFiscal: boolean;
@@ -147,8 +197,10 @@ const VendaMesa: React.FC = () => {
                 nomeProduto: p.nome,
                 precoUnitario: p.precoUnitario,
                 quantidade: p.quantidade,
-                totalItem: p.precoUnitario * p.quantidade,
-            })),
+                totalItem: p.precoUnitario! * p.quantidade,
+            })) as unknown as ItemVenda[]
+
+            ,
             pagamento: {
                 formaPagamento: selectedValuePag || 'DINHEIRO',
                 valorPago: somaProdutos,
@@ -182,12 +234,6 @@ const VendaMesa: React.FC = () => {
         useLazyGetClientesByPhoneQuery();
     const [totalDesconto, setTotalDesconto] = React.useState(pagamento?.totalDesconto || '');
 
-
-
-    const somaProdutos = produtosSelecionados.reduce(
-        (total, p) => total + p.precoUnitario * p.quantidade,
-        0
-    );
     useEffect(() => {
         adicionarPedido
         const delayDebounce = setTimeout(() => {
@@ -208,43 +254,90 @@ const VendaMesa: React.FC = () => {
     }, [mesaAtual, vendasPorMesa]);
 
     useEffect(() => {
-    const carregarDadosMesa = async () => {
-        if (mesaAtual !== null) {
-            try {
-                // 1. Buscar os itens da mesa tipados
-                const itensResponse: ItemMesa[] = await getItensMesa(mesaAtual).unwrap();
+        const carregarDadosMesa = async () => {
+            if (mesaAtual !== null) {
+                try {
+                    // 1. Buscar os itens da mesa
+                    const itensResponse = await getItensMesa(mesaAtual).unwrap();
 
-                const produtosMapeados: ProdutoSelecionado[] = itensResponse.map((item) => ({
-                    produtoId: item.produto.id,
-                    nome: item.produto.nome,
-                    preco: item.produto.precoUnitario,
-                    quantidade: item.quantidade,
-                    formPagamento: pagamento.formaPagamento,
-                    numeroParcelas: pagamento.numeroParcelas,
-                }));
+                    // Mapear os itens para o formato ProdutoSelecionado
+                    const produtosMapeados = itensResponse.map((item: any) => {
+                        // Verifica se é do tipo ItemMesa ou ItemMesaDTO
+                        const produtoId = item.produtoId || item.id;
+                        const nome = item.nome || item.produto?.nome || item.nomeProduto;
+                        const precoUnitario = item.precoUnitario || item.produto?.precoUnitario || item.preco || 0;
+                        const preco = item.preco || precoUnitario;
+                        const quantidade = item.quantidade || 1;
+                        const formPagamento = item.formPagamento?.toString() || 'DINHEIRO';
+                        const numeroParcelas = item.numeroParcelas || 1;
 
-                setProdutosSelecionados(produtosMapeados);
+                        return {
+                            produtoId,
+                            id: produtoId,
+                            nome,
+                            precoUnitario,
+                            preco,
+                            quantidade,
+                            formPagamento,
+                            numeroParcelas,
+                            totalItem: preco * quantidade
+                        } as unknown as ProdutoSelecionado;
+                    });
 
-                // 2. Buscar os pedidos da mesa tipados
-                const pedidosResponse: Pedido[] = await listarPedidos({ mesaId: mesaAtual }).unwrap();
-                const ultimoPedido = pedidosResponse.at(-1);
+                    setProdutosSelecionados(produtosMapeados);
 
-                const clienteCpf =
-                    ultimoPedido?.cliente?.pessoaFisica?.cpf ||
-                    ultimoPedido?.cliente?.pessoaJuridica?.cnpj;
+                    // 2. Buscar os pedidos da mesa
+                    const pedidosResponse = await listarPedidos({ mesaId: mesaAtual }).unwrap();
+                    const ultimoPedido = Array.isArray(pedidosResponse)
+                        ? pedidosResponse.at(-1)
+                        : undefined;
 
-                if (clienteCpf) {
-                    setClienteBusca(clienteCpf);
+                    if (ultimoPedido?.cliente) {
+                        if (typeof ultimoPedido.cliente === 'string') {
+                            setClienteBusca(ultimoPedido.cliente);
+                        } else {
+                            const cliente = ultimoPedido.cliente as Cliente;
+                            const documento = cliente.tipoPessoa === 'FISICA'
+                                ? cliente.pessoaFisica?.cpf
+                                : cliente.pessoaJuridica?.cnpj;
+
+                            if (documento) {
+                                setClienteBusca(documento);
+                            }
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao buscar dados da mesa:', error);
                 }
-
-            } catch (error) {
-                console.error('Erro ao buscar dados da mesa:', error);
             }
-        }
-    };
+        };
 
-    carregarDadosMesa();
-}, [mesaAtual]);
+        carregarDadosMesa();
+    }, [mesaAtual, getItensMesa, listarPedidos]);
+    useEffect(() => {
+        const carregarItensMesa = async () => {
+            if (mesaAtual !== null) {
+                try {
+                    const itensResponse = await getItensMesa(mesaAtual).unwrap() as unknown as ItemMesa[];
+                    const produtosMapeados = itensResponse.map((item) => ({
+                        produtoId: item.produtoId,
+                        id: item.produtoId,
+                        nome: item.nome,
+                        precoUnitario: item.preco,
+                        quantidade: item.quantidade,
+                        formPagamento: item.formPagamento.toString(),
+                        numeroParcelas: item.numeroParcelas,
+                    }));
+                    setProdutosSelecionados(produtosSelecionados);
+                } catch (error) {
+                    console.error('Erro ao carregar itens da mesa:', error);
+                }
+            }
+        };
+
+        carregarItensMesa();
+    }, [mesaAtual, getItensMesa]);
 
 
     useEffect(() => {
@@ -273,8 +366,6 @@ const VendaMesa: React.FC = () => {
         if (produtosSalvos) setProdutosSelecionados(JSON.parse(produtosSalvos));
     }, []);
 
-    const mesas = Array.from({ length: 24 }, (_, i) => i + 1);
-
     const salvarDadosMesaAtual = () => {
         if (mesaAtual !== null) {
             const payload = gerarPayloadVenda(
@@ -298,17 +389,68 @@ const VendaMesa: React.FC = () => {
 
     const handleSelecionarMesa = async (mesa: number) => {
         if (mesa !== mesaAtual) {
-            salvarDadosMesaAtual(); // salvar antes de mudar a mesa
-            setTimeout(() => setMesaAtual(mesa), 0); // deferir update da mesa para garantir ordem
+            salvarDadosMesaAtual();
+            setMesaAtual(mesa);
         }
 
         try {
+            // 1. Criar/reutilizar mesa
             await criarOuReutilizarMesa(mesa).unwrap();
-        } catch (error) {
-            console.error(`Erro ao criar mesa ${mesa}:`, error);
-        }
-    };
 
+            // 2. Buscar itens da mesa
+            const itensResponse = await getItensMesa(mesa).unwrap();
+
+            // 3. Mapear itens para o formato esperado
+            const produtosMapeados = itensResponse.map((item: any) => ({
+                produtoId: item.produtoId || item.id,
+                id: item.produtoId || item.id,
+                nome: item.nome || item.nomeProduto,
+                precoUnitario: item.preco || item.precoUnitario || 0,
+                quantidade: item.quantidade || 1,
+                formPagamento: item.formPagamento?.toString() || 'DINHEIRO',
+                numeroParcelas: item.numeroParcelas || 1,
+                mensagem: '',
+                descricao: '',
+                ncm: '',
+                EAN: '',
+                CEST: '',
+                unidade: 'UN',
+                precoCompra: 0,
+                estoqueAtual: 0
+            }));
+
+            setProdutosSelecionados(produtosMapeados);
+
+            // 4. Buscar informações do cliente
+            const pedidosResponse = await listarPedidos({ mesaId: mesa }).unwrap();
+            const ultimoPedido = Array.isArray(pedidosResponse) ? pedidosResponse.at(-1) : null;
+
+            if (ultimoPedido?.cliente) {
+                if (typeof ultimoPedido.cliente === 'string') {
+                    setClienteBusca(ultimoPedido.cliente);
+                } else {
+                    const cliente = ultimoPedido.cliente as Cliente;
+                    const documento = cliente.tipoPessoa === 'FISICA'
+                        ? cliente.pessoaFisica?.cpf
+                        : cliente.pessoaJuridica?.cnpj;
+
+                    if (documento) {
+                        setClienteBusca(documento);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao selecionar mesa:', error);
+            // Você pode adicionar tratamento de erro mais específico aqui
+            // Por exemplo, mostrar uma mensagem para o usuário:
+            alert('Ocorreu um erro ao selecionar a mesa. Por favor, tente novamente.');
+        }
+    }
+
+    const somaProdutos = produtosSelecionados.reduce(
+        (total, p) => total + (p.precoUnitario || p.precoUnitario || 0) * (p.quantidade || 1),
+        0
+    );
 
 
     const handleFinalizarVenda = async () => {
@@ -342,18 +484,18 @@ const VendaMesa: React.FC = () => {
         }
     };
 
-    // const limparEstado = () => {
-    //     setVendasPorMesa((prev) => {
-    //         const copy = { ...prev };
-    //         if (mesaAtual !== null) {
-    //             delete copy[mesaAtual];
-    //         }
-    //         return copy;
-    //     });
-    //     setClienteBusca('');
-    //     setProdutosSelecionados([]);
-    //     setMesaAtual(null);
-    // };
+    const limparEstado = () => {
+        setVendasPorMesa((prev) => {
+            const copy = { ...prev };
+            if (mesaAtual !== null) {
+                delete copy[mesaAtual];
+            }
+            return copy;
+        });
+        setClienteBusca('');
+        setProdutosSelecionados([]);
+        setMesaAtual(null);
+    };
 
 
     const handleAdicionarProduto = async (produto: ProdutoProps) => {
@@ -361,7 +503,7 @@ const VendaMesa: React.FC = () => {
             const existente = prev.find(p => p.id === produto.id);
             if (existente) {
                 return prev.map(p =>
-                    p.id === produto.id ? { ...p, quantidade: p.quantidade + 1 } : p
+                    p.id === produto.id ? { ...p, quantidade: p.quantidade! + 1 } : p
                 );
             } else {
                 return [...prev, { ...produto, quantidade: 1 }];
@@ -435,17 +577,19 @@ const VendaMesa: React.FC = () => {
 
     return (
         <>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+            <div style={{margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', width: '400px', padding: '3px 0 3px 0', height: '60px', backgroundColor: '#ccc', borderRadius: '24px' }}>
                 <button
                     onClick={() => setTipoAtendimento('mesa')}
                     style={{
-                        margin: '0 10px',
-                        padding: '10px 20px',
-                        backgroundColor: tipoAtendimento === 'mesa' ? '#007bff' : '#ccc',
+                        width: '130px',
+                        backgroundColor: tipoAtendimento === 'mesa' ? '#5f27cd' : '#ccc',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '8px',
+                        borderRadius: '24px',
                         cursor: 'pointer',
+                        fontSize: '18px',
+                        fontWeight: 'bold'
                     }}
                 >
                     Mesa
@@ -453,13 +597,14 @@ const VendaMesa: React.FC = () => {
                 <button
                     onClick={() => setTipoAtendimento('balcao')}
                     style={{
-                        margin: '0 10px',
-                        padding: '10px 20px',
-                        backgroundColor: tipoAtendimento === 'balcao' ? '#007bff' : '#ccc',
+                        width: '130px',
+                        backgroundColor: tipoAtendimento === 'balcao' ? '#5f27cd' : '#ccc',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '8px',
+                        borderRadius: '24px',
                         cursor: 'pointer',
+                        fontSize: '18px',
+                        fontWeight: 'bold'
                     }}
                 >
                     Balcão
@@ -467,17 +612,19 @@ const VendaMesa: React.FC = () => {
                 <button
                     onClick={() => setTipoAtendimento('entrega')}
                     style={{
-                        margin: '0 10px',
-                        padding: '10px 20px',
-                        backgroundColor: tipoAtendimento === 'entrega' ? '#007bff' : '#ccc',
+                        backgroundColor: tipoAtendimento === 'entrega' ? '#5f27cd' : '#ccc',
+                        width: '130px',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '8px',
+                        borderRadius: '24px',
                         cursor: 'pointer',
+                        fontSize: '18px',
+                        fontWeight: 'bold'
                     }}
                 >
                     Entrega
                 </button>
+            </div>
             </div>
             <div style={{ padding: '1rem' }}>
                 <div>
@@ -489,18 +636,28 @@ const VendaMesa: React.FC = () => {
             {tipoAtendimento === 'mesa' && (
                 <>
                     <Top>
-                        <Title>Venda por Mesa</Title>
                     </Top>
                     <Container>
                         <LeftPane>
+                            <div>
+                                <Legend>Mesas vazias<span><div></div></span> Mesas ocupadas <span><div className='container'></div></span></Legend>
+                                <div className='container'><span><GiHamburgerMenu /></span><h3>Mesas</h3></div>
+                            </div>
                             <TableSelector>
                                 {mesas.map((mesa) => (
                                     <button
-                                        key={mesa}
-                                        onClick={() => handleSelecionarMesa(mesa)}
-                                        style={{ backgroundColor: mesa === mesaAtual ? '#ccc' : undefined }}
+                                        key={mesa.numero}
+                                        onClick={() => handleSelecionarMesa(mesa.numero)}
+                                        style={{
+                                            backgroundColor:
+                                                mesa.numero === mesaAtual
+                                                    ? '#ccc'
+                                                    : numerosMesasAtivas!.includes(mesa.numero)
+                                                        ? '#b33939'
+                                                        : '#218c74',
+                                        }}
                                     >
-                                        Mesa {mesa}
+                                        {mesa.numero}
                                     </button>
                                 ))}
                             </TableSelector>
@@ -567,15 +724,15 @@ const VendaMesa: React.FC = () => {
                                     )
                                 )}
                             </div>
-
                             <PdvButton onClick={() => alert('Cadastrar cliente')}>Cadastrar Cliente</PdvButton>
-
                             <div>
                                 <h4>Produtos Selecionados:</h4>
                                 <ul>
                                     {produtosSelecionados.map((produto, index) => (
                                         <li key={index}>
-                                            {produto.nome} - R$ {produto.precoUnitario.toFixed(2)} x {produto.quantidade} = R$ {(produto.precoUnitario * produto.quantidade).toFixed(2)}
+                                            {produto.nome || produto.nome} - R$ {(produto.precoUnitario || produto.precoUnitario || 0).toFixed(2)}
+                                            x {produto.quantidade}
+                                            = R$ {((produto.precoUnitario || produto.precoUnitario || 0) * produto.quantidade!).toFixed(2)}
                                         </li>
                                     ))}
                                 </ul>
@@ -593,35 +750,52 @@ const VendaMesa: React.FC = () => {
                             <PdvButton onClick={handleFinalizarVenda} disabled={enviandoVenda}>
                                 {enviandoVenda ? 'Enviando...' : 'Finalizar Venda'}
                             </PdvButton>
-                            {/* <PdvButton onClick={limparEstado}>Limpar mesa</PdvButton> */}
+                            <PdvButton onClick={limparEstado}>Limpar mesa</PdvButton>
                         </LeftPane>
 
                         <RightPane>
-                            <Input
+                           <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                            <h2><span></span>Catálogos de produtos</h2>
+                            <HiMiniMagnifyingGlass style={{color: '#ccc', fontSize: '28px', position: 'relative', left: '240px', top: '15px'}} />
+                             <div style={{width: '300px'}}>
+                                <Input
+                                style={{textAlign: 'right'}}
                                 type="text"
                                 placeholder="Buscar produto"
                                 value={produtoBusca}
                                 onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setProdutoBusca(e.target.value)}
                             />
+                             </div>
 
-                            <ProductList>
+                           </div>
+                            <div>
                                 {isLoading && <p>Carregando produtos...</p>}
                                 {Boolean(error) && <p>Erro ao carregar produtos.</p>}
-                                {!isLoading &&
-                                    !error &&
-                                    produtos
-                                        .filter((produto: ProdutoProps) =>
-                                            produto.nome.toLowerCase().includes(produtoBusca.toLowerCase())
-                                        )
-                                        .map((produto: ProdutoProps) => (
-                                            <div key={produto.id} onClick={() => handleAdicionarProduto(produto)}>
-                                                {produto.nome} - R$ {produto.precoUnitario.toFixed(2)}{' '}
-                                                <span>
-                                                    <img src={plus} alt="Adicionar" style={{ width: 20, height: 20 }} />
-                                                </span>
-                                            </div>
-                                        ))}
-                            </ProductList>
+
+                                {!isLoading && !error && (
+                                    <ProductList>
+                                        {produtos
+                                            .filter((produto: ProdutoProps) =>
+                                                produto.nome.toLowerCase().includes(produtoBusca.toLowerCase())
+                                            )
+                                            .map((produto: ProdutoProps) => (
+                                                <div onClick={() => handleAdicionarProduto(produto)}>
+                                                    <ImgContainer>
+                                                        <span><img src="https://picsum.photos/seed/produto123/100" alt="produtos" /></span>
+                                                    </ImgContainer>
+                                                    <span>
+                                                        {produto.nome}
+                                                    </span>
+                                                    <Description>
+                                                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem dicta, porro optio sed quia alias </p>
+                                                    </Description>
+                                                    <span>R$ {produto.precoUnitario.toFixed(2)}{' '}</span>
+                                                    <Icon><span>+</span></Icon>
+                                                </div>
+                                            ))}
+                                    </ProductList>
+                                )}
+                            </div>
                         </RightPane>
                     </Container>
                 </>
