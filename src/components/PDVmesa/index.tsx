@@ -40,11 +40,9 @@ import {
     PedidoItem,
 } from '../../services/api';
 import NfContainer from '../NotaFiscal'
-import plus from '../../assets/image/plus.svg'
 import VendaEntrega from '../PDVentrega';
 import VendaBalcao from '../PDVbalcao';
 import { ItemVenda } from '../../types';
-import Card from '../Card';
 
 export interface ItemMesa {
     numeroParcelas: number;
@@ -76,8 +74,8 @@ export interface Cliente {
 
 
 export interface ProdutoSelecionado {
-    produtoId?: number;
-    id?: number;
+    produtoId: number;
+    id: number;
     nome?: string;
     nomeProduto?: string;
     preco?: number;
@@ -102,25 +100,9 @@ type Pagamento = {
     totalPagamento: number;
 };
 
-type Mesa = {
-    id: number;
-    numero: number;
-    aberta: boolean;
-    sessao?: any;
-    pedidos?: any[];
-};
-
 type MesaLocal = {
     numero: number;
     ocupada: boolean;
-};
-
-interface Pedido {
-    id: number;
-    mesaId: number;
-    status: StatusPedido;
-    itens: PedidoItem[];
-    cliente?: string;
 }
 
 
@@ -158,8 +140,6 @@ const VendaMesa: React.FC = () => {
             }))
     );
 
-    const numerosMesasAbertas = mesasAbertas?.filter(m => m.aberta).map(m => m.numero) ?? [];
-
     type VendaData = {
         emitirNotaFiscal: boolean;
         vendaAnonima: boolean;
@@ -194,7 +174,7 @@ const VendaMesa: React.FC = () => {
             emitenteId: 1,
             modelo: 'NFE',
             itens: produtosSelecionados.map((p) => ({
-                produtoId: p.id,
+                produtoId: p.produtoId,
                 nomeProduto: p.nome,
                 precoUnitario: p.precoUnitario,
                 quantidade: p.quantidade,
@@ -264,7 +244,7 @@ const VendaMesa: React.FC = () => {
                     // Mapear os itens para o formato ProdutoSelecionado
                     const produtosMapeados = itensResponse.map((item: any) => {
                         // Verifica se é do tipo ItemMesa ou ItemMesaDTO
-                        const produtoId = item.produtoId || item.id;
+                        const produtoId = item.produtoId;
                         const nome = item.nome || item.produto?.nome || item.nomeProduto;
                         const precoUnitario = item.precoUnitario || item.produto?.precoUnitario || item.preco || 0;
                         const preco = item.preco || precoUnitario;
@@ -500,25 +480,43 @@ const VendaMesa: React.FC = () => {
 
 
     const handleAdicionarProduto = async (produto: ProdutoProps) => {
+        const novoItem = {
+            produtoId: produto.id,
+            nomeProduto: produto.nome,
+            precoUnitario: produto.precoUnitario,
+            quantidade: 1,
+            totalItem: produto.precoUnitario
+        };
+
         setProdutosSelecionados((prev) => {
-            const existente = prev.find(p => p.id === produto.id);
+            const existente = prev.find(p => p.produtoId === produto.id);
             if (existente) {
                 return prev.map(p =>
-                    p.id === produto.id ? { ...p, quantidade: p.quantidade! + 1 } : p
+                    p.produtoId === produto.id
+                        ? {
+                            ...p,
+                            quantidade: p.quantidade + 1,
+                            totalItem: (p.precoUnitario || 0) * (p.quantidade + 1)
+                        }
+                        : p
                 );
             } else {
-                return [...prev, { ...produto, quantidade: 1 }];
+                return [...prev, {
+                    ...novoItem,
+                    id: produto.id,
+                    nome: produto.nome,
+                    preco: produto.precoUnitario
+                }];
             }
         });
 
         try {
             await adicionarPedido({
                 numeroMesa: mesaAtual!,
-                itens: [{ produtoId: produto.id, quantidade: 1 }]
+                itens: [novoItem]
             }).unwrap();
-
         } catch (err) {
-            console.error('Erro ao adicionar pedido:');
+            console.error('Erro ao adicionar pedido:', err);
         }
     };
 
@@ -644,13 +642,13 @@ const VendaMesa: React.FC = () => {
                     alignItems: 'center',
                     backgroundColor: '#ccc'
                 }}>
-                       <div style={{margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'px'}}>
-                         <BiBarcodeReader />
-                        <span style={{
-                            fontSize: '16px',
-                            marginRight: '56px'
-                        }}>Leitor</span>
-                       </div>
+                        <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'px' }}>
+                            <BiBarcodeReader />
+                            <span style={{
+                                fontSize: '16px',
+                                marginRight: '56px'
+                            }}>Leitor</span>
+                        </div>
                     </div>
                 </div>
                 {tipoAtendimento === 'entrega' && <VendaEntrega />}
@@ -753,7 +751,7 @@ const VendaMesa: React.FC = () => {
                                 <ul>
                                     {produtosSelecionados.map((produto, index) => (
                                         <li key={index}>
-                                            {produto.nome || produto.nome} - R$ {(produto.precoUnitario || produto.precoUnitario || 0).toFixed(2)}
+                                          id:{produto.id || produto.produtoId} {produto.nome || produto.nome} - R$ {(produto.precoUnitario || produto.precoUnitario || 0).toFixed(2)}
                                             x {produto.quantidade}
                                             = R$ {((produto.precoUnitario || produto.precoUnitario || 0) * produto.quantidade!).toFixed(2)}
                                         </li>

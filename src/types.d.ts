@@ -62,6 +62,7 @@ interface ItemVenda {
     descricao: string;
     ncm: string;
     precoUnitario: number;
+    produtoId: number;
   };
   nomeProduto: string;
   precoUnitario: number;

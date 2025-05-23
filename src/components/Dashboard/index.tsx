@@ -13,8 +13,10 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Legend,
-  Cell,  // Importar Cell para colorir barras individualmente
+  Cell,
 } from "recharts";
+
+
 
 import { Card, CardContent } from "../ui/card";
 
@@ -35,6 +37,7 @@ import {
   ContainerDash,
   CardContainer,
 } from "./styles";
+import { data } from "react-router-dom";
 
 const COLORS = [
   "#EF4444", // Vermelho forte
@@ -81,6 +84,30 @@ const Dashboard = () => {
       vendas: valor,
     }));
   };
+
+  type DataItem = {
+    label: string;
+    totais?: { [key: string]: number };
+  };
+
+  type ChartData = {
+    name: string;
+    vendas: number;
+  };
+
+  const formatArrayData = (data: DataItem[] | undefined): ChartData[] => {
+    if (!data) return [];
+
+    return data.map((item) => {
+      const totais = item.totais ?? {};
+      const valores = Object.values(totais) as number[];
+      const vendas = valores.reduce((sum, val) => sum + val, 0);
+      return {
+        name: item.label,
+        vendas,
+      };
+    });
+  }
 
   return (
     <ContainerDash>
@@ -212,7 +239,7 @@ const Dashboard = () => {
           <CardContent>
             <h3>Vendas Anuais</h3>
             <ResponsiveContainer width="100%" height={250}>
-              <ComposedChart data={formatChartDataFromObject(yearData, "Mês")}>
+              <ComposedChart data={formatArrayData(yearData)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -220,7 +247,7 @@ const Dashboard = () => {
                 <Legend />
                 <Area dataKey="vendas" fill={COLORS[6]} stroke={COLORS[6]} />
                 <Bar dataKey="vendas">
-                  {formatChartDataFromObject(yearData, "Mês").map((entry, index) => (
+                  {formatArrayData(yearData).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>

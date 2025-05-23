@@ -24,6 +24,13 @@ export interface Mesa {
   // você pode adicionar mais campos que existam na sua entidade Mesa
 }
 
+export type TotaisAno = {
+  label: string;
+  totais?: {
+    [key: string]: number;
+  };
+};
+
 export interface Pedido {
   cliente: string;
   id: number;
@@ -36,6 +43,9 @@ export interface Pedido {
 export interface PedidoItem {
   produtoId: number;
   quantidade: number;
+  nomeProduto?: string;
+  precoUnitario?: number;
+  totalItem?: number;
   // outros campos se existirem, ex: preço, nome, etc
 }
 
@@ -364,19 +374,15 @@ export const api = createApi({
       query: () => '/venda/totais-mensais',
       providesTags: ['Venda'],
     }),
-    getByTime: builder.query<number, void>({
-      query: () => '/venda/totais-mensais',
-      providesTags: ['Venda'],
-    }),
-    getTotalAno: builder.query<number, void>({
+    getTotalAno: builder.query<TotaisAno[], void>({
       query: () => '/venda/total-ano',
       providesTags: ['Venda'],
     }),
     getVendasPorPeriodo: builder.query<VendaProps[], { inicio: string; fim: string }>({
-      query: ({ inicio, fim }) => `vendas-por-periodo?inicio=${inicio}&fim=${fim}`,
+      query: ({ inicio, fim }) => `venda-por-periodo?inicio=${inicio}&fim=${fim}`,
     }),
     getTotalPorPeriodo: builder.query<number, { inicio: string; fim: string }>({
-      query: ({ inicio, fim }) => `total-por-periodo?inicio=${inicio}&fim=${fim}`,
+      query: ({ inicio, fim }) => `venda-total-por-periodo?inicio=${inicio}&fim=${fim}`,
     }),
     addVenda: builder.mutation<{ id?: number; blob?: Blob }, any>({
       query: (venda) => ({
@@ -713,7 +719,6 @@ export const {
   useCreateServiceOrderMutation,
   useAddNfeMutation,
   useGetTotalPorPeriodoQuery,
-  useGetByTimeQuery,
   useGetTotalDiaSingleQuery,
   useImportarProdutosXmlFilialMutation,
   useGetTotalDiaSingQuery,
@@ -761,5 +766,6 @@ export const {
   useImportarProdutosXmlMutation,
   useListarFiliaisQuery,
   useGetTotalAnoQuery,
+  useGetVendasPorPeriodoQuery
 } = api
 
