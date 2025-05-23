@@ -54,10 +54,6 @@ export type VendaProps = {
     totalDesconto?: number;
     totalPagamento?: number;
   };
-};
-
-interface InfoTextProps {
-  error?: boolean;
 }
 
 const SaleList = () => {
@@ -170,10 +166,6 @@ const SaleList = () => {
             onChange={(e) => setFim(e.target.value)}
           />
         </Label>
-
-        <Button onClick={aplicarFiltro}>
-          Buscar
-        </Button>
       </Card>
 
       {/* Display area */}

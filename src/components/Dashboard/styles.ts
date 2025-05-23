@@ -39,7 +39,7 @@ export const CardContainer = styled.div`
 
   h5 {
     font-size: 1.25rem;
-    color: #1f2937; // slate-800
+    color: #1f2937;
     font-weight: 600;
     margin-bottom: 0.25rem;
   }
@@ -83,12 +83,6 @@ export const CardContainer = styled.div`
     svg {
       font-size: 1.75rem;
       color: #60a5fa; // blue-400
-    }
-
-    p {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 500;
     }
   }
 `;

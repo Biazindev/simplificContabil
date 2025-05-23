@@ -49,12 +49,20 @@ const COLORS = [
   "#F97316", // Laranja vibrante
 ];
 
+interface DailyData {
+  label: string;
+  totais: {
+    PIX?: number;
+    // Outros métodos de pagamento podem ser adicionados aqui
+  };
+}
+
 const formatCurrency = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const Dashboard = () => {
   const { data: dailySingData } = useGetTotalDiaSingQuery();
-  const { data: dailySingleData } = useGetTotalDiaSingleQuery();
+  const { data: dailySingleData, isLoading, error } = useGetTotalDiaSingleQuery();
   const { data: weeklySingData } = useGetTotalSemanasQuery();
   const { data: weeklyData } = useGetTotalSemanaQuery();
   const { data: monthlySingData } = useGetTotalMesesQuery();
@@ -62,12 +70,14 @@ const Dashboard = () => {
   const { data: yearData } = useGetTotalAnoQuery();
 
   const vendasHoje = typeof dailySingData === "number" ? dailySingData : 0;
-  const vendasDia = typeof dailySingleData === "number" ? dailySingleData : 0;
   const vendasSemana = typeof weeklySingData === "number" ? weeklySingData : 0;
   const vendasSemanas = typeof weeklyData === "number" ? weeklyData : 0;
   const vendasMeses = typeof monthlySingData === "number" ? monthlySingData : 0;
   const vendasMes = typeof monthlyData === "number" ? monthlyData : 0;
   const vendasAno = typeof yearData === "number" ? yearData : 0;
+
+  if (isLoading) return <p>Carregando...</p>;
+  if (error || !dailySingleData) return <p>Erro ao carregar.</p>;
 
   const formatChartDataFromObject = (
     dataObj: Record<string, number> | number | undefined,
@@ -109,6 +119,13 @@ const Dashboard = () => {
     });
   }
 
+  const valorPix = dailySingleData?.[0]?.totais?.PIX ?? 0;
+
+  console.log('Valor PIX extraído:', valorPix);
+  console.log('Valor PIX extraído:', valorPix);
+  if (isLoading) return <p>Carregando...</p>;
+  if (error || !dailySingleData) return <p>Erro ao carregar.</p>;
+
   return (
     <ContainerDash>
       <DashboardContainer>
@@ -140,7 +157,7 @@ const Dashboard = () => {
           </div>
         </CardContainer>
         <CardContainer>
-          <p>{formatCurrency(vendasHoje)}</p>
+          <p>{formatCurrency(valorPix)}</p>
           <div>
             <span>
               <PiMoneyBold size={40} />
@@ -174,9 +191,7 @@ const Dashboard = () => {
             <h4>
               Valor total de vendas diárias:{" "}
               <span>
-                {formatCurrency(
-                  Object.values(dailySingleData ?? {}).reduce((acc, val) => acc + val, 0)
-                )}
+                <p>{formatCurrency(valorPix)}</p>
               </span>
             </h4>
           </CardContent>

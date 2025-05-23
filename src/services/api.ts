@@ -17,6 +17,13 @@ export interface Endereco {
   cep: string; bairro: string; municipio: string; logradouro: string; numero: string; uf: string; complemento?: string
 }
 
+interface DailyData {
+  label: string;
+  totais: {
+    [key: string]: number;
+  };
+}
+
 export interface Mesa {
   id: number;
   numero: number;
@@ -353,7 +360,7 @@ export const api = createApi({
       query: () => 'venda/totais-diario',
       providesTags: ['Venda'],
     }),
-    getTotalDiaSingle: builder.query<number, void>({
+    getTotalDiaSingle: builder.query<DailyData[], void>({
       query: () => 'venda/total-dia',
       providesTags: ['Venda'],
     }),
@@ -389,22 +396,19 @@ export const api = createApi({
         url: '/venda/finalizar',
         method: 'POST',
         body: venda,
-        responseHandler: (response) => response.blob(), // Sempre trata como Blob primeiro
+        responseHandler: (response) => response.blob(),
       }),
       transformResponse: async (blob: Blob): Promise<{ id?: number; blob?: Blob }> => {
         try {
           const text = await blob.text();
           const json = JSON.parse(text);
 
-          // Se conseguir converter em JSON com id, retornamos o id
           if (json && typeof json.id === 'number') {
             return { id: json.id };
           }
 
-          // Se não tiver id, assumimos que não é um JSON de id válido
           return { blob };
         } catch (e) {
-          // Se falhar ao parsear, é realmente um blob (ex: PDF)
           return { blob };
         }
       },
@@ -421,7 +425,7 @@ export const api = createApi({
     }),
     deleteVenda: builder.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
-        url: `'/venda'${id}`,
+        url: `/venda${id}`,
         method: 'DELETE'
       }),
       invalidatesTags: ['Venda']

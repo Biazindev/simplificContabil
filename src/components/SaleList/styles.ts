@@ -19,7 +19,6 @@ export const ContentWrapper = styled.div`
 `;
 
 export const FilterCard = styled.div`
-  background: ${({ theme }) => theme.colors.surface};
   padding: 2rem;
   border-radius: 2rem;
   box-shadow: 8px 8px 20px ${({ theme }) => theme.colors.neoShadowDark}, -8px -8px 20px ${({ theme }) => theme.colors.neoShadowLight};
@@ -89,6 +88,7 @@ export const InfoText = styled.div`
 `
 export const PageContainer = styled.div`
   min-height: 100vh;
+  width: 100%;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -97,9 +97,7 @@ export const PageContainer = styled.div`
 `;
 
 export const Card = styled.div`
-  background: ${({ theme }) => theme.colors.surface || '#fff'};
   border-radius: 2rem;
-  box-shadow: 8px 8px 20px ${({ theme }) => theme.colors.neoShadowDark}, -8px -8px 20px ${({ theme }) => theme.colors.neoShadowLight};
   padding: 2rem;
   display: flex;
   flex-wrap: wrap;
@@ -175,11 +173,6 @@ export const Th = styled.th`
 export const Tr = styled.tr`
 border-bottom: 1px solid #000;
   &:nth-child(even) {
-    background: ${({ theme }) => theme.colors.neoShadowLight}33;
-  }
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryAccent}22;
   }
 `;
 
