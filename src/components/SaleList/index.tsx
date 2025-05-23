@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query';
+
+
 import {
-  useGetVendasQuery,
+  useGetVendasPorPeriodoQuery,
   useGetTotalPorPeriodoQuery,
   useDeleteVendaMutation,
 } from '../../services/api';
@@ -9,167 +12,226 @@ import {
   Label,
   Input,
   InfoText,
-  TableContainer,
   Table,
   Th,
   EmptyMessage,
-  Td,
   PageContainer,
   Card,
-  Button
-} from './styles'
+  Button,
+} from './styles';
+import DraggableTableContainer from '../DraggableTableContainer';
+import VendaRow from '../Utils/VendaRow';
+
+export type ItemVenda = {
+  id: number;
+  quantidade: number;
+  produtoId: number | null;
+  nomeProduto?: string;
+  produto?: {
+    id: number;
+    nome: string;
+    precoUnitario: number;
+  };
+  precoUnitario?: number;
+  totalItem?: number;
+};
 
 export type VendaProps = {
   id: number;
-  documentoCliente: string;
-  itens: {
-    id: number;
-    quantidade: number;
-    produtoId: number;
-    nomeProduto?: string;
-  }[];
+  documentoCliente: string | null;
+  itens: ItemVenda[];
   totalVenda: number;
-  totalDesconto: number;
-  totalPagamento: number;
+  totalDesconto?: number;
+  totalPagamento?: number;
   formaPagamento: 'DINHEIRO' | 'CARTAO' | 'PIX' | string;
   dataVenda: string;
   status: string;
-  clienteId: number;
-  numeroParcelas: number;
+  clienteId?: number | null;
+  numeroParcelas?: number;
+  pagamento?: {
+    formaPagamento?: string;
+    totalVenda?: number;
+    totalDesconto?: number;
+    totalPagamento?: number;
+  };
 };
 
-type VendaRowProps = {
-  venda: VendaProps;
-  onDelete: (id: number) => void | Promise<void>;
-};
-
-const VendaRow = ({ venda, onDelete }: VendaRowProps) => (
-  <tr>
-    <Td>{venda.id}</Td>
-    <Td>{venda.documentoCliente}</Td>
-    <Td>{/* Nome ou razão social aqui, se quiser */}</Td>
-    <Td>R$ {venda.totalVenda.toFixed(2)}</Td>
-    <Td>R$ {venda.totalDesconto.toFixed(2)}</Td>
-    <Td>R$ {venda.totalPagamento.toFixed(2)}</Td>
-    <Td>{venda.formaPagamento}</Td>
-    <Td>{venda.status}</Td>
-    <Td>{new Date(venda.dataVenda).toLocaleString('pt-BR')}</Td>
-    <Td>
-      <Button onClick={() => onDelete(venda.id)}>Excluir</Button>
-    </Td>
-  </tr>
-);
+interface InfoTextProps {
+  error?: boolean;
+}
 
 const SaleList = () => {
   const [inicio, setInicio] = useState('');
   const [fim, setFim] = useState('');
-  const [filter, setFilter] = useState<{ inicio: string; fim: string } | undefined>(undefined);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // 1. Set initial date range (last 30 days)
   useEffect(() => {
     const hoje = new Date();
     const trintaDiasAtras = new Date(hoje);
-    trintaDiasAtras.setDate(hoje.getDate() - 30);
+    trintaDiasAtras.setDate(hoje.getDate() - 5);
 
-    const formatDate = (date: Date) => date.toISOString().slice(0, 10);
-
-    const dataInicio = formatDate(trintaDiasAtras);
-    const dataFim = formatDate(hoje);
-
-    setInicio(dataInicio);
-    setFim(dataFim);
-    setFilter({ inicio: dataInicio, fim: dataFim });
+    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    setInicio(formatDate(trintaDiasAtras));
+    setFim(formatDate(hoje));
   }, []);
 
+  // 2. Fetch sales data
   const {
-    data: vendas,
-    error: errorVendas,
+    data: vendas = [],
     isLoading: loadingVendas,
-    refetch: refetchVendas,
-  } = useGetVendasQuery(filter, {
-    skip: !filter,
-  });
+    error: errorVendas,
+    refetch: refetchVendas
+  } = useGetVendasPorPeriodoQuery(
+    inicio && fim ? { inicio, fim } : skipToken
+  );
 
   const {
-    data: total,
-    error: errorTotal,
+    data: total = 0,
     isLoading: loadingTotal,
-  } = useGetTotalPorPeriodoQuery(filter!, { skip: !filter });
+    error: errorTotal,
+    refetch: refetchTotal
+  } = useGetTotalPorPeriodoQuery(
+    inicio && fim ? { inicio, fim } : skipToken
+  );
 
+  // 4. Mark initial load as complete after first fetch
+  useEffect(() => {
+    if (inicio && fim && isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+  }, [inicio, fim, isInitialLoad]);
+
+  // 5. Format items with product names
+  const formatItems = (items: ItemVenda[]) => {
+    return items.map(item => ({
+      ...item,
+      nomeProduto: item.produto?.nome || item.nomeProduto || 'Produto não informado',
+      precoUnitario: item.produto?.precoUnitario || item.precoUnitario || 0,
+      totalItem: item.totalItem || (item.quantidade * (item.produto?.precoUnitario || item.precoUnitario || 0))
+    }));
+  };
+
+  // 6. Delete mutation
   const [deleteVenda] = useDeleteVendaMutation();
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir esta venda?')) {
       try {
         await deleteVenda(id).unwrap();
-        alert('Venda excluída com sucesso!');
         refetchVendas();
-      } catch (err) {
-        console.error('Erro ao excluir venda:', err);
+        refetchTotal();
+        alert('Venda excluída com sucesso!');
+      } catch (error) {
+        console.error('Erro ao excluir venda:', error);
         alert('Erro ao excluir venda.');
       }
     }
   };
 
+  const handleEdit = (venda: VendaProps) => {
+    alert(`Editar venda ID: ${venda.id}`);
+  };
+
   const aplicarFiltro = () => {
     if (!inicio || !fim) {
-      alert('Selecione as duas datas para filtrar');
+      alert('Selecione ambas as datas (início e fim) para filtrar');
       return;
     }
-    setFilter({ inicio, fim });
+    refetchVendas();
+    refetchTotal();
   };
+
+  // 7. Debug log
+  useEffect(() => {
+    if (vendas.length > 0) {
+      console.log('Dados das vendas recebidos:', vendas);
+      console.log('Total recebido:', total);
+    }
+  }, [vendas, total]);
 
   return (
     <PageContainer>
       <Card>
         <Label>
           Início:
-          <Input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
+          <Input
+            type="date"
+            value={inicio}
+            onChange={(e) => setInicio(e.target.value)}
+          />
         </Label>
 
         <Label>
           Fim:
-          <Input type="date" value={fim} onChange={(e) => setFim(e.target.value)} />
+          <Input
+            type="date"
+            value={fim}
+            onChange={(e) => setFim(e.target.value)}
+          />
         </Label>
 
-        <Button onClick={aplicarFiltro}>Buscar</Button>
+        <Button onClick={aplicarFiltro}>
+          Buscar
+        </Button>
       </Card>
 
-      {!loadingTotal && !errorTotal && total !== undefined && (
-        <InfoText>
-          Total de vendas no período: <strong>R$ {total.toFixed(2)}</strong>
-        </InfoText>
-      )}
-
-      {loadingVendas && <InfoText>Carregando vendas...</InfoText>}
-
-      {!loadingVendas && !errorVendas && (
+      {/* Display area */}
+      {!isInitialLoad && (
         <>
-          {vendas && vendas.length > 0 ? (
-            <TableContainer>
-              <Table>
-                <thead>
-                  <tr>
-                    <Th>ID</Th>
-                    <Th>Documento Cliente</Th>
-                    <Th>Nome/Razão Social</Th>
-                    <Th>Valor Total</Th>
-                    <Th>Desconto</Th>
-                    <Th>Valor Pago</Th>
-                    <Th>Forma Pagamento</Th>
-                    <Th>Status</Th>
-                    <Th>Data</Th>
-                    <Th>Ações</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {vendas.map((venda: VendaProps) => (
-                    <VendaRow key={venda.id} venda={venda} onDelete={handleDelete} />
-                  ))}
-                </tbody>
-              </Table>
-            </TableContainer>
+          {/* Total sales */}
+          {!loadingTotal && !errorTotal && (
+            <InfoText>
+              Total no período: <strong>R$ {Number(total).toFixed(2)}</strong>
+            </InfoText>
+          )}
+
+          {/* Loading/error states */}
+          {loadingVendas ? (
+            <InfoText>Carregando vendas...</InfoText>
+          ) : errorVendas ? (
+            <InfoText className={errorVendas ? 'error' : ''}>
+              Erro ao carregar vendas
+            </InfoText>
           ) : (
-            <EmptyMessage>Não há vendas cadastradas no período selecionado.</EmptyMessage>
+            /* Sales table */
+            <>
+              {vendas.length > 0 ? (
+                <DraggableTableContainer>
+                  <Table>
+                    <thead>
+                      <tr>
+                        <Th>ID</Th>
+                        <Th>Documento Cliente</Th>
+                        <Th>Itens</Th>
+                        <Th>Valor Total</Th>
+                        <Th>Desconto</Th>
+                        <Th>Valor Pago</Th>
+                        <Th>Pagamento</Th>
+                        <Th>Status</Th>
+                        <Th>Data</Th>
+                        <Th>Ações</Th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendas.map(venda => (
+                        <VendaRow
+                          key={venda.id}
+                          venda={{
+                            ...venda,
+                            itens: formatItems(venda.itens)
+                          }}
+                          onDelete={handleDelete}
+                          onEdit={handleEdit}
+                        />
+                      ))}
+                    </tbody>
+                  </Table>
+                </DraggableTableContainer>
+              ) : (
+                <EmptyMessage>Nenhuma venda encontrada no período selecionado</EmptyMessage>
+              )}
+            </>
           )}
         </>
       )}

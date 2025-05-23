@@ -379,10 +379,10 @@ export const api = createApi({
       providesTags: ['Venda'],
     }),
     getVendasPorPeriodo: builder.query<VendaProps[], { inicio: string; fim: string }>({
-      query: ({ inicio, fim }) => `venda-por-periodo?inicio=${inicio}&fim=${fim}`,
+      query: ({ inicio, fim }) => `venda/vendas-por-periodo?inicio=${inicio}&fim=${fim}`,
     }),
     getTotalPorPeriodo: builder.query<number, { inicio: string; fim: string }>({
-      query: ({ inicio, fim }) => `venda-total-por-periodo?inicio=${inicio}&fim=${fim}`,
+      query: ({ inicio, fim }) => `venda/total-por-periodo?inicio=${inicio}&fim=${fim}`,
     }),
     addVenda: builder.mutation<{ id?: number; blob?: Blob }, any>({
       query: (venda) => ({

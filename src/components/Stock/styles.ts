@@ -2,6 +2,7 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -24,7 +25,6 @@ export const TabContainer = styled.div`
   justify-content: center;
   gap: 0.75rem;
   width: 100%;
-  max-width: 800px;
   margin-bottom: 2rem;
 `;
 
@@ -50,7 +50,6 @@ export const TabButton = styled.button<{ active?: boolean }>`
 // Formulário com gap e adaptação de largura
 export const Form = styled.form`
   width: 100%;
-  max-width: 600px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -98,7 +97,6 @@ export const Button = styled.button`
 // Container de imagem ou upload
 export const Img = styled.div`
   width: 100%;
-  max-width: 600px;
   height: 140px;
   border: 2px dashed #10b981;
   border-radius: 1rem;

@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import * as S from './styles';
 import {
   useListarFiliaisQuery,
-  useImportarProdutosXmlFilialMutation,
   useImportarProdutosXmlMutation,
 } from '../../services/api';
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -18,7 +17,6 @@ const Stock = () => {
 
   const { data: filiais, isLoading: loadingFiliais, error: errorFiliais } = useListarFiliaisQuery();
 
-  const [enviarXmlParaFilial, { isLoading: loadingFilial }] = useImportarProdutosXmlFilialMutation();
   const [importarXml, { isLoading: loadingImport }] = useImportarProdutosXmlMutation();
 
   const handleXmlUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

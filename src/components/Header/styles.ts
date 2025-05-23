@@ -43,7 +43,7 @@ export const SidebarOverlay = styled.div`
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 99;
+  z-index: 999;
 
   @media (min-width: 781px) {
     display: none;
@@ -52,8 +52,8 @@ export const SidebarOverlay = styled.div`
 
 export const Sidebar = styled.nav<SidebarProps>`
   grid-area: sidebar;
-  background-color: #b2bec3;
-  color: #000;
+  background-color: #1e272e;
+  color: #ccc;
   padding: 1rem 0.5rem;
   transition: width 0.3s ease-in-out;
   width: ${({ isOpen }) => (isOpen ? "240px" : "48px")};
@@ -85,7 +85,7 @@ export const SidebarItem = styled.a`
   align-items: center;
   gap: 2rem;
   padding: 0.75rem;
-  color: #000;
+  color: #ccc;
   text-decoration: none;
   border-radius: 8px;
   margin: 0.25rem 0;
@@ -116,7 +116,7 @@ export const SidebarItem = styled.a`
 export const HeaderContainer = styled.header`
   grid-area: header;
   width: 100%;
-  background-color: #b2bec3;
+  background-color: #1e272e;
   color: #000;
   padding: 0 2rem;
   display: flex;

@@ -128,7 +128,7 @@ export const TableSelector = styled.div`
 
 export const ProductList = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   margin: 0 auto;
   justify-content: center;
   gap: 16px;
@@ -509,3 +509,192 @@ export const Icon = styled.div`
     z-index: 1000;
   }
 `
+
+export const OrderList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  h4 {
+    font-size: 1.4rem;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  li {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-left: 4px solid #4caf50;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .produto-info {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .remover {
+      background: transparent;
+      border: none;
+      color: #e53935;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: 0.2s ease;
+
+      &:hover {
+        color: #b71c1c;
+        transform: scale(1.2);
+      }
+    }
+  }
+
+  span {
+  display: none;
+  }
+
+  @media (max-width: 600px) {
+    padding: 1rem;
+
+    h4 {
+      font-size: 1.2rem;
+    }
+
+    li {
+      font-size: 0.9rem;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .remover {
+      align-self: flex-end;
+      margin-top: 0.5rem;
+    }
+  }
+`;
+export const TotaisContainer = styled.div`
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .linha {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+    color: #444;
+
+    strong {
+      color: #555;
+    }
+
+    span {
+      font-weight: 500;
+      color: #333;
+    }
+  }
+
+  .total-com-desconto {
+    background-color: #f1f8e9;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #66bb6a;
+    border-radius: 8px;
+
+    strong {
+      color: #2e7d32;
+    }
+
+    span {
+      color: #2e7d32;
+      font-weight: bold;
+    }
+  }
+
+  @media (max-width: 600px) {
+    padding: 1rem;
+    font-size: 0.95rem;
+
+    .linha {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .total-com-desconto {
+      flex-direction: column;
+    }
+  }
+`;
+export const ClienteInfoContainer = styled.div`
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    p {
+      margin: 0;
+      font-size: 1rem;
+      color: #333;
+
+      strong {
+        color: #555;
+      }
+    }
+  }
+
+  .pagamento {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #444;
+    }
+
+    input, .react-select__control {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .pagamento {
+      grid-template-columns: 1fr;
+    }
+  }
+`;

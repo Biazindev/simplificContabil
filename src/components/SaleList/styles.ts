@@ -6,7 +6,6 @@ export const PageWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${({ theme }) => theme.colors.neoShadowLight || '#f5f5f5'};
   padding: 2rem;
 `;
 
@@ -64,81 +63,19 @@ export const SearchButton = styled.button`
   }
 `;
 
-export const TableContainer = styled.div`
-  width: 100%;
-  background: ${({ theme }) => theme.colors.surface};
-  border-radius: 2rem;
-  box-shadow: 8px 8px 20px ${({ theme }) => theme.colors.neoShadowDark}, -8px -8px 20px ${({ theme }) => theme.colors.neoShadowLight};
-  padding: 2rem;
-  overflow-x: auto;
-`;
-
 export const Header = styled.h1`
   font-size: 2rem;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.text};
   margin-bottom: 1.5rem;
   text-align: center;
-`;
-
-export const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  border-radius: 1rem;
-  overflow: hidden;
-`;
-
-export const Thead = styled.thead`
-  background: ${({ theme }) => theme.colors.primary};
-  color: #ffffff;
-`;
-
-export const Th = styled.th`
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.95rem;
-  white-space: nowrap;
-`;
-
-export const Tr = styled.tr`
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryAccent}22;
-    transition: background 0.2s ease-in-out;
-  }
-`;
-
-export const Td = styled.td`
-  padding: 1rem;
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.colors.text};
-  vertical-align: middle;
-  max-width: 180px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
+`
 
 export const TableActions = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
   justify-content: center;
-`;
-
-export const DeleteButton = styled.button`
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.md};
-  background: ${({ theme }) => theme.colors.error};
-  color: white;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.3s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.error}cc;
-  }
 `;
 
 export const EmptyMessage = styled.p`
@@ -152,7 +89,6 @@ export const InfoText = styled.div`
 `
 export const PageContainer = styled.div`
   min-height: 100vh;
-  background: ${({ theme }) => theme.colors.neoShadowDark || '#eef1f5'};
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -197,5 +133,113 @@ export const Button = styled.button`
   &:disabled {
     background: #ccc;
     cursor: not-allowed;
+  }
+`;
+
+export const TableContainer = styled.div`
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 1rem;
+  padding: 1.5rem;
+`;
+
+
+export const Table = styled.table`
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+`;
+
+
+export const Thead = styled.thead`
+  color: #ffffff;
+`;
+
+export const Th = styled.th`
+  padding: 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: left;
+  border-bottom: 2px solid ${({ theme }) => theme.colors.neoShadowDark};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:last-child {
+    min-width: 100px;
+    text-align: center;
+  }
+`;
+
+export const Tr = styled.tr`
+border-bottom: 1px solid #000;
+  &:nth-child(even) {
+    background: ${({ theme }) => theme.colors.neoShadowLight}33;
+  }
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryAccent}22;
+  }
+`;
+
+export const Td = styled.td`
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.colors.text};
+  vertical-align: middle;
+  text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.neoShadowDark}33;
+
+  &:last-child {
+    min-width: 100px; /* ou maior, conforme necessidade */
+    text-align: center;
+  }
+`;
+
+export const IconButton = styled.button`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+export const DeleteButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #ff4e4e, #ff6b6b);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 4px 4px 12px ${({ theme }) => theme.colors.neoShadowDark},
+              -4px -4px 12px ${({ theme }) => theme.colors.neoShadowLight};
+  transition: background 0.3s ease, transform 0.2s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #e03a3a, #f45151);
+    transform: scale(1.02);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
   }
 `;

@@ -21,7 +21,10 @@ import {
     Legend,
     ImgContainer,
     Description,
-    Icon
+    Icon,
+    OrderList,
+    TotaisContainer,
+    ClienteInfoContainer
 } from './styles';
 import {
     ProdutoProps,
@@ -296,6 +299,7 @@ const VendaMesa: React.FC = () => {
 
         carregarDadosMesa();
     }, [mesaAtual, getItensMesa, listarPedidos]);
+
     useEffect(() => {
         const carregarItensMesa = async () => {
             if (mesaAtual !== null) {
@@ -321,31 +325,31 @@ const VendaMesa: React.FC = () => {
     }, [mesaAtual, getItensMesa]);
 
 
-    useEffect(() => {
-        if (clienteEncontrado) {
-            localStorage.setItem('clienteEncontrado', JSON.stringify(clienteEncontrado));
-            console.log('📦 clienteBusca salvo no localStorage:', clienteBusca);
-        }
-    }, [clienteEncontrado]);
+    // useEffect(() => {
+    //     if (clienteEncontrado) {
+    //         localStorage.setItem('clienteEncontrado', JSON.stringify(clienteEncontrado));
+    //         console.log('📦 clienteBusca salvo no localStorage:', clienteBusca);
+    //     }
+    // }, [clienteEncontrado]);
 
-    useEffect(() => {
-        localStorage.setItem('clienteBusca', clienteBusca);
-    }, [clienteBusca]);
+    // useEffect(() => {
+    //     localStorage.setItem('clienteBusca', clienteBusca);
+    // }, [clienteBusca]);
 
-    useEffect(() => {
-        localStorage.setItem('produtosSelecionados', JSON.stringify(produtosSelecionados));
-        console.log('📦 produtosSelecionados salvos no localStorage:', produtos);
-    }, [produtosSelecionados]);
+    // useEffect(() => {
+    //     localStorage.setItem('produtosSelecionados', JSON.stringify(produtosSelecionados));
+    //     console.log('📦 produtosSelecionados salvos no localStorage:', produtos);
+    // }, [produtosSelecionados]);
 
-    useEffect(() => {
-        const clienteSalvo = localStorage.getItem('clienteBusca');
-        const produtosSalvos = localStorage.getItem('produtosSelecionados');
+    // useEffect(() => {
+    //     const clienteSalvo = localStorage.getItem('clienteBusca');
+    //     const produtosSalvos = localStorage.getItem('produtosSelecionados');
 
-        console.log('📥 clienteBusca recuperado do localStorage:', clienteSalvo);
-        console.log('📥 produtosSelecionados recuperados do localStorage:', produtosSalvos);
-        if (clienteSalvo) setClienteBusca(clienteSalvo);
-        if (produtosSalvos) setProdutosSelecionados(JSON.parse(produtosSalvos));
-    }, []);
+    //     console.log('📥 clienteBusca recuperado do localStorage:', clienteSalvo);
+    //     console.log('📥 produtosSelecionados recuperados do localStorage:', produtosSalvos);
+    //     if (clienteSalvo) setClienteBusca(clienteSalvo);
+    //     if (produtosSalvos) setProdutosSelecionados(JSON.parse(produtosSalvos));
+    // }, []);
 
     const salvarDadosMesaAtual = () => {
         if (mesaAtual !== null) {
@@ -478,6 +482,10 @@ const VendaMesa: React.FC = () => {
         setMesaAtual(null);
     };
 
+    const handleRemoverProduto = (indexToRemove: number) => {
+        setProdutosSelecionados((prev) => prev.filter((_, i) => i !== indexToRemove));
+    };
+
 
     const handleAdicionarProduto = async (produto: ProdutoProps) => {
         const novoItem = {
@@ -571,9 +579,8 @@ const VendaMesa: React.FC = () => {
             return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
         }
         return cpf;
-    };
-
-
+    }
+    
     return (
         <>
             <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
@@ -698,19 +705,18 @@ const VendaMesa: React.FC = () => {
                                 </InputMask>
                                 {buscandoCliente && <p>Buscando cliente...</p>}
                                 {Boolean(erroCliente) && <p>Erro ao buscar cliente.</p>}
-
                                 {clienteBusca.trim().length >= 3 && !buscandoCliente && (
                                     clienteEncontrado ? (
-                                        <>
-                                            <div>
-                                                <p>{clienteEncontrado?.pessoaFisica?.nome}</p>
+                                        <ClienteInfoContainer>
+                                            <div className="info">
+                                                <p><strong>Nome:</strong> {clienteEncontrado?.pessoaFisica?.nome}</p>
+                                                <p><strong>CPF:</strong> {formatarCpf(clienteEncontrado?.pessoaFisica?.cpf || '')}</p>
+                                                <p><strong>Telefone:</strong> {formatarTelefone(clienteEncontrado?.pessoaFisica?.telefone || '')}</p>
                                             </div>
-                                            <div>
-                                                <p>{formatarCpf(clienteEncontrado?.pessoaFisica?.cpf || '')}</p>
-                                            </div>
-                                            <div>
-                                                <p>{formatarTelefone(clienteEncontrado?.pessoaFisica?.telefone || '')}</p>
+
+                                            <div className="pagamento">
                                                 <div>
+                                                    <label>Forma de Pagamento</label>
                                                     <Select
                                                         options={opcoesPagamento}
                                                         value={opcoesPagamento.find(op => op.value === selectedValue)}
@@ -718,16 +724,19 @@ const VendaMesa: React.FC = () => {
                                                         placeholder="Selecione uma forma de pagamento"
                                                     />
                                                 </div>
+
                                                 <div>
+                                                    <label>Parcelamento</label>
                                                     <Select
                                                         options={parcelas}
-                                                        value={opcoesPagamento.find(op => op.value === selectedValue)}
+                                                        value={parcelas.find(op => op.value === selectedValue)}
                                                         onChange={option => setSelectedValue(option ? option.value : null)}
                                                         placeholder="Selecione parcelamento"
                                                     />
-
                                                 </div>
+
                                                 <div>
+                                                    <label>Desconto</label>
                                                     <Input
                                                         type="number"
                                                         step="0.01"
@@ -736,38 +745,51 @@ const VendaMesa: React.FC = () => {
                                                         placeholder="Valor desconto"
                                                         onChange={e => setTotalDesconto(e.target.value)}
                                                     />
-
                                                 </div>
                                             </div>
-                                        </>
+                                        </ClienteInfoContainer>
                                     ) : (
                                         <p>Nenhum cliente encontrado.</p>
                                     )
                                 )}
                             </div>
                             <PdvButton onClick={() => alert('Cadastrar cliente')}>Cadastrar Cliente</PdvButton>
-                            <div>
+                            <OrderList>
                                 <h4>Produtos Selecionados:</h4>
                                 <ul>
-                                    {produtosSelecionados.map((produto, index) => (
-                                        <li key={index}>
-                                          id:{produto.id || produto.produtoId} {produto.nome || produto.nome} - R$ {(produto.precoUnitario || produto.precoUnitario || 0).toFixed(2)}
-                                            x {produto.quantidade}
-                                            = R$ {((produto.precoUnitario || produto.precoUnitario || 0) * produto.quantidade!).toFixed(2)}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                                    {produtosSelecionados.map((produto, index) => {
+                                        const id = produto.id ?? produto.produtoId ?? 'N/A';
+                                        const nome = produto.nome ?? 'Sem nome';
+                                        const preco = produto.precoUnitario ?? 0;
+                                        const quantidade = produto.quantidade ?? 0;
+                                        const total = preco * quantidade;
 
-                            <div>
-                                <strong>Total:</strong> R$ {somaProdutos.toFixed(2)}
-                            </div>
-                            <div>
-                                <strong>Desconto:</strong> R$ {(isNaN(descontoNumerico) ? 0 : descontoNumerico).toFixed(2)}
-                            </div>
-                            <div>
-                                <strong>Total com desconto:</strong> R$ {totalComDesconto.toFixed(2)}
-                            </div>
+                                        return (
+                                            <li key={index}>
+                                                <div className="produto-info">
+                                                    <div><strong>{nome}</strong></div>
+                                                    <span>ID: {id}</span>
+                                                    <div>
+                                                        R$ {preco.toFixed(2)} x {quantidade} = <strong>R$ {total.toFixed(2)}</strong>
+                                                    </div>
+                                                </div>
+                                                <button title='remover' className="remover" onClick={() => handleRemoverProduto(index)}>×</button>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </OrderList>
+                            <TotaisContainer>
+                                <div className="linha">
+                                    <strong>Total:</strong> <span>R$ {somaProdutos.toFixed(2)}</span>
+                                </div>
+                                <div className="linha">
+                                    <strong>Desconto:</strong> <span>R$ {(isNaN(descontoNumerico) ? 0 : descontoNumerico).toFixed(2)}</span>
+                                </div>
+                                <div className="linha total-com-desconto">
+                                    <strong>Total com desconto:</strong> <span>R$ {totalComDesconto.toFixed(2)}</span>
+                                </div>
+                            </TotaisContainer>
                             <PdvButton onClick={handleFinalizarVenda} disabled={enviandoVenda}>
                                 {enviandoVenda ? 'Enviando...' : 'Finalizar Venda'}
                             </PdvButton>
