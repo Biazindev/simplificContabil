@@ -666,7 +666,7 @@ const VendaMesa: React.FC = () => {
                     backgroundColor: '#ccc'
                 }}>
                         <div style={{ display: 'flex' }}>
-                            <Link to={'/produtos'}>
+                            <Link to={'/produtos-cadastrar'}>
                                 <div>
                                     <PdvButton style={{ marginRight: '24px' }}>Cadastrar produtos</PdvButton>
                                 </div>
@@ -777,7 +777,9 @@ const VendaMesa: React.FC = () => {
                                     )
                                 )}
                             </div>
-                            <PdvButton onClick={() => alert('Cadastrar cliente')}>Cadastrar Cliente</PdvButton>
+                            <Link to={'/cadastro-clientes'}>
+                            <PdvButton>Cadastrar Cliente</PdvButton>
+                            </Link>
                             <OrderList>
                                 <h4>Produtos Selecionados:</h4>
                                 <ul>

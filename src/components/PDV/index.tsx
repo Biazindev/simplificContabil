@@ -27,7 +27,7 @@ import {
   ErrorText
 } from './styles';
 import { setCliente } from '../../store/reducers/vendaSlice'
-import SaleNavigationMenu from '../../hooks/index'
+import SaleNavigationMenu from '../../menu/index'
 import { Input } from '../../styles'
 
 export interface ClienteForm {
@@ -128,7 +128,7 @@ const Cliente = () => {
     }
   }, [documentoBusca]);
 
-  const handleBuscaDocumento = async () => {
+    const handleBuscaDocumento = async () => {
     if (!documentoBusca.trim()) {
       setErroBusca('Digite um CPF/CNPJ');
       return;
@@ -519,45 +519,45 @@ const Cliente = () => {
   }
 
   const handleBuscarEnderecoPorCep = async () => {
-  if (!form || !form.pessoaFisica) return;
+    if (!form || !form.pessoaFisica) return;
 
-  const cep = form.pessoaFisica.endereco?.cep;
-  if (!cep) return;
+    const cep = form.pessoaFisica.endereco?.cep;
+    if (!cep) return;
 
-  const endereco = await CepService.buscar(cep);
+    const endereco = await CepService.buscar(cep);
 
-  if (endereco) {
-    const novosCamposDesabilitados: string[] = [];
+    if (endereco) {
+      const novosCamposDesabilitados: string[] = [];
 
-    if (endereco.logradouro) novosCamposDesabilitados.push('logradouro');
-    if (endereco.bairro) novosCamposDesabilitados.push('bairro');
-    if (endereco.localidade) novosCamposDesabilitados.push('municipio');
-    if (endereco.uf) novosCamposDesabilitados.push('uf');
+      if (endereco.logradouro) novosCamposDesabilitados.push('logradouro');
+      if (endereco.bairro) novosCamposDesabilitados.push('bairro');
+      if (endereco.localidade) novosCamposDesabilitados.push('municipio');
+      if (endereco.uf) novosCamposDesabilitados.push('uf');
 
-    setCamposAutoPreenchidos(novosCamposDesabilitados);
+      setCamposAutoPreenchidos(novosCamposDesabilitados);
 
-    setForm((prev) => {
-      if (!prev?.pessoaFisica) return prev;
+      setForm((prev) => {
+        if (!prev?.pessoaFisica) return prev;
 
-      return {
-        ...prev,
-        pessoaFisica: {
-          ...prev.pessoaFisica,
-          endereco: {
-            ...prev.pessoaFisica.endereco,
-            logradouro: endereco.logradouro || '',
-            complemento: endereco.complemento || '',
-            bairro: endereco.bairro || '',
-            municipio: endereco.localidade || '',
-            uf: endereco.uf || '',
+        return {
+          ...prev,
+          pessoaFisica: {
+            ...prev.pessoaFisica,
+            endereco: {
+              ...prev.pessoaFisica.endereco,
+              logradouro: endereco.logradouro || '',
+              complemento: endereco.complemento || '',
+              bairro: endereco.bairro || '',
+              municipio: endereco.localidade || '',
+              uf: endereco.uf || '',
+            },
           },
-        },
-      };
-    });
-  } else {
-    alert('CEP inválido ou não encontrado');
-  }
-};
+        };
+      });
+    } else {
+      alert('CEP inválido ou não encontrado');
+    }
+  };
 
 
   useEffect(() => {
@@ -753,22 +753,25 @@ const Cliente = () => {
                       disabled={documentoJaCadastrado}
                     />
                   </Fieldset>
-                  <Input
-                    name="cep"
-                    value={form.pessoaFisica?.endereco?.cep || ''}
-                    onChange={(e) => {
-                      const cepFormatado = formatarCep(e.target.value);
-                      const eventoFormatado = {
-                        ...e,
-                        target: {
-                          ...e.target,
-                          value: cepFormatado,
-                        },
-                      };
+                  <Fieldset>
+                    <Label>CEP</Label>
+                    <Input
+                      name="cep"
+                      value={form.pessoaFisica?.endereco?.cep || ''}
+                      onChange={(e) => {
+                        const cepFormatado = formatarCep(e.target.value);
+                        const eventoFormatado = {
+                          ...e,
+                          target: {
+                            ...e.target,
+                            value: cepFormatado,
+                          },
+                        };
 
-                      handleChange(eventoFormatado, 'cep', 'endereco');
-                    }}
-                  />
+                        handleChange(eventoFormatado, 'cep', 'endereco');
+                      }}
+                    />
+                  </Fieldset>
                   <Fieldset>
                     <Label>Logradouro</Label>
                     <Input
@@ -804,7 +807,7 @@ const Cliente = () => {
                       value={form.pessoaFisica.endereco.municipio}
                       onChange={(e) =>
                         handleChange(e, 'municipio', 'endereco')}
-                        disabled={camposAutoPreenchidos.includes('municipio')}
+                      disabled={camposAutoPreenchidos.includes('municipio')}
                     />
                   </Fieldset>
                   <Fieldset>
@@ -899,23 +902,25 @@ const Cliente = () => {
                       disabled={documentoJaCadastrado}
                     />
                   </Fieldset>
-                  <Label>CEP</Label>
-                  <Input
-                    name="cep"
-                    value={form.pessoaJuridica?.endereco?.cep || ''}
-                    onChange={(e) => {
-                      const cepFormatado = formatarCep(e.target.value);
-                      const eventoFormatado = {
-                        ...e,
-                        target: {
-                          ...e.target,
-                          value: cepFormatado,
-                        },
-                      };
+                  <Fieldset>
+                    <Label>CEP</Label>
+                    <Input
+                      name="cep"
+                      value={form.pessoaFisica?.endereco?.cep || ''}
+                      onChange={(e) => {
+                        const cepFormatado = formatarCep(e.target.value);
+                        const eventoFormatado = {
+                          ...e,
+                          target: {
+                            ...e.target,
+                            value: cepFormatado,
+                          },
+                        };
 
-                      handleChange(eventoFormatado, 'cep', 'endereco');
-                    }}
-                  />
+                        handleChange(eventoFormatado, 'cep', 'endereco');
+                      }}
+                    />
+                  </Fieldset>
                   <Fieldset>
                     <Label>Logradouro</Label>
                     <Input

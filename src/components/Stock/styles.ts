@@ -7,6 +7,14 @@ export const Container = styled.div`
   padding: 0 1.5rem;  // Adicionei padding lateral
 `;
 
+export const ContainerSerch = styled.div`
+ display: block;
+ margin: 0 auto;
+ justify-content: center;
+ align-items: center;
+
+`
+
 export const Title = styled.h2`
   font-size: clamp(1.8rem, 2.5vw, 2.5rem);
   margin: 2rem 0;

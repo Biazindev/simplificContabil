@@ -5,7 +5,7 @@ import { store } from './store/reducers'
 import AuthInitializer from './store/reducers/authInitialize'
 import { ThemeProvider } from 'styled-components'
 import { GlobalStyle } from './styles'
-import { usePrefersDark } from './hooks/usePrefersDark'
+import { usePrefersDark } from './menu/usePrefersDark'
 import { darkTheme, lightTheme } from './theme'
 import { useState } from 'react'
 

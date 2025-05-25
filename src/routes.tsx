@@ -3,7 +3,7 @@ import Credentials from "./components/Credentials"
 import Header from "./components/Header"
 import Stock from "./components/Stock"
 import Produtos from "./components/Produtos"
-import Cliente from "./components/PDV/Cliente"
+import Cliente from "./components/PDV"
 import Dashboard from "./components/Dashboard"
 import { ForgotPassword } from './components/Credentials/ForgotPassword'
 import { ResetPassword } from './components/Credentials/ResetPassword'
@@ -14,10 +14,11 @@ import User from "./components/User/User"
 import SaleList from "./components/SaleList"
 import Delivery from "./components/Delivery"
 import NfContainer from "./components/NotaFiscal"
-import ServiceOrder from "./components/ServiceOrder"
 import VendaMesa from "./components/PDVmesa/index"
 import VendaEntrega from "./components/PDVentrega"
 import VendaBalcao from "./components/PDVbalcao"
+import ProdutosCadastrar from "./components/Produtos/ProdutosCadastrar"
+import CadastroCliente from "./components/Cadastro/Clientes"
 
 interface AppRoutesProps {
   toggleTheme: () => void;
@@ -35,7 +36,9 @@ const Rotas = ({ toggleTheme, isLightTheme }: AppRoutesProps) => (
       <Route element={<Header toggleTheme={toggleTheme} isLightTheme={isLightTheme} />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/produtos" element={<Produtos />} />
+        <Route path="/produtos-cadastrar" element={<ProdutosCadastrar />} />
         <Route path="/clientes" element={<Cliente />} />
+        <Route path="/cadastro-clientes" element={<CadastroCliente />} />
         <Route path="/stock" element={<Stock />} />
         <Route path="/get" element={<GetClientes />} />
         <Route path="/venda" element={<Venda vendaId={""} statusVenda={"pendente"} />} />
@@ -43,7 +46,6 @@ const Rotas = ({ toggleTheme, isLightTheme }: AppRoutesProps) => (
         <Route path="/sale-list" element={<SaleList/>} />
         <Route path="/delivery" element={<Delivery/>} />
         <Route path="/nf" element={<NfContainer />} />
-        <Route path="/service-order" element={<ServiceOrder />} />
         <Route path="/pdv-mesa" element={<VendaMesa />} />
         <Route path="/pdv-entrega" element={<VendaEntrega />} />
         <Route path="/pdv-entrega" element={<VendaBalcao />} />

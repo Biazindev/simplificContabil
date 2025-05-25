@@ -3,12 +3,13 @@ import * as S from './styles';
 import {
   useListarFiliaisQuery,
   useGetProdutosQuery,
+  useGetProdutosByNameQuery,
   useUpdateProdutoMutation,
   useDeleteProdutoMutation
 } from '../../services/api';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { Input } from './styles';
-import { ProdutoProps } from '../../services/api'
+import { ProdutoProps } from '../../services/api';
 
 const Stock = () => {
   const [activeTab, setActiveTab] = useState<'manual' | 'codigo'>('manual');
@@ -27,13 +28,16 @@ const Stock = () => {
   const [editDataVencimento, setEditDataVencimento] = useState('');
   const [editQuantidade, setEditQuantidade] = useState(0);
   const [editObservacao, setEditObservacao] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { data: filiais, isLoading: loadingFiliais, error: errorFiliais } = useListarFiliaisQuery();
   const { data: produtos, isLoading: loadingProdutos, error: errorProdutos, refetch } = useGetProdutosQuery();
+  const { data: searchedProdutos, isLoading: loadingSearch, refetch: refetchSearch } = useGetProdutosByNameQuery(searchTerm, {
+    skip: searchTerm === ''
+  });
   const [updateProduto] = useUpdateProdutoMutation();
   const [deleteProduto] = useDeleteProdutoMutation();
 
-  // --- Leitura de código de barras por câmera ---
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [scanning, setScanning] = useState(false);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
@@ -57,8 +61,7 @@ const Stock = () => {
       const codigo = result.getText();
       setCodigoBarras(codigo);
 
-      // Buscar produto localmente na lista de produtos já carregados
-      const produtoEncontrado = produtos?.find(p => p.codigoBarras === codigo);
+      const produtoEncontrado = produtosParaExibir.find(p => p.codigoBarras === codigo);
 
       if (!produtoEncontrado) {
         setProdutoNome('');
@@ -99,6 +102,11 @@ const Stock = () => {
       console.error('Erro ao buscar produtos:', error);
       setMensagem('❌ Erro ao buscar produtos.');
     }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    refetchSearch();
   };
 
   const handleEditarProduto = (produto: ProdutoProps) => {
@@ -150,6 +158,7 @@ const Stock = () => {
       setMensagem('✅ Produto atualizado com sucesso!');
       setEditingProduto(null);
       refetch();
+      if (searchTerm) refetchSearch();
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
       setMensagem('❌ Erro ao atualizar produto');
@@ -162,6 +171,7 @@ const Stock = () => {
         await deleteProduto(id).unwrap();
         setMensagem('✅ Produto excluído com sucesso!');
         refetch();
+        if (searchTerm) refetchSearch();
       } catch (error) {
         console.error('Erro ao excluir produto:', error);
         setMensagem('❌ Erro ao excluir produto');
@@ -169,15 +179,36 @@ const Stock = () => {
     }
   };
 
+  const produtosParaExibir = searchTerm ? searchedProdutos || [] : produtos || [];
+
   return (
     <S.Container>
       <div>
         <S.Title>Consulta de Produtos</S.Title>
 
-        <S.Button onClick={handleBuscarProdutos} style={{ marginBottom: '20px' }}>
-          🔄 Atualizar Lista de Produtos
-        </S.Button>
-
+        <S.Form onSubmit={handleSearch} style={{ marginBottom: '20px' }}>
+          <S.ContainerSerch style={{ display: 'flex', gap: '10px' }}>
+            <div>
+              <S.Input
+              type="text"
+              placeholder="Buscar por nome..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <S.Button
+              type="button"
+              onClick={() => {
+                setSearchTerm('');
+                handleBuscarProdutos();
+              }}
+              color="#3b82f6"
+            >
+              Limpar Busca
+            </S.Button>
+            </div>
+          </S.ContainerSerch>
+        </S.Form>
         <S.TabContainer>
           <S.TabButton active={activeTab === 'manual'} onClick={() => setActiveTab('manual')}>Manual</S.TabButton>
           <S.TabButton active={activeTab === 'codigo'} onClick={() => setActiveTab('codigo')}>Código de Barras</S.TabButton>
@@ -185,15 +216,15 @@ const Stock = () => {
 
         {activeTab === 'manual' && (
           <div>
-            {loadingProdutos ? (
+            {loadingProdutos || (searchTerm && loadingSearch) ? (
               <p>Carregando produtos...</p>
             ) : errorProdutos ? (
               <p>Erro ao carregar produtos</p>
             ) : (
               <div>
-                <h3>Lista de Produtos</h3>
+                <h3>{searchTerm ? `Resultados para "${searchTerm}"` : 'Lista de Produtos'}</h3>
                 <S.ProdutosList>
-                  {produtos?.map((produto) => (
+                  {produtosParaExibir.map((produto) => (
                     <S.ProdutoItem key={produto.id}>
                       {editingProduto === produto.id ? (
                         <S.Form>
@@ -311,7 +342,7 @@ const Stock = () => {
                       ) : (
                         <>
                           {produto.imagem && (
-                            <div style={{ maxWidth: '300px', maxHeight: '300px'}}>
+                            <div style={{ maxWidth: '300px', maxHeight: '300px' }}>
                               <img style={{ width: '100%', height: '100%', maxHeight: '250px' }} src={`data:image/webp;base64,${produto.imagem}`} alt="Preview" />
                             </div>
                           )}
