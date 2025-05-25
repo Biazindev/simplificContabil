@@ -46,21 +46,6 @@ interface ClienteProps {
   razaoSocial?: string
 }
 
-type ProdutoProps = {
-  mensagem: string
-  id: number
-  nome: string
-  descricao: string
-  precoUnitario: number
-  ncm: string
-  EAN: string
-  ativo: boolean
-  dataCadastro: number[]
-  imagem: string | null
-  quantidade: number
-  observacao: string | null
-}
-
 
 interface LoginRequest {
   username: string
@@ -106,7 +91,7 @@ interface ItemMesaDTO {
   produtoId: number;
   nomeProduto: string;
   quantidade: number;
-  precoUnitario: number;
+  precoUnitario: number
   totalItem: number;
 }
 

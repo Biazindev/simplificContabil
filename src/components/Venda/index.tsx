@@ -1,3 +1,4 @@
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../store/reducers';
@@ -10,7 +11,7 @@ import {
   Container,
   SectionTitle,
   Title,
-  Text,
+  TextForm,
   ProdutoItem,
   Total,
   Button,
@@ -98,7 +99,11 @@ const Venda = ({ vendaId, statusVenda }: EmitirNotaButtonProps) => {
     }
   }, [dispatch]);
 
-  const total = produtos.reduce((acc, p) => acc + p.precoUnitario * p.quantidade, 0);
+  const total = produtos.reduce(
+    (acc, p) => acc + p.precoUnitario * p.quantidade,
+    0
+  );
+
 
   const handleEnviarVenda = async () => {
     if (!cliente) {
@@ -213,29 +218,34 @@ const Venda = ({ vendaId, statusVenda }: EmitirNotaButtonProps) => {
       <SectionTitle>Cliente</SectionTitle>
       {cliente?.pessoaFisica && (
         <div>
-          <Text><strong>Nome:</strong> {cliente.pessoaFisica.nome}</Text>
-          <Text><strong>CPF:</strong> {cliente.pessoaFisica.cpf}</Text>
-          <Text><strong>Email:</strong> {cliente.pessoaFisica.email}</Text>
-          <Text><strong>Telefone:</strong> {cliente.pessoaFisica.telefone}</Text>
+          <TextForm><strong>Nome:</strong> {cliente.pessoaFisica.nome}</TextForm>
+          <TextForm><strong>CPF:</strong> {cliente.pessoaFisica.cpf}</TextForm>
+          <TextForm><strong>Email:</strong> {cliente.pessoaFisica.email}</TextForm>
+          <TextForm><strong>Telefone:</strong> {cliente.pessoaFisica.telefone}</TextForm>
         </div>
       )}
 
       {cliente?.pessoaJuridica && (
         <div>
-          <Text><strong>Razão Social:</strong> {cliente.pessoaJuridica.razaoSocial}</Text>
-          <Text><strong>CNPJ:</strong> {cliente.pessoaJuridica.cnpj}</Text>
-          <Text><strong>Email:</strong> {cliente.pessoaJuridica.email}</Text>
-          <Text><strong>Telefone:</strong> {cliente.pessoaJuridica.telefone}</Text>
+          <TextForm><strong>Razão Social:</strong> {cliente.pessoaJuridica.razaoSocial}</TextForm>
+          <TextForm><strong>CNPJ:</strong> {cliente.pessoaJuridica.cnpj}</TextForm>
+          <TextForm><strong>Email:</strong> {cliente.pessoaJuridica.email}</TextForm>
+          <TextForm><strong>Telefone:</strong> {cliente.pessoaJuridica.telefone}</TextForm>
         </div>
       )}
 
       <SectionTitle>Produtos</SectionTitle>
       <ul>
-        {produtos.map((p) => (
-          <ProdutoItem key={p.id}>
-            {p.nome} - {p.quantidade} x R$ {p.precoUnitario.toFixed(2)} = R$ {(p.quantidade * p.precoUnitario).toFixed(2)}
-          </ProdutoItem>
-        ))}
+        {produtos.map((p) => {
+          const preco = parseFloat(p.precoUnitario.toString().replace(',', '.'));
+          const total = preco * p.quantidade;
+
+          return (
+            <ProdutoItem key={p.id}>
+              {p.nome} - {p.quantidade} x R$ {preco.toFixed(2)} = R$ {total.toFixed(2)}
+            </ProdutoItem>
+          );
+        })}
       </ul>
       <Total>Total: R$ {total.toFixed(2)}</Total>
 
@@ -259,7 +269,7 @@ const Venda = ({ vendaId, statusVenda }: EmitirNotaButtonProps) => {
             htmlFor="emitirNotaFiscal"
             onClick={(e) => {
               if (!isVendaConcluida) {
-                e.preventDefault(); 
+                e.preventDefault();
                 alert('Conclua a venda antes de emitir a nota fiscal.');
               }
             }}

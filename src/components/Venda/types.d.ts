@@ -48,10 +48,10 @@ interface ItemVenda {
     nome: string;
     descricao: string;
     ncm: string;
-    precoUnitario: number;
+    precoUnitario: number
   };
   nomeProduto: string;
-  precoUnitario: number;
+  precoUnitario: number
   quantidade: number;
   totalItem: number;
 }
@@ -107,7 +107,7 @@ export interface Endereco {
 export interface Item {
   produtoId: number;
   nomeProduto: string;
-  precoUnitario: number;
+  precoUnitario: number
   quantidade: number;
   totalItem: number;
 }
@@ -195,7 +195,7 @@ export interface PessoaJuridica {
 export interface ItemVenda {
   produtoId: number;
   nomeProduto: string;
-  precoUnitario: number;
+  precoUnitario: number
   quantidade: number;
   totalItem: number;
 }

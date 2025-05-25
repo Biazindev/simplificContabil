@@ -33,44 +33,8 @@ import {
     useAdicionarPedidoMutation,
     useSairParaEntregaMutation,
 } from '../../services/api';
-import NfContainer from '../NotaFiscal'
-import plus from '../../assets/image/plus.svg'
 import VendaBalcao from '../PDVbalcao';
-import VendaMesa from '../PDVmesa';
-
-type ItemVenda = {
-    produtoId: number;
-    nomeProduto: string;
-    precoUnitario: number;
-    quantidade: number;
-    totalItem: number;
-};
-
-type Pagamento = {
-    formaPagamento: string;
-    valorPago: number;
-    valorRestante: number;
-    dataPagamento: string;
-    status: string;
-    numeroParcelas: number;
-    totalVenda: number;
-    totalDesconto: number;
-    totalPagamento: number;
-};
-
-type VendaData = {
-    emitirNotaFiscal: boolean;
-    vendaAnonima: boolean;
-    documentoCliente: string | null;
-    cliente: any | null;
-    emitenteId: number | null;
-    modelo: string | null;
-    itens: ItemVenda[];
-    pagamento: Pagamento;
-    dataVenda: string;
-    status: string;
-};
-
+import { VendaData, Pagamento } from '../PDVmesa';
 
 
 const VendaEntrega: React.FC = () => {

@@ -25,9 +25,9 @@ export const SectionTitle = styled.h2`
   margin-top: ${({ theme }) => theme.spacing(4)};
 `;
 
-export const Text = styled.p`
+export const TextForm = styled.p`
   font-size: 1rem;
-  color: ${({ theme }) => theme.colors.textLight};
+  color: #000;
   line-height: 1.5;
 `;
 

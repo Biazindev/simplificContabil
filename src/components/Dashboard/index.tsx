@@ -189,7 +189,7 @@ const Dashboard = () => {
               </ComposedChart>
             </ResponsiveContainer>
             <h4>
-              Valor total de vendas diárias:{" "}
+              Valor total de vendas diárias{" "}
               <span>
                 <p>{formatCurrency(valorPix)}</p>
               </span>
@@ -218,7 +218,7 @@ const Dashboard = () => {
               </ComposedChart>
             </ResponsiveContainer>
             <h4>
-              Valor total de vendas semanais: <span>{formatCurrency(vendasSemanas)}</span>
+              Valor total de vendas semanais<span>{formatCurrency(vendasSemanas)}</span>
             </h4>
           </CardContent>
         </Card>
@@ -244,7 +244,7 @@ const Dashboard = () => {
               </ComposedChart>
             </ResponsiveContainer>
             <h4>
-              Valor total de vendas mensais: <span>{formatCurrency(vendasMes)}</span>
+              Valor total de vendas mensais<span>{formatCurrency(vendasMes)}</span>
             </h4>
           </CardContent>
         </Card>
@@ -270,7 +270,7 @@ const Dashboard = () => {
               </ComposedChart>
             </ResponsiveContainer>
             <h4>
-              Valor total de vendas anuais: <span>{formatCurrency(vendasAno)}</span>
+              Valor total de vendas anuais<span>{formatCurrency(vendasAno)}</span>
             </h4>
           </CardContent>
         </Card>

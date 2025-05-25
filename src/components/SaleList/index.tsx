@@ -30,9 +30,9 @@ export type ItemVenda = {
   produto?: {
     id: number;
     nome: string;
-    precoUnitario: number;
+    precoUnitario: number
   };
-  precoUnitario?: number;
+  precoUnitario?: number
   totalItem?: number;
 };
 
@@ -167,7 +167,6 @@ const SaleList = () => {
           />
         </Label>
       </Card>
-
       {/* Display area */}
       {!isInitialLoad && (
         <>

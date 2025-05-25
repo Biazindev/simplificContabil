@@ -36,6 +36,17 @@ const Delivery = () => {
     total: 0
   };
 
+  const parsePreco = (preco?: string | number | null): number => {
+  if (typeof preco === 'number') return preco;
+  if (typeof preco === 'string') {
+    const normalizado = preco.replace(',', '.');
+    const valor = parseFloat(normalizado);
+    return isNaN(valor) ? 0 : valor;
+  }
+  return 0;
+};
+
+
   const [status, setStatus] = useState<'Pendente' | 'Concluída'>('Pendente');
 
   const entrega = {
@@ -108,7 +119,7 @@ const Delivery = () => {
                 <ul style={{ margin: 0, paddingLeft: '1rem' }}>
                   {entrega.produtos.map((produto) => (
                     <li key={produto.id}>
-                      {produto.nome} ({produto.quantidade} x R$ {produto.precoUnitario.toFixed(2)})
+                     {produto.nome} ({produto.quantidade} x R$ {parsePreco(produto.precoUnitario).toFixed(2)})
                     </li>
                   ))}
                 </ul>

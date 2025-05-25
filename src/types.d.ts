@@ -36,14 +36,14 @@ export interface EmitirNotaPayload {
     endereco: Endereco;
     emitenteId: number;
   };
-  itens: ItemVenda[];
-  totalVenda: number;
-  totalDesconto: number;
-  totalPagamento: number;
-  formaPagamento: string;
-  dataVenda: string;
-  status: string;
-  numeroParcelas: number;
+  itens?: ItemVenda[];
+  totalVenda?: number;
+  totalDesconto?: number;
+  totalPagamento?: number;
+  formaPagamento?: string;
+  dataVenda?: string;
+  status?: string;
+  numeroParcelas?: number;
 }
 
 interface Endereco {
@@ -56,18 +56,18 @@ interface Endereco {
 }
 
 interface ItemVenda {
-  produto: {
-    id: number;
-    nome: string;
-    descricao: string;
-    ncm: string;
-    precoUnitario: number;
-    produtoId: number;
+  produto?: {
+    id?: number;
+    nome?: string;
+    descricao?: string;
+    ncm?: string;
+    precoUnitario?: number
+    produtoId?: number;
   };
-  nomeProduto: string;
-  precoUnitario: number;
-  quantidade: number;
-  totalItem: number;
+  nomeProduto?: string;
+  precoUnitario?: number
+  quantidade?: number;
+  totalItem?: number;
 }
 
 interface PedidoEntrega {
@@ -90,17 +90,6 @@ interface CardProps {
     children: React.ReactNode
     className?: string
 }
-
-  // type VendaProps = {
-  //   id: number
-  //   cliente: string
-  //   produtos: { id: number
-  //   quantidade: number }[]
-  //   metodoPagamento: string
-  //   valorPago: number
-  //   totalVenda: number
-  //   dataVenda: string
-  // }
   
 interface Endereco {
     cep: string;
@@ -255,10 +244,9 @@ interface ClienteProps {
       nome?: string;
       descricao?: string;
       ncm?: string;
-      precoUnitario?: number;
-    };
+      precoUnitario?: number
     nomeProduto?: string;
-    precoUnitario?: number;
+    precoUnitario?: number
     quantidade?: number;
     totalItem?: number;
   }[];
@@ -270,7 +258,7 @@ interface ClienteProps {
   status?: 'PAGO' | 'PENDENTE' | 'CANCELADO';
   numeroParcelas?: number;
 };
-
+ }
 
 export interface ResponseData {
   status: number;

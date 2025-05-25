@@ -10,6 +10,7 @@ import { Mutex } from 'async-mutex'
 import { EmitirNotaPayload } from '../components/Venda/types'
 import { OrdemServicoDTO } from '../Enum/enum'
 import { ItemMesa } from '../components/PDVmesa/index'
+import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES } from 'react'
 
 export interface ForgotPasswordRequest { email: string }
 export interface ResetPasswordRequest { token: string; newPassword: string }
@@ -51,7 +52,7 @@ export interface PedidoItem {
   produtoId: number;
   quantidade: number;
   nomeProduto?: string;
-  precoUnitario?: number;
+  precoUnitario?: number
   totalItem?: number;
   // outros campos se existirem, ex: preço, nome, etc
 }
@@ -65,7 +66,7 @@ export interface ItemMesaDTO {
   produtoId: number;
   nomeProduto: string;
   quantidade: number;
-  precoUnitario: number;
+  precoUnitario: number
   totalItem: number;
 }
 
@@ -189,16 +190,16 @@ export interface CreateClienteRequest {
 
 
 export type ProdutoProps = {
+  ncm: string
   mensagem: string
   id: number
   nome: string
   descricao: string
   precoUnitario: number
-  ncm: string
-  EAN: string
+  ean: number
   ativo: boolean
   dataVencimento: string
-  imagem: string | null
+  imagem: string | null;
   quantidade: number
   observacao: string | null
 }

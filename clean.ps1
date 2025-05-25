@@ -5,7 +5,7 @@ $foldersToDelete = @("node_modules", "dist", "build", ".next", ".expo", ".turbo"
 foreach ($folder in $foldersToDelete) {
     if (Test-Path $folder) {
         Remove-Item -Recurse -Force $folder
-        Write-Host "✅ Removido: $folder"
+        Write-Host " Removido: $folder"
     }
 }
 
@@ -14,13 +14,13 @@ $filesToDelete = @("package-lock.json", "yarn.lock", "pnpm-lock.yaml")
 foreach ($file in $filesToDelete) {
     if (Test-Path $file) {
         Remove-Item $file -Force
-        Write-Host "✅ Removido: $file"
+        Write-Host " Removido: $file"
     }
 }
 
 # Reinstalar dependências
 if (Test-Path "package.json") {
-    Write-Host "`n📦 Instalando dependências..."
+    Write-Host "`n Instalando dependências..."
     if (Test-Path "yarn.lock") {
         yarn install
     } elseif (Test-Path "pnpm-lock.yaml") {
@@ -29,7 +29,7 @@ if (Test-Path "package.json") {
         npm install
     }
 } else {
-    Write-Host "⚠️ Nenhum package.json encontrado."
+    Write-Host " Nenhum package.json encontrado."
 }
 
-Write-Host "`n🚀 Limpeza concluída!"
+Write-Host "`n Limpeza concluída!"

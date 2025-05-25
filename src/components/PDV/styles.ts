@@ -105,7 +105,7 @@ export const Fieldset = styled.fieldset`
 
 export const Label = styled.label`
   font-size: 0.9rem;
-  color: ${({ theme }) => theme.colors.textLight};
+  color: #000;
 `;
 
 

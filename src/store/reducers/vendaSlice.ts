@@ -8,7 +8,7 @@ export type Produto = {
   id: number;
   nome: string;
   descricao: string;
-  precoUnitario: number;
+  precoUnitario: number
   ncm: string;
   ativo: boolean;
   quantidade: number;
@@ -43,7 +43,10 @@ export const enviarVenda = createAsyncThunk(
       throw new Error('Cliente ou produtos não encontrados');
     }
 
-    const total = produtos.reduce((acc, p) => acc + p.precoUnitario * p.quantidade, 0);
+    const total = produtos.reduce(
+      (acc, p) => acc + p.precoUnitario * p.quantidade,
+      0
+    );
 
     const payload = {
       documentoCliente: cliente.pessoaFisica?.cpf ?? '',

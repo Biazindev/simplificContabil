@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const Container = styled.div`
   font-family: 'Roboto', sans-serif;
-  color: ${({ theme }) => theme.colors.textLight};
+  color: #000;
   padding: ${({ theme }) => theme.spacing(6)};
   margin: 0 auto;
   max-width: 1200px;

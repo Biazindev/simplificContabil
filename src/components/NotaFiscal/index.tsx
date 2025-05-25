@@ -98,7 +98,7 @@ const NfContainer = () => {
         }
     }, [dispatch]);
 
-    const total = produtos.reduce((acc, p) => acc + p.precoUnitario * p.quantidade, 0);
+    const total = produtos.reduce((acc, p) => acc + parseFloat(p.precoUnitario.toString()) * p.quantidade, 0);
 
     const handleEmitirNotaFiscal = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

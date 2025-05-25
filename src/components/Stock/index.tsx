@@ -92,11 +92,9 @@ const pararLeituraCodigo = () => {
     stream.getTracks().forEach((track) => track.stop());
   }
   setScanning(false);
-};
+}
 
-  // --- Fim leitura de código ---
 
-  // --- Salvar produto como XML ---
   const handleSalvarProduto = async () => {
     if (!filialId) {
       setMensagem('❌ Selecione uma filial antes de salvar.');

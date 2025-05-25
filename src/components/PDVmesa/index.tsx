@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom';
 import InputMask from 'react-input-mask';
 import Select from 'react-select';
 import { GiHamburgerMenu } from "react-icons/gi";
@@ -38,14 +39,27 @@ import {
     useSairParaEntregaMutation,
     useListarMesasAbertasQuery,
     useLazyGetItensMesaQuery,
-    useLazyListarPedidosQuery,
-    StatusPedido,
-    PedidoItem,
+    useLazyListarPedidosQuery
 } from '../../services/api';
 import NfContainer from '../NotaFiscal'
 import VendaEntrega from '../PDVentrega';
 import VendaBalcao from '../PDVbalcao';
 import { ItemVenda } from '../../types';
+
+export type VendaData = {
+    emitirNotaFiscal?: boolean;
+    vendaAnonima?: boolean;
+    documentoCliente?: string | null;
+    cliente?: any | null;
+    emitenteId?: number | null;
+    modelo?: string | null;
+    itens?: ItemVenda[];
+    pagamento?: Pagamento;
+    dataVenda?: string;
+    status?: string;
+};
+
+
 
 export interface ItemMesa {
     numeroParcelas: number;
@@ -81,17 +95,16 @@ export interface ProdutoSelecionado {
     id: number;
     nome?: string;
     nomeProduto?: string;
-    preco?: number;
-    precoUnitario?: number;
+    preco?: number
+    precoUnitario?: number
     quantidade: number;
     formPagamento?: string;
     numeroParcelas?: number;
-    totalItem?: number;
+    totalItem?: number
 }
 
 
-
-type Pagamento = {
+export type Pagamento = {
     formaPagamento: string;
     valorPago: number;
     valorRestante: number;
@@ -103,7 +116,7 @@ type Pagamento = {
     totalPagamento: number;
 };
 
-type MesaLocal = {
+export type MesaLocal = {
     numero: number;
     ocupada: boolean;
 }
@@ -150,7 +163,7 @@ const VendaMesa: React.FC = () => {
         cliente: any | null;
         emitenteId: number | null;
         modelo: string | null;
-        itens: ItemVenda[];
+        itens?: ItemVenda[];
         pagamento: Pagamento;
         dataVenda: string;
         status: string;
@@ -181,7 +194,7 @@ const VendaMesa: React.FC = () => {
                 nomeProduto: p.nome,
                 precoUnitario: p.precoUnitario,
                 quantidade: p.quantidade,
-                totalItem: p.precoUnitario! * p.quantidade,
+                totalItem: p.precoUnitario || 0 * p.quantidade,
             })) as unknown as ItemVenda[]
 
             ,
@@ -431,13 +444,14 @@ const VendaMesa: React.FC = () => {
             alert('Ocorreu um erro ao selecionar a mesa. Por favor, tente novamente.');
         }
     }
+    const somaProdutos = produtosSelecionados.reduce((total, p) => {
+        const preco =
+            typeof p.precoUnitario === 'string'
+                ? parseFloat((p.precoUnitario as string).replace(',', '.'))
+                : p.precoUnitario ?? 0;
 
-    const somaProdutos = produtosSelecionados.reduce(
-        (total, p) => total + (p.precoUnitario || p.precoUnitario || 0) * (p.quantidade || 1),
-        0
-    );
-
-
+        return total + preco * (p.quantidade || 1);
+    }, 0);
     const handleFinalizarVenda = async () => {
         if (mesaAtual === null) {
             alert('Selecione uma mesa antes de finalizar a venda.');
@@ -490,7 +504,6 @@ const VendaMesa: React.FC = () => {
     const handleAdicionarProduto = async (produto: ProdutoProps) => {
         const novoItem = {
             produtoId: produto.id,
-            nomeProduto: produto.nome,
             precoUnitario: produto.precoUnitario,
             quantidade: 1,
             totalItem: produto.precoUnitario
@@ -504,8 +517,11 @@ const VendaMesa: React.FC = () => {
                         ? {
                             ...p,
                             quantidade: p.quantidade + 1,
-                            totalItem: (p.precoUnitario || 0) * (p.quantidade + 1)
-                        }
+                            totalItem:
+                                ((typeof p.precoUnitario === 'string'
+                                    ? parseFloat((p.precoUnitario as string).replace(',', '.')) 
+                                    : p.precoUnitario ?? 0) * (p.quantidade + 1)
+                )}
                         : p
                 );
             } else {
@@ -580,7 +596,7 @@ const VendaMesa: React.FC = () => {
         }
         return cpf;
     }
-    
+
     return (
         <>
             <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
@@ -649,12 +665,20 @@ const VendaMesa: React.FC = () => {
                     alignItems: 'center',
                     backgroundColor: '#ccc'
                 }}>
-                        <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'px' }}>
-                            <BiBarcodeReader />
-                            <span style={{
-                                fontSize: '16px',
-                                marginRight: '56px'
-                            }}>Leitor</span>
+                        <div style={{ display: 'flex' }}>
+                            <Link to={'/produtos'}>
+                                <div>
+                                    <PdvButton style={{ marginRight: '24px' }}>Cadastrar produtos</PdvButton>
+                                </div>
+                            </Link>
+                            <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'px' }}>
+                                <span style={{
+                                    fontSize: '16px',
+                                    marginRight: '4px',
+                                    cursor: 'pointer'
+                                }}>Leitor</span>
+                                <BiBarcodeReader style={{ cursor: 'pointer' }} />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -681,8 +705,8 @@ const VendaMesa: React.FC = () => {
                                                 mesa.numero === mesaAtual
                                                     ? '#ccc'
                                                     : numerosMesasAtivas!.includes(mesa.numero)
-                                                        ? '#b33939'
-                                                        : '#218c74',
+                                                        ? '#ff5252'
+                                                        : '#33d9b2',
                                         }}
                                     >
                                         {mesa.numero}
@@ -762,7 +786,7 @@ const VendaMesa: React.FC = () => {
                                         const nome = produto.nome ?? 'Sem nome';
                                         const preco = produto.precoUnitario ?? 0;
                                         const quantidade = produto.quantidade ?? 0;
-                                        const total = preco * quantidade;
+                                        const total = preco || 0 * quantidade;
 
                                         return (
                                             <li key={index}>
@@ -824,7 +848,10 @@ const VendaMesa: React.FC = () => {
                                             .map((produto: ProdutoProps) => (
                                                 <div onClick={() => handleAdicionarProduto(produto)}>
                                                     <ImgContainer>
-                                                        <span><img src="https://picsum.photos/seed/produto123/100" alt="produtos" /></span>
+                                                        {produto.imagem && (
+                                                            <img src={`data:image/webp;base64,${produto.imagem}`} alt="Preview" />
+                                                        )}
+
                                                     </ImgContainer>
                                                     <span>
                                                         {produto.nome}

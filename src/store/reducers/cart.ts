@@ -9,7 +9,7 @@ type ProdutoProps = {
     id: number;
     nome: string;
     descricao: string;
-    precoUnitario: number;
+    precoUnitario: number
     ncm: string;
     ativo: boolean;
     dataCadastro: number[];

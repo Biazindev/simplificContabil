@@ -13,9 +13,6 @@ import Venda from "./components/Venda"
 import User from "./components/User/User"
 import SaleList from "./components/SaleList"
 import Delivery from "./components/Delivery"
-import CriarPedido from "./pages/dashboardpizzaria/pedido/novo/CriarPedido"
-import DashboardPizzaria from "./pages/dashboardpizzaria/DashboardPizzaria"
-import PedidosEntrega from "./pages/dashboardpizzaria/PedidosEntrega"
 import NfContainer from "./components/NotaFiscal"
 import ServiceOrder from "./components/ServiceOrder"
 import VendaMesa from "./components/PDVmesa/index"
@@ -45,9 +42,6 @@ const Rotas = ({ toggleTheme, isLightTheme }: AppRoutesProps) => (
         <Route path="/user" element={<User />} />
         <Route path="/sale-list" element={<SaleList/>} />
         <Route path="/delivery" element={<Delivery/>} />
-        <Route path="/criar-pedido" element={<CriarPedido />} />
-        <Route path="/pizzariadash" element={<DashboardPizzaria />} />
-        <Route path="/pedidos-entrega" element={<PedidosEntrega />} />
         <Route path="/nf" element={<NfContainer />} />
         <Route path="/service-order" element={<ServiceOrder />} />
         <Route path="/pdv-mesa" element={<VendaMesa />} />

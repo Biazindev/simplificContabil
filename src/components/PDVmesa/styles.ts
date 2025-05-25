@@ -446,7 +446,7 @@ export const Legend = styled.p`
     align-items: center;
 
     .container {
-    background-color: #b33939;
+    background-color: #ff5252;
     }
 
     span {
@@ -462,7 +462,7 @@ export const Legend = styled.p`
     height: 24px;
     border-radius: 50%;
     margin-right: 16px;
-    background-color: #218c74;
+    background-color: #33d9b2;
   }
 
     }

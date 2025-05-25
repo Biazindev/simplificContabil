@@ -9,6 +9,7 @@ import { FaArrowRight } from "react-icons/fa"
 import * as S from './styles'
 import { Input } from '../../styles'
 import { useNavigate } from 'react-router-dom'
+import ImagePreview from '../Utils/img'
 
 const parseCurrency = (value: string): number => {
   return Number(value.replace(/\./g, '').replace(',', '.')) || 0
@@ -19,14 +20,16 @@ type ProdutoProps = {
   nome: string
   descricao: string
   precoUnitario: number
-  EAN: string
+  ean: number
   ncm: string
   dataVencimento: string
   ativo: boolean
   quantidade: number
   observacao?: string | null
-  imagem?: string | null
+  imagem: string | null;
 }
+
+
 
 const Produtos = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -41,18 +44,30 @@ const Produtos = () => {
   const [quantidadesTemp, setQuantidadesTemp] = useState<Record<number, number>>({})
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
 
-  const [produto, setProduto] = useState<Omit<ProdutoProps, 'id'>>({
+  const [produto, setProduto] = useState<{
+    nome: string;
+    descricao: string;
+    precoUnitario: number
+    ncm: string;
+    ean: number;
+    dataVencimento: string;
+    ativo: boolean;
+    quantidade: number;
+    observacao: string;
+    imagem: string | null;
+  }>({
     nome: '',
     descricao: '',
     precoUnitario: 0,
     ncm: '',
-    EAN: '',
+    ean: 0,
     dataVencimento: '',
     ativo: true,
     quantidade: 0,
     observacao: '',
-    imagem: null
-  })
+    imagem: null,
+  });
+
 
   const [cliente, setCliente] = useState<any>(null)
 
@@ -67,66 +82,79 @@ const Produtos = () => {
   const formatForJava = (date: Date) =>
     date.toISOString().split('.')[0]
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setProduto((prev) => ({
-          ...prev,
-          imagem: reader.result as string
-        }))
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target
+    const { name, value, type } = e.target;
 
     if (type === 'checkbox') {
-      setProduto((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }))
-    } else if (name === 'precoUnitario') {
-      const parsed = parseCurrency(value)
-      setProduto((prev) => ({ ...prev, precoUnitario: parsed }))
-    } else {
+      setProduto((prev) => ({
+        ...prev,
+        [name]: (e.target as HTMLInputElement).checked
+      }));
+    }
+    else if (type === 'file' && e.target instanceof HTMLInputElement && e.target.files?.length) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          const base64 = reader.result.split(',')[1];
+
+          setProduto((prev) => ({
+            ...prev,
+            imagem: base64
+          }));
+        }
+      };
+
+      reader.readAsDataURL(file);
+    }
+    else if (name === 'precoUnitario') {
+      const parsed = parseCurrency(value);
+      setProduto(prev => ({
+        ...prev,
+        precoUnitario: parsed
+      }));
+    }
+    else {
       setProduto((prev) => ({
         ...prev,
         [name]: name === 'quantidade' ? Number(value) : value,
-        dataVencimento: formatForJava(new Date())
-      }))
+        dataVencimento: name === 'dataVencimento' ? value : formatForJava(new Date())
+      }));
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const novoProduto = {
+    e.preventDefault();
+    const produtoParaEnviar = {
       ...produto,
-      dataVencimento: new Date().toISOString().split('.')[0],
-      observacao: produto.observacao || null
-    }
+      dataVencimento: formatForJava(new Date(produto.dataVencimento || new Date())),
+      imagem: produto.imagem || null
+    };
 
     try {
-      await postProduto(novoProduto).unwrap()
-      alert('Produto cadastrado com sucesso!')
+      await postProduto(produtoParaEnviar).unwrap();
+      alert('Produto cadastrado com sucesso!');
+      // Reset do formulário
       setProduto({
         nome: '',
         descricao: '',
         precoUnitario: 0,
         ncm: '',
-        EAN: '',
+        ean: 0,
+        dataVencimento: formatForJava(new Date()),
         ativo: true,
-        dataVencimento: '',
         quantidade: 0,
         observacao: '',
         imagem: null
-      })
-      setMostrarFormulario(false)
-    } catch (error: any) {
-      console.error('Erro ao cadastrar produto:', error)
-      alert('Erro ao cadastrar produto.')
+      });
+      setMostrarFormulario(false);
+    } catch (error) {
+      console.error('Erro ao cadastrar produto:', error);
+      alert('Erro ao cadastrar produto. Verifique o console para detalhes.');
     }
-  }
+  };
 
   const adicionarProduto = (produto: ProdutoProps, quantidade: number) => {
     if (!produtosSelecionados.find((p) => p.id === produto.id)) {
@@ -151,11 +179,23 @@ const Produtos = () => {
     )
   }
 
-  const totalGeral = produtosSelecionados.reduce(
-    (total, p) => total + p.precoUnitario * p.quantidade,
-    0
-  )
-  console.log('Produtos selecionados:', produtosSelecionados)
+  const parsePreco = (valor?: string | number | null): number => {
+    if (typeof valor === 'number') return valor;
+    if (typeof valor === 'string') {
+      const normalizado = valor.replace(',', '.');
+      const numero = parseFloat(normalizado);
+      return isNaN(numero) ? 0 : numero;
+    }
+    return 0;
+  };
+
+  const totalGeral = produtosSelecionados.reduce((total, p) => {
+    const preco = parsePreco(p.precoUnitario);
+    const quantidade = p.quantidade ?? 0;
+    return total + preco * quantidade;
+  }, 0);
+
+
   return (
     <S.Container>
       <S.TopBar>
@@ -205,7 +245,7 @@ const Produtos = () => {
             <S.SearchResults>
               {produtosFiltrados.map((produto) => (
                 <div key={produto.id}>
-                  {produto.nome} - R$ {produto.precoUnitario.toFixed(2)}
+                  {produto.nome} - R$ {parsePreco(produto.precoUnitario).toFixed(2)}
                   <Input
                     type="text"
                     min={1}
@@ -221,7 +261,15 @@ const Produtos = () => {
                   />
                   <button
                     type="button"
-                    onClick={() => adicionarProduto(produto, quantidadesTemp[produto.id] || 1)}
+                    onClick={() =>
+                      adicionarProduto(
+                        {
+                          ...produto,
+                          ncm: produto.ncm || '00000000' // ou qualquer valor padrão adequado
+                        },
+                        quantidadesTemp[produto.id] || 1
+                      )
+                    }
                   >
                     <FaArrowRight />
                   </button>
@@ -251,13 +299,24 @@ const Produtos = () => {
                 onChange={handleChange}
                 required
               />
-              <S.Label htmlFor="precoUnitario">Preço Unitário</S.Label>
               <Input
-                type="number"
+                type="text"
                 name="precoUnitario"
                 placeholder="Preço Unitário"
+                inputMode="decimal"
                 value={produto.precoUnitario}
-                onChange={handleChange}
+                onChange={(e) => {
+                  const valorDigitado = e.target.value;
+                  const valorFiltrado = valorDigitado
+                    .replace(/[^0-9,]/g, '')
+                    .replace(/(,.*),/g, '$1');
+                  handleChange({
+                    target: {
+                      name: 'precoUnitario',
+                      value: valorFiltrado,
+                    }
+                  } as React.ChangeEvent<HTMLInputElement>);
+                }}
                 required
               />
               <S.Label htmlFor="precoUnitario">Data de Vencimento </S.Label>
@@ -278,11 +337,12 @@ const Produtos = () => {
                 onChange={handleChange}
                 required
               />
+              <S.Label htmlFor="EAN">EAN</S.Label>
               <Input
-                type="text"
-                name="EAN"
+                type="number"
+                name="ean"
                 placeholder="EAN"
-                value={produto.ncm}
+                value={produto.ean}
                 onChange={handleChange}
                 required
               />
@@ -313,10 +373,12 @@ const Produtos = () => {
               </S.Label>
               <S.Label>
                 Imagem:
-                <Input type="file" accept="image/*" onChange={handleImageChange} />
+                <Input type="file" accept="image/*" onChange={handleChange} />
               </S.Label>
-              {produto.imagem && <S.ImgPreview src={produto.imagem} alt="Preview" />}
-              <S.Button type="submit">Cadastrar</S.Button>
+              {produto.imagem && (
+                <ImagePreview base64={produto.imagem} />
+              )}
+              <S.Button onSubmit={handleSubmit} type="submit">Cadastrar</S.Button>
             </S.Form>
           </div>
         )}
