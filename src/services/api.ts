@@ -190,6 +190,8 @@ export interface CreateClienteRequest {
 
 
 export type ProdutoProps = {
+  preco?: any
+  codigoBarras?: string
   ncm: string
   mensagem: string
   id: number

@@ -11,6 +11,66 @@ export const Container = styled.div`
   gap: ${({ theme }) => theme.spacing(6)};
 `;
 
+export const Img = styled.div`
+  width: 100%;
+  height: 140px;
+  border: 2px dashed #10b981;
+  border-radius: 1rem;
+  display: grid;
+  place-items: center;
+  color: #10b981;
+  background-color: #f0fdf4;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background-color: #ecfdf5;
+  }
+`
+
+export const Input = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  }
+`;
+
+export const TabContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-bottom: 2rem;
+`;
+
+// Botão de aba com estilo dinâmico
+export const TabButton = styled.button<{ active?: boolean }>`
+  flex: 1;
+  min-width: 120px;
+  padding: 0.75rem 1rem;
+  border: none;
+  background-color: ${({ active }) => (active ? "#3b82f6" : "#f3f4f6")};
+  color: ${({ active }) => (active ? "#ffffff" : "#1f2937")};
+  font-weight: 500;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: ${({ active }) => (active ? "#2563eb" : "#e5e7eb")};
+  }
+`;
+
 export const TopBar = styled.div`
   display: flex;
   justify-content: space-between;
