@@ -72,7 +72,7 @@ const VendaBalcao: React.FC = () => {
             itens: produtosSelecionados.map((p) => ({
                 produtoId: p.id,
                 nomeProduto: p.nome,
-                precoUnitario: parseFloat(p.precoUnitario.toString().replace(',', '.')), 
+                precoUnitario: parseFloat(p.precoUnitario.toString().replace(',', '.')),
                 quantidade: p.quantidade,
                 totalItem: parseFloat(p.precoUnitario.toString().replace(',', '.')) * p.quantidade,
             })),
@@ -414,7 +414,9 @@ const VendaBalcao: React.FC = () => {
                                             .map((produto: ProdutoProps) => (
                                                 <div onClick={() => handleAdicionarProduto(produto)}>
                                                     <ImgContainer>
-                                                        <span><img src="https://picsum.photos/seed/produto123/100" alt="produtos" /></span>
+                                                        {produto.imagem && (
+                                                            <img src={`data:image/webp;base64,${produto.imagem}`} alt="Preview" />
+                                                        )}
                                                     </ImgContainer>
                                                     <span>
                                                         {produto.nome}

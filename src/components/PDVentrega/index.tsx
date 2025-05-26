@@ -4,23 +4,23 @@ import Select from 'react-select';
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HiMiniMagnifyingGlass } from "react-icons/hi2";
 import {
-   Container,
-       LeftPane,
-       ProductList,
-       RightPane,
-       TableSelector,
-       PdvButton,
-       Wrapper,
-       SwitchContainer,
-       ToggleSwitch,
-       Slider,
-       Input,
-       Title,
-       Top,
-       Legend,
-       ImgContainer,
-       Description,
-       Icon
+    Container,
+    LeftPane,
+    ProductList,
+    RightPane,
+    TableSelector,
+    PdvButton,
+    Wrapper,
+    SwitchContainer,
+    ToggleSwitch,
+    Slider,
+    Input,
+    Title,
+    Top,
+    Legend,
+    ImgContainer,
+    Description,
+    Icon
 } from '../PDVmesa/styles';
 import {
     ProdutoProps,
@@ -285,158 +285,160 @@ const VendaEntrega: React.FC = () => {
     };
 
     return (
-            <>
-                <div style={{ padding: '1rem' }}>
-                    {tipoAtendimento === 'entrega' && <VendaEntrega />}
-                    {tipoAtendimento === 'balcao' && <VendaBalcao />}
-                </div>
-                {tipoAtendimento === 'mesa' && (
-                    <>
-                        <Top>
-                        </Top>
-                        <Container>
-                            <LeftPane>
-                                <div>
-                                    <InputMask
-                                        mask="(99) 99999-9999"
-                                        value={(clienteBusca)}
-                                        onChange={(e) => setClienteBusca(formatarApenasNumeros(e.target.value))}
-                                    >
-                                        {(inputProps: any) => (
-                                            <Input
-                                                {...inputProps}
-                                                type="text"
-                                                placeholder="Buscar cliente por telefone"
-                                            />
-                                        )}
-                                    </InputMask>
-                                    {buscandoCliente && <p>Buscando cliente...</p>}
-                                    {Boolean(erroCliente) && <p>Erro ao buscar cliente.</p>}
-    
-                                    {clienteBusca.trim().length >= 3 && !buscandoCliente && (
-                                        clienteEncontrado ? (
-                                            <>
-                                                <div>
-                                                    <p>{clienteEncontrado?.pessoaFisica?.nome}</p>
-                                                </div>
-                                                <div>
-                                                    <p>{formatarCpf(clienteEncontrado?.pessoaFisica?.cpf || '')}</p>
-                                                </div>
-                                                <div>
-                                                    <p>{formatarTelefone(clienteEncontrado?.pessoaFisica?.telefone || '')}</p>
-                                                    <div>
-                                                        <Select
-                                                            options={opcoesPagamento}
-                                                            value={opcoesPagamento.find(op => op.value === selectedValue)}
-                                                            onChange={option => setSelectedValuePag(option ? option.value : null)}
-                                                            placeholder="Selecione uma forma de pagamento"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Select
-                                                            options={parcelas}
-                                                            value={opcoesPagamento.find(op => op.value === selectedValue)}
-                                                            onChange={option => setSelectedValue(option ? option.value : null)}
-                                                            placeholder="Selecione parcelamento"
-                                                        />
-    
-                                                    </div>
-                                                    <div>
-                                                        <Input
-                                                            type="number"
-                                                            step="0.01"
-                                                            min="0"
-                                                            value={totalDesconto}
-                                                            placeholder="Valor desconto"
-                                                            onChange={e => setTotalDesconto(e.target.value)}
-                                                        />
-    
-                                                    </div>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <p>Nenhum cliente encontrado.</p>
-                                        )
+        <>
+            <div style={{ padding: '1rem' }}>
+                {tipoAtendimento === 'entrega' && <VendaEntrega />}
+                {tipoAtendimento === 'balcao' && <VendaBalcao />}
+            </div>
+            {tipoAtendimento === 'mesa' && (
+                <>
+                    <Top>
+                    </Top>
+                    <Container>
+                        <LeftPane>
+                            <div>
+                                <InputMask
+                                    mask="(99) 99999-9999"
+                                    value={(clienteBusca)}
+                                    onChange={(e) => setClienteBusca(formatarApenasNumeros(e.target.value))}
+                                >
+                                    {(inputProps: any) => (
+                                        <Input
+                                            {...inputProps}
+                                            type="text"
+                                            placeholder="Buscar cliente por telefone"
+                                        />
                                     )}
-                                </div>
-                                <PdvButton onClick={() => alert('Cadastrar cliente')}>Cadastrar Cliente</PdvButton>
-                                <div>
-                                    <h4>Produtos Selecionados:</h4>
-                                    <ul>
-                                        {produtosSelecionados.map((produto, index) => (
-                                            <li key={index}>
-                                                {produto.nome || produto.nome} - R$ {(produto.precoUnitario || produto.precoUnitario || 0).toFixed(2)}
-                                                x {produto.quantidade}
-                                                = R$ {((produto.precoUnitario || produto.precoUnitario || 0) * produto.quantidade!).toFixed(2)}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-    
-                                <div>
-                                    <strong>Total:</strong> R$ {somaProdutos.toFixed(2)}
-                                </div>
-                                <div>
-                                    <strong>Desconto:</strong> R$ {(isNaN(descontoNumerico) ? 0 : descontoNumerico).toFixed(2)}
-                                </div>
-                                <div>
-                                    <strong>Total com desconto:</strong> R$ {totalComDesconto.toFixed(2)}
-                                </div>
-                                <PdvButton onClick={handleFinalizarVenda} disabled={enviandoVenda}>
-                                    {enviandoVenda ? 'Enviando...' : 'Finalizar Venda'}
-                                </PdvButton>
-                                <PdvButton onClick={limparEstado}>Limpar mesa</PdvButton>
-                            </LeftPane>
-    
-                            <RightPane>
-                               <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                </InputMask>
+                                {buscandoCliente && <p>Buscando cliente...</p>}
+                                {Boolean(erroCliente) && <p>Erro ao buscar cliente.</p>}
+
+                                {clienteBusca.trim().length >= 3 && !buscandoCliente && (
+                                    clienteEncontrado ? (
+                                        <>
+                                            <div>
+                                                <p>{clienteEncontrado?.pessoaFisica?.nome}</p>
+                                            </div>
+                                            <div>
+                                                <p>{formatarCpf(clienteEncontrado?.pessoaFisica?.cpf || '')}</p>
+                                            </div>
+                                            <div>
+                                                <p>{formatarTelefone(clienteEncontrado?.pessoaFisica?.telefone || '')}</p>
+                                                <div>
+                                                    <Select
+                                                        options={opcoesPagamento}
+                                                        value={opcoesPagamento.find(op => op.value === selectedValue)}
+                                                        onChange={option => setSelectedValuePag(option ? option.value : null)}
+                                                        placeholder="Selecione uma forma de pagamento"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Select
+                                                        options={parcelas}
+                                                        value={opcoesPagamento.find(op => op.value === selectedValue)}
+                                                        onChange={option => setSelectedValue(option ? option.value : null)}
+                                                        placeholder="Selecione parcelamento"
+                                                    />
+
+                                                </div>
+                                                <div>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={totalDesconto}
+                                                        placeholder="Valor desconto"
+                                                        onChange={e => setTotalDesconto(e.target.value)}
+                                                    />
+
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <p>Nenhum cliente encontrado.</p>
+                                    )
+                                )}
+                            </div>
+                            <PdvButton onClick={() => alert('Cadastrar cliente')}>Cadastrar Cliente</PdvButton>
+                            <div>
+                                <h4>Produtos Selecionados:</h4>
+                                <ul>
+                                    {produtosSelecionados.map((produto, index) => (
+                                        <li key={index}>
+                                            {produto.nome || produto.nome} - R$ {(produto.precoUnitario || produto.precoUnitario || 0).toFixed(2)}
+                                            x {produto.quantidade}
+                                            = R$ {((produto.precoUnitario || produto.precoUnitario || 0) * produto.quantidade!).toFixed(2)}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div>
+                                <strong>Total:</strong> R$ {somaProdutos.toFixed(2)}
+                            </div>
+                            <div>
+                                <strong>Desconto:</strong> R$ {(isNaN(descontoNumerico) ? 0 : descontoNumerico).toFixed(2)}
+                            </div>
+                            <div>
+                                <strong>Total com desconto:</strong> R$ {totalComDesconto.toFixed(2)}
+                            </div>
+                            <PdvButton onClick={handleFinalizarVenda} disabled={enviandoVenda}>
+                                {enviandoVenda ? 'Enviando...' : 'Finalizar Venda'}
+                            </PdvButton>
+                            <PdvButton onClick={limparEstado}>Limpar mesa</PdvButton>
+                        </LeftPane>
+
+                        <RightPane>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <h2><span></span>Catálogos de produtos</h2>
-                                <HiMiniMagnifyingGlass style={{color: '#ccc', fontSize: '28px', position: 'relative', left: '240px', top: '15px'}} />
-                                 <div style={{width: '300px'}}>
+                                <HiMiniMagnifyingGlass style={{ color: '#ccc', fontSize: '28px', position: 'relative', left: '240px', top: '15px' }} />
+                                <div style={{ width: '300px' }}>
                                     <Input
-                                    style={{textAlign: 'right'}}
-                                    type="text"
-                                    placeholder="Buscar produto"
-                                    value={produtoBusca}
-                                    onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setProdutoBusca(e.target.value)}
-                                />
-                                 </div>
-    
-                               </div>
-                                <div>
-                                    {isLoading && <p>Carregando produtos...</p>}
-                                    {Boolean(error) && <p>Erro ao carregar produtos.</p>}
-    
-                                    {!isLoading && !error && (
-                                        <ProductList>
-                                            {produtos
-                                                .filter((produto: ProdutoProps) =>
-                                                    produto.nome.toLowerCase().includes(produtoBusca.toLowerCase())
-                                                )
-                                                .map((produto: ProdutoProps) => (
-                                                    <div onClick={() => handleAdicionarProduto(produto)}>
-                                                        <ImgContainer>
-                                                            <span><img src="https://picsum.photos/seed/produto123/100" alt="produtos" /></span>
-                                                        </ImgContainer>
-                                                        <span>
-                                                            {produto.nome}
-                                                        </span>
-                                                        <Description>
-                                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem dicta, porro optio sed quia alias </p>
-                                                        </Description>
-                                                        <span>R$ {produto.precoUnitario.toFixed(2)}{' '}</span>
-                                                        <Icon><span>+</span></Icon>
-                                                    </div>
-                                                ))}
-                                        </ProductList>
-                                    )}
+                                        style={{ textAlign: 'right' }}
+                                        type="text"
+                                        placeholder="Buscar produto"
+                                        value={produtoBusca}
+                                        onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setProdutoBusca(e.target.value)}
+                                    />
                                 </div>
-                            </RightPane>
-                        </Container>
-                    </>
-                )}
-            </>
-        );
+
+                            </div>
+                            <div>
+                                {isLoading && <p>Carregando produtos...</p>}
+                                {Boolean(error) && <p>Erro ao carregar produtos.</p>}
+
+                                {!isLoading && !error && (
+                                    <ProductList>
+                                        {produtos
+                                            .filter((produto: ProdutoProps) =>
+                                                produto.nome.toLowerCase().includes(produtoBusca.toLowerCase())
+                                            )
+                                            .map((produto: ProdutoProps) => (
+                                                <div onClick={() => handleAdicionarProduto(produto)}>
+                                                    <ImgContainer>
+                                                        {produto.imagem && (
+                                                            <img src={`data:image/webp;base64,${produto.imagem}`} alt="Preview" />
+                                                        )}
+                                                    </ImgContainer>
+                                                    <span>
+                                                        {produto.nome}
+                                                    </span>
+                                                    <Description>
+                                                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem dicta, porro optio sed quia alias </p>
+                                                    </Description>
+                                                    <span>R$ {produto.precoUnitario.toFixed(2)}{' '}</span>
+                                                    <Icon><span>+</span></Icon>
+                                                </div>
+                                            ))}
+                                    </ProductList>
+                                )}
+                            </div>
+                        </RightPane>
+                    </Container>
+                </>
+            )}
+        </>
+    );
 }
 
 export default VendaEntrega;

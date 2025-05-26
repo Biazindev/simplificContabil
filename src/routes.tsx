@@ -35,9 +35,8 @@ const Rotas = ({ toggleTheme, isLightTheme }: AppRoutesProps) => (
     <Route element={<PrivateRoute />}>
       <Route element={<Header toggleTheme={toggleTheme} isLightTheme={isLightTheme} />}>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/produtos" element={<Produtos />} />
         <Route path="/produtos-cadastrar" element={<ProdutosCadastrar />} />
-        <Route path="/clientes" element={<Cliente />} />
+        <Route path="/ordem-servico" element={<Cliente />} />
         <Route path="/cadastro-clientes" element={<CadastroCliente />} />
         <Route path="/stock" element={<Stock />} />
         <Route path="/get" element={<GetClientes />} />

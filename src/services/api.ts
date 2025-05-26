@@ -11,6 +11,7 @@ import { EmitirNotaPayload } from '../components/Venda/types'
 import { OrdemServicoDTO } from '../Enum/enum'
 import { ItemMesa } from '../components/PDVmesa/index'
 import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES } from 'react'
+import { number } from 'yup'
 
 export interface ForgotPasswordRequest { email: string }
 export interface ResetPasswordRequest { token: string; newPassword: string }
@@ -78,12 +79,12 @@ export enum StatusPedido {
 }
 
 export interface PessoaFisica {
-  nome: string;
-  cpf: string;
-  email: string;
-  telefone: string;
+  nome?: string;
+  cpf?: string;
+  email?: string;
+  telefone?: string;
   dataNascimento: string;
-  endereco: Endereco;
+  endereco?: Endereco;
 }
 
 export interface PedidoPayload {
@@ -120,7 +121,7 @@ export interface PessoaJuridica {
   atividadesSecundarias: Atividade[];
   socios: Socio[];
   endereco: Endereco;
-  simples: SimplesNacional;
+  simples?: SimplesNacional;
   telefone?: string;
   inscricaoEstadual: string;
   capitalSocial: number;
@@ -166,15 +167,15 @@ export interface Endereco {
 export interface ClienteProps {
   tipoPessoa: string;
   cliente: void | ClienteProps;
-  id: number;
+  id?: number;
   nome: string;
   cpf?: string;
-  documento: string;
+  documento?: string;
   cnpj?: string;
   email?: string;
   telefone?: string;
   endereco?: Endereco;
-  dataNascimento?: string;
+  dataNascimento: string;
   razaoSocial?: string;
   pessoaFisica?: PessoaFisica;
   pessoaJuridica?: PessoaJuridica;
@@ -187,7 +188,9 @@ export interface CreateClienteRequest {
   pessoaJuridica?: PessoaJuridica | null;
 }
 
-
+export interface UpdateClienteRequest extends CreateClienteRequest {
+  id: number;
+}
 
 export type ProdutoProps = {
   preco?: any
@@ -457,18 +460,19 @@ export const api = createApi({
 
     updateCliente: builder.mutation<void, {
       id: number;
-      pessoaFisica?: PessoaFisica | null;
-      pessoaJuridica?: PessoaJuridica | null;
-    }>({
-      query: ({ id, pessoaFisica, pessoaJuridica }) => ({
-        url: `/clientes/${id}`,
-        method: 'PUT',
-        body: {
-          pessoaFisica: pessoaFisica ?? null,
-          pessoaJuridica: pessoaJuridica ?? null
-        },
+      pessoaFisica?: Partial<PessoaFisica> | null;
+      pessoaJuridica?: Partial<PessoaJuridica> | null;
+    }>
+      ({
+        query: ({ id, pessoaFisica, pessoaJuridica }) => ({
+          url: `/clientes/${id}`,
+          method: 'PUT',
+          body: {
+            pessoaFisica: pessoaFisica ?? null,
+            pessoaJuridica: pessoaJuridica ?? null
+          },
+        }),
       }),
-    }),
 
     deleteCliente: builder.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({

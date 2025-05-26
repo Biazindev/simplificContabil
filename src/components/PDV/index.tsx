@@ -98,7 +98,7 @@ const Cliente = () => {
               logradouro: '',
               numero: '',
               bairro: '',
-              unicipio: '',
+              municipio: '',
               uf: '',
               cep: '',
               complemento: ''

@@ -56,10 +56,15 @@ const GetClientes = () => {
                     <td>{cpf}</td>
                     <td>
                       <button
-                        onClick={() => handleDelete(cliente.id)}
+                        onClick={() => {
+                          if (cliente.id !== undefined) {
+                            handleDelete(cliente.id);
+                          }
+                        }}
                       >
                         Excluir
                       </button>
+
                     </td>
                   </tr>
                 );
@@ -81,10 +86,15 @@ const GetClientes = () => {
                     <td>{cnpj}</td>
                     <td>
                       <button
-                        onClick={() => handleDelete(cliente.id)}
+                        onClick={() => {
+                          if (cliente.id !== undefined) {
+                            handleDelete(cliente.id);
+                          }
+                        }}
                       >
                         Excluir
                       </button>
+
                     </td>
                   </tr>
                 );
