@@ -194,43 +194,43 @@ const VendaMesa: React.FC = () => {
     };
 
     const gerarPayloadVenda = (
-    clienteEncontrado: ClienteProps | null,
-    produtosSelecionados: ProdutoSelecionado[],
-    pagamento: Pagamento,
-    somaProdutos: number,
-    showNf: boolean,
-): VendaRequestDTO => {
-    const agora = new Date().toISOString(); // Será convertido no backend para LocalDateTime
+        clienteEncontrado: ClienteProps | null,
+        produtosSelecionados: ProdutoSelecionado[],
+        pagamento: Pagamento,
+        somaProdutos: number,
+        showNf: boolean,
+    ): VendaData  => {
+        const agora = new Date().toISOString(); // Será convertido no backend para LocalDateTime
 
-    return {
-        emitirNotaFiscal: showNf,
-        documentoCliente: clienteEncontrado?.documento || '',
-        cliente: showNf ? clienteEncontrado : null,
-        emitenteId: showNf ? 1 : null, // obrigatório só se for emitir nota
-        modelo: showNf ? 'NFE' : null,
-        itens: produtosSelecionados.map((p) => ({
-            produtoId: p.produtoId,
-            nomeProduto: p.nome,
-            precoUnitario: sanitizeNumber(p.precoUnitario || '0'),
-            quantidade: p.quantidade,
-            totalItem: sanitizeNumber(p.totalItem || '0'),
-        })),
-        pagamento: {
-            formaPagamento: selectedValuePag || 'DINHEIRO',
-            valorPago: formatPrecoBackend(sanitizeNumber(somaProdutos)),
-            valorRestante: formatPrecoBackend(0),
-            dataPagamento: agora,
-            status: 'PAGO',
-            numeroParcelas: Number(selectedValue) || 1,
-            totalVenda: formatPrecoBackend(sanitizeNumber(somaProdutos)),
-            totalDesconto: formatPrecoBackend(sanitizeNumber(totalDesconto)),
-            totalPagamento: formatPrecoBackend(sanitizeNumber(somaProdutos)),
-        },
-        dataVenda: agora,
-        status: 'EM_PREPARO',
-        vendaAnonima: !clienteEncontrado,
+        return {
+            emitirNotaFiscal: showNf,
+            documentoCliente: clienteEncontrado?.documento || '',
+            cliente: showNf ? clienteEncontrado : null,
+            emitenteId: showNf ? 1 : null, // obrigatório só se for emitir nota
+            modelo: showNf ? 'NFE' : null,
+            itens: produtosSelecionados.map((p) => ({
+                produtoId: p.produtoId,
+                nomeProduto: p.nome,
+                precoUnitario: sanitizeNumber(p.precoUnitario || '0'),
+                quantidade: p.quantidade,
+                totalItem: sanitizeNumber(p.totalItem || '0'),
+            })),
+            pagamento: {
+                formaPagamento: selectedValuePag || 'DINHEIRO',
+                valorPago: formatPrecoBackend(sanitizeNumber(somaProdutos)),
+                valorRestante: formatPrecoBackend(0),
+                dataPagamento: agora,
+                status: 'PAGO',
+                numeroParcelas: Number(selectedValue) || 1,
+                totalVenda: formatPrecoBackend(sanitizeNumber(somaProdutos)),
+                totalDesconto: formatPrecoBackend(sanitizeNumber(totalDesconto)),
+                totalPagamento: formatPrecoBackend(sanitizeNumber(somaProdutos)),
+            },
+            dataVenda: agora,
+            status: 'EM_PREPARO',
+            vendaAnonima: !clienteEncontrado,
+        };
     };
-};
 
     const pagamento: Pagamento = {
         formaPagamento: '',
@@ -513,9 +513,7 @@ const VendaMesa: React.FC = () => {
             await adicionarPedido({
                 numeroMesa: mesaAtual!,
                 itens: [{
-                    produto: {
-                        id: produto.id // backend espera produto completo ou ao menos o id
-                    },
+                    produtoId: produto.id,
                     quantidade: 1
                 }]
             }).unwrap();
@@ -525,343 +523,343 @@ const VendaMesa: React.FC = () => {
     }
 
 
-        const renderTableInfo = (orderData: any) => {
-            if (orderData?.type === 'mesa' && orderData?.table?.tableNumber) {
-                return <h3>Mesa {orderData.table.tableNumber}</h3>;
-            }
-            return null;
-        };
-
-        const opcoesPagamento = [
-            { value: 'PIX', label: 'Pix' },
-            { value: 'DINHEIRO', label: 'Dinheiro' },
-            { value: 'CARTAO_CREDITO', label: 'Cartão de Crédito' },
-            { value: 'CARTAO_DEBITO', label: 'Cartão de Débito' },
-            { value: 'PARCELADO_LOJA', label: 'Parcelado Loja' },
-            { value: 'CARTAO', label: 'Cartão Genérico' }
-        ]
-
-        const parcelas = [
-            { value: '1', label: '1x' },
-            { value: '2', label: '2x' },
-            { value: '3', label: '3x' },
-            { value: '4', label: '4x' },
-            { value: '5', label: '5x' },
-            { value: '6', label: '6x' }
-        ]
-
-        const descontoNumerico = parsePreco(totalDesconto);
-        const totalComDesconto = somaProdutos - (isNaN(descontoNumerico) ? 0 : descontoNumerico);
-
-        const formatarTelefone = (telefone: string) => {
-            if (!telefone) return '';
-            const numeros = telefone.replace(/\D/g, '');
-            if (numeros.length === 11) {
-                return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
-            }
-            return telefone;
+    const renderTableInfo = (orderData: any) => {
+        if (orderData?.type === 'mesa' && orderData?.table?.tableNumber) {
+            return <h3>Mesa {orderData.table.tableNumber}</h3>;
         }
+        return null;
+    };
 
-        const formatarCpf = (cpf: string) => {
-            if (!cpf) return '';
-            const numeros = cpf.replace(/\D/g, '');
-            if (numeros.length === 11) {
-                return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
-            }
-            return cpf;
+    const opcoesPagamento = [
+        { value: 'PIX', label: 'Pix' },
+        { value: 'DINHEIRO', label: 'Dinheiro' },
+        { value: 'CARTAO_CREDITO', label: 'Cartão de Crédito' },
+        { value: 'CARTAO_DEBITO', label: 'Cartão de Débito' },
+        { value: 'PARCELADO_LOJA', label: 'Parcelado Loja' },
+        { value: 'CARTAO', label: 'Cartão Genérico' }
+    ]
+
+    const parcelas = [
+        { value: '1', label: '1x' },
+        { value: '2', label: '2x' },
+        { value: '3', label: '3x' },
+        { value: '4', label: '4x' },
+        { value: '5', label: '5x' },
+        { value: '6', label: '6x' }
+    ]
+
+    const descontoNumerico = parsePreco(totalDesconto);
+    const totalComDesconto = somaProdutos - (isNaN(descontoNumerico) ? 0 : descontoNumerico);
+
+    const formatarTelefone = (telefone: string) => {
+        if (!telefone) return '';
+        const numeros = telefone.replace(/\D/g, '');
+        if (numeros.length === 11) {
+            return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
         }
+        return telefone;
+    }
 
-        return (
-            <>
-                <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', width: '400px', padding: '3px 0 3px 0', height: '36px', backgroundColor: '#ccc', borderRadius: '24px' }}>
-                        <button
-                            onClick={() => setTipoAtendimento('mesa')}
-                            style={{
-                                width: '130px',
-                                backgroundColor: tipoAtendimento === 'mesa' ? '#5f27cd' : '#ccc',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '24px',
-                                cursor: 'pointer',
-                                fontSize: '18px',
-                                fontWeight: 'bold'
-                            }}
-                        >
-                            Mesa
-                        </button>
-                        <button
-                            onClick={() => setTipoAtendimento('balcao')}
-                            style={{
-                                width: '130px',
-                                backgroundColor: tipoAtendimento === 'balcao' ? '#5f27cd' : '#ccc',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '24px',
-                                cursor: 'pointer',
-                                fontSize: '18px',
-                                fontWeight: 'bold'
-                            }}
-                        >
-                            Balcão
-                        </button>
-                        <button
-                            onClick={() => setTipoAtendimento('entrega')}
-                            style={{
-                                backgroundColor: tipoAtendimento === 'entrega' ? '#5f27cd' : '#ccc',
-                                width: '130px',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '24px',
-                                cursor: 'pointer',
-                                fontSize: '18px',
-                                fontWeight: 'bold'
-                            }}
-                        >
-                            Entrega
-                        </button>
-                    </div>
+    const formatarCpf = (cpf: string) => {
+        if (!cpf) return '';
+        const numeros = cpf.replace(/\D/g, '');
+        if (numeros.length === 11) {
+            return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
+        }
+        return cpf;
+    }
+
+    return (
+        <>
+            <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', width: '400px', padding: '3px 0 3px 0', height: '36px', backgroundColor: '#ccc', borderRadius: '24px' }}>
+                    <button
+                        onClick={() => setTipoAtendimento('mesa')}
+                        style={{
+                            width: '130px',
+                            backgroundColor: tipoAtendimento === 'mesa' ? '#5f27cd' : '#ccc',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            fontSize: '18px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Mesa
+                    </button>
+                    <button
+                        onClick={() => setTipoAtendimento('balcao')}
+                        style={{
+                            width: '130px',
+                            backgroundColor: tipoAtendimento === 'balcao' ? '#5f27cd' : '#ccc',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            fontSize: '18px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Balcão
+                    </button>
+                    <button
+                        onClick={() => setTipoAtendimento('entrega')}
+                        style={{
+                            backgroundColor: tipoAtendimento === 'entrega' ? '#5f27cd' : '#ccc',
+                            width: '130px',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            fontSize: '18px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Entrega
+                    </button>
                 </div>
-                <div style={{ padding: '1rem' }}>
-                    <div>
-                        {renderTableInfo(VendaMesa)}
-                    </div>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'end',
-                        width: '100%',
-                        margin: '0 auto'
-                    }}><div style={{
-                        borderRadius: '8px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        fontSize: '28px',
-                        alignItems: 'center',
-                        backgroundColor: '#ccc'
-                    }}>
-                            <div style={{ display: 'flex' }}>
-                                <Link to={'/produtos-cadastrar'}>
-                                    <div>
-                                        <PdvButton style={{ marginRight: '24px' }}>Cadastrar produtos</PdvButton>
-                                    </div>
-                                </Link>
-                                <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'px' }}>
-                                    <span style={{
-                                        fontSize: '16px',
-                                        marginRight: '4px',
-                                        cursor: 'pointer'
-                                    }}>Leitor</span>
-                                    <BiBarcodeReader style={{ cursor: 'pointer' }} />
+            </div>
+            <div style={{ padding: '1rem' }}>
+                <div>
+                    {renderTableInfo(VendaMesa)}
+                </div>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'end',
+                    width: '100%',
+                    margin: '0 auto'
+                }}><div style={{
+                    borderRadius: '8px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    fontSize: '28px',
+                    alignItems: 'center',
+                    backgroundColor: '#ccc'
+                }}>
+                        <div style={{ display: 'flex' }}>
+                            <Link to={'/produtos-cadastrar'}>
+                                <div>
+                                    <PdvButton style={{ marginRight: '24px' }}>Cadastrar produtos</PdvButton>
                                 </div>
+                            </Link>
+                            <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'px' }}>
+                                <span style={{
+                                    fontSize: '16px',
+                                    marginRight: '4px',
+                                    cursor: 'pointer'
+                                }}>Leitor</span>
+                                <BiBarcodeReader style={{ cursor: 'pointer' }} />
                             </div>
                         </div>
                     </div>
-                    {tipoAtendimento === 'entrega' && <VendaEntrega />}
-                    {tipoAtendimento === 'balcao' && <VendaBalcao />}
                 </div>
-                {tipoAtendimento === 'mesa' && (
-                    <>
-                        <Top>
-                        </Top>
-                        <Container>
-                            <LeftPane>
-                                <div>
-                                    <Legend>Mesas vazias<span><div></div></span> Mesas ocupadas <span><div className='container'></div></span></Legend>
-                                    <div className='container'><span><GiHamburgerMenu /></span><h3>Mesas</h3></div>
-                                </div>
-                                <TableSelector>
-                                    {mesas.map((mesa) => (
-                                        <button
-                                            key={mesa.numero}
-                                            onClick={() => handleSelecionarMesa(mesa.numero)}
-                                            style={{
-                                                backgroundColor:
-                                                    mesa.numero === mesaAtual
-                                                        ? '#ccc'
-                                                        : numerosMesasAtivas!.includes(mesa.numero)
-                                                            ? '#ff5252'
-                                                            : '#33d9b2',
-                                            }}
-                                        >
-                                            {mesa.numero}
-                                        </button>
-                                    ))}
-                                </TableSelector>
-                                <div>
-                                    <InputMask
-                                        mask="(99) 99999-9999"
-                                        value={(clienteBusca)}
-                                        onChange={(e) => setClienteBusca(formatarApenasNumeros(e.target.value))}
+                {tipoAtendimento === 'entrega' && <VendaEntrega />}
+                {tipoAtendimento === 'balcao' && <VendaBalcao />}
+            </div>
+            {tipoAtendimento === 'mesa' && (
+                <>
+                    <Top>
+                    </Top>
+                    <Container>
+                        <LeftPane>
+                            <div>
+                                <Legend>Mesas vazias<span><div></div></span> Mesas ocupadas <span><div className='container'></div></span></Legend>
+                                <div className='container'><span><GiHamburgerMenu /></span><h3>Mesas</h3></div>
+                            </div>
+                            <TableSelector>
+                                {mesas.map((mesa) => (
+                                    <button
+                                        key={mesa.numero}
+                                        onClick={() => handleSelecionarMesa(mesa.numero)}
+                                        style={{
+                                            backgroundColor:
+                                                mesa.numero === mesaAtual
+                                                    ? '#ccc'
+                                                    : numerosMesasAtivas!.includes(mesa.numero)
+                                                        ? '#ff5252'
+                                                        : '#33d9b2',
+                                        }}
                                     >
-                                        {(inputProps: any) => (
-                                            <Input
-                                                {...inputProps}
-                                                type="text"
-                                                placeholder="Buscar cliente por telefone"
-                                            />
-                                        )}
-                                    </InputMask>
-                                    {buscandoCliente && <p>Buscando cliente...</p>}
-                                    {Boolean(erroCliente) && <p>Erro ao buscar cliente.</p>}
-                                    {clienteBusca.trim().length >= 3 && !buscandoCliente && (
-                                        clienteEncontrado ? (
-                                            <ClienteInfoContainer>
-                                                <div className="info">
-                                                    <p><strong>Nome:</strong> {clienteEncontrado?.pessoaFisica?.nome}</p>
-                                                    <p><strong>CPF:</strong> {formatarCpf(clienteEncontrado?.pessoaFisica?.cpf || '')}</p>
-                                                    <p><strong>Telefone:</strong> {formatarTelefone(clienteEncontrado?.pessoaFisica?.telefone || '')}</p>
-                                                </div>
-
-                                                <div className="pagamento">
-                                                    <div>
-                                                        <label>Forma de Pagamento</label>
-                                                        <Select
-                                                            options={opcoesPagamento}
-                                                            value={opcoesPagamento.find(op => op.value === selectedValue)}
-                                                            onChange={option => setSelectedValuePag(option ? option.value : null)}
-                                                            placeholder="Selecione uma forma de pagamento"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label>Parcelamento</label>
-                                                        <Select
-                                                            options={parcelas}
-                                                            value={parcelas.find(op => op.value === selectedValue)}
-                                                            onChange={option => setSelectedValue(option ? option.value : null)}
-                                                            placeholder="Selecione parcelamento"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label>Desconto</label>
-                                                        <Input
-                                                            type="text"
-                                                            value={totalDesconto}
-                                                            placeholder="Valor desconto"
-                                                            onChange={e => setTotalDesconto(e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </ClienteInfoContainer>
-                                        ) : (
-                                            <p>Nenhum cliente encontrado.</p>
-                                        )
-                                    )}
-                                </div>
-                                <Link to={'/cadastro-clientes'}>
-                                    <PdvButton>Cadastrar Cliente</PdvButton>
-                                </Link>
-                                <OrderList>
-                                    <h4>Produtos Selecionados:</h4>
-                                    <ul>
-                                        {produtosSelecionados.map((produto, index) => {
-                                            const id = produto.id ?? produto.produtoId ?? 'N/A';
-                                            const nome = produto.nome ?? 'Sem nome';
-                                            const preco = produto.precoUnitario ?? '0';
-                                            const quantidade = produto.quantidade ?? 0;
-                                            const total = formatPreco(parsePreco(preco) * quantidade);
-
-                                            return (
-                                                <li key={index}>
-                                                    <div className="produto-info">
-                                                        <div><strong>{nome}</strong></div>
-                                                        <span>ID: {id}</span>
-                                                        <div>
-                                                            R$ {Number(parsePreco(preco)).toFixed(2)} x {quantidade}<strong>
-                                                            </strong>
-                                                        </div>
-
-                                                    </div>
-                                                    <button title='remover' className="remover" onClick={() => handleRemoverProduto(index)}>×</button>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                </OrderList>
-                                <TotaisContainer>
-                                    <div className="linha">
-                                        <strong>Total:</strong> <span>R$ {somaProdutos.toFixed(2)}</span>
-                                    </div>
-                                    <div className="linha">
-                                        <strong>Desconto:</strong> <span>R$ {descontoNumerico.toFixed(2)}</span>
-                                    </div>
-                                    <div className="linha total-com-desconto">
-                                        <strong>Total com desconto:</strong> <span>R$ {totalComDesconto.toFixed(2)}</span>
-                                    </div>
-                                </TotaisContainer>
-                                <PdvButton onClick={handleFinalizarVenda} disabled={enviandoVenda}>
-                                    {enviandoVenda ? 'Enviando...' : 'Finalizar Venda'}
-                                </PdvButton>
-                                <PdvButton onClick={limparEstado}>Limpar mesa</PdvButton>
-                            </LeftPane>
-
-                            <RightPane>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <h2><span></span>Catálogos de produtos</h2>
-                                    <HiMiniMagnifyingGlass style={{ color: '#ccc', fontSize: '28px', position: 'relative', left: '140px', top: '15px' }} />
-                                    <div style={{ width: '300px' }}>
+                                        {mesa.numero}
+                                    </button>
+                                ))}
+                            </TableSelector>
+                            <div>
+                                <InputMask
+                                    mask="(99) 99999-9999"
+                                    value={(clienteBusca)}
+                                    onChange={(e) => setClienteBusca(formatarApenasNumeros(e.target.value))}
+                                >
+                                    {(inputProps: any) => (
                                         <Input
-                                            style={{ textAlign: 'right' }}
+                                            {...inputProps}
                                             type="text"
-                                            placeholder="Buscar produto"
-                                            value={produtoBusca}
-                                            onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setProdutoBusca(e.target.value)}
+                                            placeholder="Buscar cliente por telefone"
                                         />
-                                    </div>
-
-                                </div>
-                                <div>
-                                    {isLoading && <p>Carregando produtos...</p>}
-                                    {Boolean(error) && <p>Erro ao carregar produtos.</p>}
-
-                                    {!isLoading && !error && (
-                                        <ProductList>
-                                            {produtos
-                                                .filter((produto: ProdutoProps) =>
-                                                    produto.nome.toLowerCase().includes(produtoBusca.toLowerCase())
-                                                )
-                                                .map((produto: ProdutoProps) => (
-                                                    <div onClick={() => handleAdicionarProduto(produto)}>
-                                                        <ImgContainer>
-                                                            {produto.imagem && (
-                                                                <img src={`data:image/webp;base64,${produto.imagem}`} alt="Preview" />
-                                                            )}
-
-                                                        </ImgContainer>
-                                                        <span>
-                                                            {produto.nome}
-                                                        </span>
-                                                        <Description>
-                                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem dicta, porro optio sed quia alias </p>
-                                                        </Description>
-                                                        <span>R$ {produto.precoUnitario.toFixed(2)}{' '}</span>
-                                                        <Icon><span>+</span></Icon>
-                                                    </div>
-                                                ))}
-                                        </ProductList>
                                     )}
-                                </div>
-                            </RightPane>
-                        </Container>
-                    </>
-                )}
-                <Wrapper>
-                    <SwitchContainer>
-                        <span>Emitir Nota Fiscal</span>
-                        <ToggleSwitch>
-                            <input
-                                type="checkbox"
-                                checked={showNf}
-                                onChange={() => setShowNf((prev) => !prev)}
-                            />
-                            <Slider />
-                        </ToggleSwitch>
-                    </SwitchContainer>
-                </Wrapper>
-                {showNf && <NfContainer />}
-            </>
-        );
-    }
+                                </InputMask>
+                                {buscandoCliente && <p>Buscando cliente...</p>}
+                                {Boolean(erroCliente) && <p>Erro ao buscar cliente.</p>}
+                                {clienteBusca.trim().length >= 3 && !buscandoCliente && (
+                                    clienteEncontrado ? (
+                                        <ClienteInfoContainer>
+                                            <div className="info">
+                                                <p><strong>Nome:</strong> {clienteEncontrado?.pessoaFisica?.nome}</p>
+                                                <p><strong>CPF:</strong> {formatarCpf(clienteEncontrado?.pessoaFisica?.cpf || '')}</p>
+                                                <p><strong>Telefone:</strong> {formatarTelefone(clienteEncontrado?.pessoaFisica?.telefone || '')}</p>
+                                            </div>
 
-    export default VendaMesa;
+                                            <div className="pagamento">
+                                                <div>
+                                                    <label>Forma de Pagamento</label>
+                                                    <Select
+                                                        options={opcoesPagamento}
+                                                        value={opcoesPagamento.find(op => op.value === selectedValue)}
+                                                        onChange={option => setSelectedValuePag(option ? option.value : null)}
+                                                        placeholder="Selecione uma forma de pagamento"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label>Parcelamento</label>
+                                                    <Select
+                                                        options={parcelas}
+                                                        value={parcelas.find(op => op.value === selectedValue)}
+                                                        onChange={option => setSelectedValue(option ? option.value : null)}
+                                                        placeholder="Selecione parcelamento"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label>Desconto</label>
+                                                    <Input
+                                                        type="text"
+                                                        value={totalDesconto}
+                                                        placeholder="Valor desconto"
+                                                        onChange={e => setTotalDesconto(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </ClienteInfoContainer>
+                                    ) : (
+                                        <p>Nenhum cliente encontrado.</p>
+                                    )
+                                )}
+                            </div>
+                            <Link to={'/cadastro-clientes'}>
+                                <PdvButton>Cadastrar Cliente</PdvButton>
+                            </Link>
+                            <OrderList>
+                                <h4>Produtos Selecionados:</h4>
+                                <ul>
+                                    {produtosSelecionados.map((produto, index) => {
+                                        const id = produto.id ?? produto.produtoId ?? 'N/A';
+                                        const nome = produto.nome ?? 'Sem nome';
+                                        const preco = produto.precoUnitario ?? '0';
+                                        const quantidade = produto.quantidade ?? 0;
+                                        const total = formatPreco(parsePreco(preco) * quantidade);
+
+                                        return (
+                                            <li key={index}>
+                                                <div className="produto-info">
+                                                    <div><strong>{nome}</strong></div>
+                                                    <span>ID: {id}</span>
+                                                    <div>
+                                                        R$ {Number(parsePreco(preco)).toFixed(2)} x {quantidade}<strong>
+                                                        </strong>
+                                                    </div>
+
+                                                </div>
+                                                <button title='remover' className="remover" onClick={() => handleRemoverProduto(index)}>×</button>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </OrderList>
+                            <TotaisContainer>
+                                <div className="linha">
+                                    <strong>Total:</strong> <span>R$ {somaProdutos.toFixed(2)}</span>
+                                </div>
+                                <div className="linha">
+                                    <strong>Desconto:</strong> <span>R$ {descontoNumerico.toFixed(2)}</span>
+                                </div>
+                                <div className="linha total-com-desconto">
+                                    <strong>Total com desconto:</strong> <span>R$ {totalComDesconto.toFixed(2)}</span>
+                                </div>
+                            </TotaisContainer>
+                            <PdvButton onClick={handleFinalizarVenda} disabled={enviandoVenda}>
+                                {enviandoVenda ? 'Enviando...' : 'Finalizar Venda'}
+                            </PdvButton>
+                            <PdvButton onClick={limparEstado}>Limpar mesa</PdvButton>
+                        </LeftPane>
+
+                        <RightPane>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <h2><span></span>Catálogos de produtos</h2>
+                                <HiMiniMagnifyingGlass style={{ color: '#ccc', fontSize: '28px', position: 'relative', left: '140px', top: '15px' }} />
+                                <div style={{ width: '300px' }}>
+                                    <Input
+                                        style={{ textAlign: 'right' }}
+                                        type="text"
+                                        placeholder="Buscar produto"
+                                        value={produtoBusca}
+                                        onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setProdutoBusca(e.target.value)}
+                                    />
+                                </div>
+
+                            </div>
+                            <div>
+                                {isLoading && <p>Carregando produtos...</p>}
+                                {Boolean(error) && <p>Erro ao carregar produtos.</p>}
+
+                                {!isLoading && !error && (
+                                    <ProductList>
+                                        {produtos
+                                            .filter((produto: ProdutoProps) =>
+                                                produto.nome.toLowerCase().includes(produtoBusca.toLowerCase())
+                                            )
+                                            .map((produto: ProdutoProps) => (
+                                                <div onClick={() => handleAdicionarProduto(produto)}>
+                                                    <ImgContainer>
+                                                        {produto.imagem && (
+                                                            <img src={`data:image/webp;base64,${produto.imagem}`} alt="Preview" />
+                                                        )}
+
+                                                    </ImgContainer>
+                                                    <span>
+                                                        {produto.nome}
+                                                    </span>
+                                                    <Description>
+                                                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem dicta, porro optio sed quia alias </p>
+                                                    </Description>
+                                                    <span>R$ {produto.precoUnitario.toFixed(2)}{' '}</span>
+                                                    <Icon><span>+</span></Icon>
+                                                </div>
+                                            ))}
+                                    </ProductList>
+                                )}
+                            </div>
+                        </RightPane>
+                    </Container>
+                </>
+            )}
+            <Wrapper>
+                <SwitchContainer>
+                    <span>Emitir Nota Fiscal</span>
+                    <ToggleSwitch>
+                        <input
+                            type="checkbox"
+                            checked={showNf}
+                            onChange={() => setShowNf((prev) => !prev)}
+                        />
+                        <Slider />
+                    </ToggleSwitch>
+                </SwitchContainer>
+            </Wrapper>
+            {showNf && <NfContainer />}
+        </>
+    );
+}
+
+export default VendaMesa;
