@@ -127,8 +127,11 @@ const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
             <SidebarItem href="/pdv-mesa" onClick={closeSidebar}>
               <PiSuitcaseSimpleLight /> PDV
             </SidebarItem>
-            <SidebarItem href="/ordem-servico" onClick={closeSidebar}>
+            <SidebarItem href="/vendas-loja" onClick={closeSidebar}>
               <PiSuitcaseSimpleLight /> Ordem de Serviço
+            </SidebarItem>
+            <SidebarItem href="/ordem-list" onClick={closeSidebar}>
+              <PiSuitcaseSimpleLight /> Lista Ordem de Serviço
             </SidebarItem>
           </div>
         )}

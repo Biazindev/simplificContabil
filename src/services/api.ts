@@ -53,8 +53,8 @@ export interface PedidoItem {
   produtoId: number;
   quantidade: number;
   nomeProduto?: string;
-  precoUnitario?: number
-  totalItem?: number;
+  precoUnitario?: string | number
+  totalItem?: string | number
   // outros campos se existirem, ex: preço, nome, etc
 }
 
@@ -261,7 +261,7 @@ export const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Auth', 'Produto', 'Venda', 'Cliente', 'Filial', 'Mesa', 'Pedido'],
+  tagTypes: ['Auth', 'Produto', 'Venda', 'Cliente', 'Filial', 'Mesa', 'Pedido', 'OrdemServico', 'atualizarOrdem'],
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (creds) => ({
@@ -704,10 +704,55 @@ export const api = createApi({
       query: (numeroMesa) => `mesas/${numeroMesa}/itens`,
       providesTags: ['Pedido'],
     }),
+    criarOrdemServico: builder.mutation({
+      query: (dto) => ({
+        url: '/ordens-servico',
+        method: 'POST',
+        body: dto,
+      }),
+      invalidatesTags: ['OrdemServico'],
+    }),
+    listarOrdensServico: builder.query({
+      query: () => '/ordens-servico',
+      providesTags: ['OrdemServico'],
+    }),
+    buscarOrdemServico: builder.query({
+      query: (id) => `/ordens-servico/${id}`,
+      providesTags: (result, error, id) => [{ type: 'OrdemServico', id }],
+    }),
+    deletarOrdemServico: builder.mutation({
+      query: (id) => ({
+        url: `/ordens-servico/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['OrdemServico'],
+    }),
+    gerarComprovante: builder.query({
+      query: (id) => ({
+        url: `/ordens-servico/comprovante/${id}`,
+        responseHandler: (response) => response.blob(),
+      }),
+      providesTags: (result, error, id) => [{ type: 'OrdemServico', id }],
+    }),
+    atualizarOrdemServico: builder.mutation({
+      query: ({ id, ...patch }) => ({
+        url: `ordem-servico/${id}`,
+        method: 'PUT',
+        body: patch
+      }),
+      invalidatesTags: ['OrdemServico']
+    }),
   }),
 })
 
 export const {
+  useAtualizarOrdemServicoMutation,
+  useCriarOrdemServicoMutation,
+  useListarOrdensServicoQuery,
+  useBuscarOrdemServicoQuery,
+  useDeletarOrdemServicoMutation,
+  useGerarComprovanteQuery,
+  useLazyGerarComprovanteQuery,
   useLazyGetItensMesaQuery,
   useLazyListarPedidosQuery,
   useLazyGetMesasAtivasQuery,

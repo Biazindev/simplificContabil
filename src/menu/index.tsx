@@ -9,7 +9,7 @@ const SaleNavigationMenu: React.FC = () => {
       <h3>Cliente salvo com sucesso! Escolha o próximo passo:</h3>
       <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
         <button onClick={() => navigate('/produtos')}>Produtos</button>
-        <button onClick={() => navigate('/pdv-mesa')}>PDV</button>
+        <button onClick={() => navigate('/ordem-servico')}>Ordem de Serviço</button>
       </div>
     </div>
   );

@@ -906,7 +906,7 @@ const Cliente = () => {
                     <Label>CEP</Label>
                     <Input
                       name="cep"
-                      value={form.pessoaFisica?.endereco?.cep || ''}
+                      value={form.pessoaJuridica?.endereco?.cep || ''}
                       onChange={(e) => {
                         const cepFormatado = formatarCep(e.target.value);
                         const eventoFormatado = {
