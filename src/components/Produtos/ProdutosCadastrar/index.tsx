@@ -6,7 +6,7 @@ import {
   useGetProdutosByNameQuery,
   useImportarProdutosXmlMutation,
   useListarFiliaisQuery,
-  useGetProdutoPorGtinQuery 
+  useGetProdutoPorGtinQuery
 } from '../../../services/api'
 
 import { FaArrowRight } from "react-icons/fa"
@@ -85,22 +85,27 @@ const ProdutosCadastrar = () => {
   });
 
   useEffect(() => {
-  if (produtoPorEan) {
-    setProduto(prev => ({
-      ...prev,
-      nome: produtoPorEan.description || prev.nome,
-      descricao: produtoPorEan.category?.description || prev.descricao,
-      precoUnitario: produtoPorEan.max_price?.toString() || prev.precoUnitario,
-      ncm: typeof produtoPorEan.ncm === 'object' ? produtoPorEan.ncm.code : produtoPorEan.ncm || prev.ncm,
-      dataVencimento: prev.dataVencimento, // A API não retorna isso
-      ativo: true, // Considera ativo por padrão, ajuste se necessário
-      observacao: produtoPorEan.brand?.name || prev.observacao,
-      imagem: produtoPorEan.thumbnail || prev.imagem,
-      ean: produtoPorEan.gtin?.toString() || prev.ean
-    }));
-    setMensagem('✅ Produto encontrado via EAN!');
-  }
-}, [produtoPorEan]);
+    if (produtoPorEan) {
+      setProduto(prev => ({
+        ...prev,
+        nome: produtoPorEan.description || prev.nome,
+        descricao: produtoPorEan.category?.description || prev.descricao,
+        precoUnitario: produtoPorEan.max_price?.toString() || prev.precoUnitario,
+        ncm:
+          typeof produtoPorEan.ncm === 'object' &&
+            produtoPorEan.ncm !== null &&
+            'code' in produtoPorEan.ncm
+            ? (produtoPorEan.ncm as any).code
+            : produtoPorEan.ncm || prev.ncm,
+        dataVencimento: prev.dataVencimento, // A API não retorna isso
+        ativo: true, // Considera ativo por padrão, ajuste se necessário
+        observacao: produtoPorEan.brand?.name || prev.observacao,
+        imagem: produtoPorEan.thumbnail || prev.imagem,
+        ean: produtoPorEan.gtin?.toString() || prev.ean
+      }));
+      setMensagem('✅ Produto encontrado via EAN!');
+    }
+  }, [produtoPorEan]);
 
   const formatForJava = (date: Date) =>
     date.toISOString().split('.')[0]

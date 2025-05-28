@@ -464,24 +464,24 @@ const VendaMesa: React.FC = () => {
         }
     };
 
-   const limparEstado = async () => {
-    if (mesaAtual !== null) {
-        try {
-            await limpaMesa(mesaAtual).unwrap();
-        } catch (error) {
-            console.error("Erro ao limpar mesa no backend:", error);
+    const limparEstado = async () => {
+        if (mesaAtual !== null) {
+            try {
+                await limpaMesa(mesaAtual).unwrap();
+            } catch (error) {
+                console.error("Erro ao limpar mesa no backend:", error);
+            }
+
+            setVendasPorMesa((prev) => {
+                const copy = { ...prev };
+                delete copy[mesaAtual];
+                return copy;
+            });
         }
 
-        setVendasPorMesa((prev) => {
-            const copy = { ...prev };
-            delete copy[mesaAtual];
-            return copy;
-        });
-    }
-
-    setClienteBusca('');
-    setProdutosSelecionados([]);
-};
+        setClienteBusca('');
+        setProdutosSelecionados([]);
+    };
 
     const handleRemoverProduto = (indexToRemove: number) => {
         setProdutosSelecionados((prev) => prev.filter((_, i) => i !== indexToRemove));
@@ -529,7 +529,7 @@ const VendaMesa: React.FC = () => {
             await adicionarPedido({
                 numeroMesa: mesaAtual!,
                 itens: [{
-                    produto: { id: produto.id }, 
+                    produtoId: produto.id,
                     quantidade: 1,
                     observacao: "",
                 }],
@@ -692,10 +692,10 @@ const VendaMesa: React.FC = () => {
                                         style={{
                                             backgroundColor:
                                                 mesa.numero === mesaAtual
-                                                    ? '#ccc'
+                                                    ? '#ccc' // mesa selecionada
                                                     : numerosMesasAtivas!.includes(mesa.numero)
-                                                        ? '#ff5252'
-                                                        : '#33d9b2',
+                                                        ? '#33d9b2' // mesa ATIVA (aberta) => verde
+                                                        : '#ff5252', // mesa OCUPADA (fechada?) => vermelho
                                         }}
                                     >
                                         {mesa.numero}
