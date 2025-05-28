@@ -20,6 +20,8 @@ import {
   useBuscarUsuarioPorIdQuery,
   useLogoutMutation
 } from "../../services/api";
+import KeyboardShortcutHandler from "../shortcuts/KeyboardShortcutHandler";
+import Footer from "../Footer";
 
 interface HeaderProps {
   toggleTheme: () => void;
@@ -85,7 +87,9 @@ const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
 
 
   return (
-    <Layout>
+    <>
+      <Layout>
+      <KeyboardShortcutHandler closeSidebar={closeSidebar} />
       {/* Botão de hambúrguer visível apenas em telas pequenas */}
       <ToggleSidebarButton onClick={toggleSidebar}>
         <FaBars />
@@ -244,12 +248,12 @@ const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
           )}
         </HeaderRight>
       </HeaderContainer>
-
-      {/* Conteúdo principal */}
       <Main>
         <Outlet />
       </Main>
     </Layout>
+    <Footer />
+    </>
   );
 };
 

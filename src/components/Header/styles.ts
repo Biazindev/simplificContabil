@@ -60,7 +60,7 @@ export const Sidebar = styled.nav<SidebarProps>`
   overflow: hidden;
   white-space: nowrap;
   position: relative;
-  z-index: 100;
+  z-index: 1000;
 
   h2 {
     font-size: 1.2rem;
@@ -91,6 +91,8 @@ export const SidebarItem = styled.a`
   margin: 0.25rem 0;
   transition: background 0.2s, color 0.2s;
   font-size: 0.9rem;
+  z-index: 1000;
+
 
   svg {
     flex-shrink: 0;
@@ -123,7 +125,8 @@ export const HeaderContainer = styled.header`
   align-items: center;
   justify-content: flex-end;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  z-index: 10;
+  z-index: 1000;
+
 
   @media (max-width: 768px) {
     padding: 0 1rem;

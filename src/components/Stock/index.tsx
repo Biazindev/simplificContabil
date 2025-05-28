@@ -152,7 +152,7 @@ const Stock = () => {
         quantidade: editQuantidade,
         observacao: editObservacao,
         mensagem: '',
-        imagem: null
+        imagem: null,
       }).unwrap();
 
       setMensagem('✅ Produto atualizado com sucesso!');
