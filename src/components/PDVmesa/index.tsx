@@ -40,12 +40,13 @@ import {
     useListarMesasAbertasQuery,
     useLazyGetItensMesaQuery,
     useLazyListarPedidosQuery,
-    PedidoItem
+    useLimparMesaMutation
 } from '../../services/api';
 import NfContainer from '../NotaFiscal'
 import VendaEntrega from '../PDVentrega';
 import VendaBalcao from '../PDVbalcao';
 import { ItemVenda } from '../../types';
+import { number } from 'yup';
 
 export type VendaData = {
     emitirNotaFiscal?: boolean;
@@ -75,6 +76,15 @@ export interface ItemMesa {
     quantidade: number;
 }
 
+export interface PedidoItem {
+    produto: {
+        id?: number;
+    };
+    quantidade: number;
+    observacao?: string;
+}
+
+
 export interface ClientePessoaFisica {
     cpf: string;
 }
@@ -91,7 +101,7 @@ export interface Cliente {
 
 export interface ProdutoSelecionado {
     produtoId: number;
-    id: number;
+    id?: number;
     nome?: string;
     nomeProduto?: string;
     preco?: string; // Alterado para string
@@ -140,6 +150,7 @@ const VendaMesa: React.FC = () => {
     const [sairParaEntrega] = useSairParaEntregaMutation()
     const [getItensMesa] = useLazyGetItensMesaQuery();
     const [listarPedidos] = useLazyListarPedidosQuery();
+    const [limpaMesa] = useLimparMesaMutation();
     const { data: mesasAbertas } = useListarMesasAbertasQuery();
 
     const sanitizeNumber = (value: string | number) => {
@@ -199,7 +210,7 @@ const VendaMesa: React.FC = () => {
         pagamento: Pagamento,
         somaProdutos: number,
         showNf: boolean,
-    ): VendaData  => {
+    ): VendaData => {
         const agora = new Date().toISOString(); // Será convertido no backend para LocalDateTime
 
         return {
@@ -453,27 +464,32 @@ const VendaMesa: React.FC = () => {
         }
     };
 
-    const limparEstado = () => {
+   const limparEstado = async () => {
+    if (mesaAtual !== null) {
+        try {
+            await limpaMesa(mesaAtual).unwrap();
+        } catch (error) {
+            console.error("Erro ao limpar mesa no backend:", error);
+        }
+
         setVendasPorMesa((prev) => {
             const copy = { ...prev };
-            if (mesaAtual !== null) {
-                delete copy[mesaAtual];
-            }
+            delete copy[mesaAtual];
             return copy;
         });
-        setClienteBusca('');
-        setProdutosSelecionados([]);
-        setMesaAtual(null);
-    };
+    }
+
+    setClienteBusca('');
+    setProdutosSelecionados([]);
+};
 
     const handleRemoverProduto = (indexToRemove: number) => {
         setProdutosSelecionados((prev) => prev.filter((_, i) => i !== indexToRemove));
     };
 
     const handleAdicionarProduto = async (produto: ProdutoProps) => {
-        const precoUnitario = sanitizeNumber(produto.precoUnitario); // número
+        const precoUnitario = sanitizeNumber(produto.precoUnitario);
         const quantidade = 1;
-
         const totalItem = precoUnitario * quantidade;
 
         const novoItem: ProdutoSelecionado = {
@@ -481,7 +497,7 @@ const VendaMesa: React.FC = () => {
             produtoId: produto.id,
             nome: produto.nome,
             preco: produto.preco,
-            precoUnitario: precoUnitario.toFixed(2), // se for string na tipagem
+            precoUnitario: precoUnitario.toFixed(2),
             quantidade,
             totalItem: totalItem.toFixed(2),
         };
@@ -513,14 +529,15 @@ const VendaMesa: React.FC = () => {
             await adicionarPedido({
                 numeroMesa: mesaAtual!,
                 itens: [{
-                    produtoId: produto.id,
-                    quantidade: 1
-                }]
+                    produto: { id: produto.id }, 
+                    quantidade: 1,
+                    observacao: "",
+                }],
             }).unwrap();
         } catch (err) {
             console.error('Erro ao adicionar pedido:', err);
         }
-    }
+    };
 
 
     const renderTableInfo = (orderData: any) => {

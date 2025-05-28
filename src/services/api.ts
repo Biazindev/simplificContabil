@@ -10,8 +10,8 @@ import { Mutex } from 'async-mutex'
 import { EmitirNotaPayload } from '../components/Venda/types'
 import { OrdemServicoDTO } from '../Enum/enum'
 import { ItemMesa } from '../components/PDVmesa/index'
-import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES } from 'react'
 import { number } from 'yup'
+import { ProdutoSelecionado } from '@/components/PDVentrega'
 
 export interface ForgotPasswordRequest { email: string }
 export interface ResetPasswordRequest { token: string; newPassword: string }
@@ -50,11 +50,14 @@ export interface Pedido {
 }
 
 export interface PedidoItem {
+  id?: number
   produtoId: number;
   quantidade: number;
   nomeProduto?: string;
   precoUnitario?: string | number
   totalItem?: string | number
+  observacao?: string
+  produto?: ProdutoSelecionado[]
   // outros campos se existirem, ex: preço, nome, etc
 }
 
@@ -193,6 +196,14 @@ export interface UpdateClienteRequest extends CreateClienteRequest {
 }
 
 export type ProdutoProps = {
+  brand?: any
+  code?: any;
+  gtin?: any
+  thumbnail?: string | null
+  max_price?: any
+  category?: any
+  description?: string
+  produtoId?: any
   preco?: any
   codigoBarras?: string
   ncm: string
@@ -674,7 +685,7 @@ export const api = createApi({
 
 
     // Adicionar pedido à mesa
-    adicionarPedido: builder.mutation<void, PedidoMesaDTO>({
+    adicionarPedido: builder.mutation<{ id: number }, PedidoMesaDTO>({
       query: (dto: any) => ({
         url: 'mesas/pedido',
         method: 'POST',
@@ -742,10 +753,22 @@ export const api = createApi({
       }),
       invalidatesTags: ['OrdemServico']
     }),
+    limparMesa: builder.mutation<void, number>({ 
+      query: (numeroMesa) => ({
+        url: `mesas/limpar/${numeroMesa}`,
+        method: 'DELETE',
+      }),
+    }),
+    getProdutoPorGtin: builder.query<ProdutoProps, string>({
+      query: (codigo) => `produtos/gtins/${codigo}`,
+      providesTags: (result, error, codigo) => [{ type: 'Produto', id: codigo }],
+    }),
   }),
 })
 
 export const {
+  useGetProdutoPorGtinQuery,
+  useLimparMesaMutation,
   useAtualizarOrdemServicoMutation,
   useCriarOrdemServicoMutation,
   useListarOrdensServicoQuery,

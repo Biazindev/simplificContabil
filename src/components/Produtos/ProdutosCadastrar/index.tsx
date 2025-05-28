@@ -5,7 +5,8 @@ import {
   useDeleteProdutoMutation,
   useGetProdutosByNameQuery,
   useImportarProdutosXmlMutation,
-  useListarFiliaisQuery
+  useListarFiliaisQuery,
+  useGetProdutoPorGtinQuery 
 } from '../../../services/api'
 
 import { FaArrowRight } from "react-icons/fa"
@@ -79,9 +80,30 @@ const ProdutosCadastrar = () => {
     imagem: null,
   })
 
+  const { data: produtoPorEan, refetch: buscarProdutoPorEan } = useGetProdutoPorGtinQuery(produto.ean.toString(), {
+    skip: produto.ean === 0 || produto.ean.toString().length < 8
+  });
+
+  useEffect(() => {
+  if (produtoPorEan) {
+    setProduto(prev => ({
+      ...prev,
+      nome: produtoPorEan.description || prev.nome,
+      descricao: produtoPorEan.category?.description || prev.descricao,
+      precoUnitario: produtoPorEan.max_price?.toString() || prev.precoUnitario,
+      ncm: typeof produtoPorEan.ncm === 'object' ? produtoPorEan.ncm.code : produtoPorEan.ncm || prev.ncm,
+      dataVencimento: prev.dataVencimento, // A API não retorna isso
+      ativo: true, // Considera ativo por padrão, ajuste se necessário
+      observacao: produtoPorEan.brand?.name || prev.observacao,
+      imagem: produtoPorEan.thumbnail || prev.imagem,
+      ean: produtoPorEan.gtin?.toString() || prev.ean
+    }));
+    setMensagem('✅ Produto encontrado via EAN!');
+  }
+}, [produtoPorEan]);
+
   const formatForJava = (date: Date) =>
     date.toISOString().split('.')[0]
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -122,6 +144,10 @@ const ProdutosCadastrar = () => {
         [name]: name === 'quantidade' ? Number(value) : value,
         dataVencimento: name === 'dataVencimento' ? value : formatForJava(new Date())
       }));
+
+      if (name === 'ean' && value.length >= 8) {
+        buscarProdutoPorEan();
+      }
     }
   };
 
@@ -145,11 +171,9 @@ const ProdutosCadastrar = () => {
     };
 
     try {
-      // 1. Envia o produto para a API (banco de dados)
       await postProduto(produtoParaEnviar).unwrap();
       alert('✅ Produto cadastrado com sucesso!');
 
-      // 2. Cria e envia o XML
       const xml = `
       <produtos>
         <produto>
@@ -241,7 +265,6 @@ const ProdutosCadastrar = () => {
     }
   };
 
-  // --- Leitura de código de barras por câmera ---
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [scanning, setScanning] = useState(false);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
@@ -256,7 +279,6 @@ const ProdutosCadastrar = () => {
     };
   }, []);
 
-
   const iniciarLeituraCodigo = async () => {
     if (!videoRef.current || !codeReader.current) return;
     setScanning(true);
@@ -266,7 +288,6 @@ const ProdutosCadastrar = () => {
       const codigo = result.getText();
       setCodigoBarras(codigo);
 
-      // 🔍 Buscar produto pela API
       const response = await fetch(`/api/produtos/barcode/${codigo}`);
       if (!response.ok) {
         setProdutoNome('');
@@ -299,7 +320,6 @@ const ProdutosCadastrar = () => {
     }
     setScanning(false);
   }
-
 
   return (
     <S.Container>
@@ -415,6 +435,11 @@ const ProdutosCadastrar = () => {
                     placeholder="EAN"
                     value={produto.ean}
                     onChange={handleChange}
+                    onBlur={() => {
+                      if (produto.ean.toString().length >= 8) {
+                        buscarProdutoPorEan();
+                      }
+                    }}
                   />
 
                   <S.Label htmlFor="observacao">Observação</S.Label>
