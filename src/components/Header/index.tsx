@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { MdPersonAddAlt } from "react-icons/md";
 import { MdProductionQuantityLimits } from "react-icons/md";
 import { useNavigate, Outlet } from "react-router-dom";
+import { BiSupport } from "react-icons/bi";
 import {
   RxAvatar, RxDashboard, RxBox, RxPerson, RxExit
 } from "react-icons/rx";
@@ -171,8 +172,8 @@ const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
           <FaFileInvoiceDollar /> Nota fiscal
         </SidebarItem>
 
-        <SidebarItem href="/#" onClick={closeSidebar}>
-          <FaFileInvoiceDollar /> Suporte
+        <SidebarItem href="/support" onClick={closeSidebar}>
+          <BiSupport /> Suporte
         </SidebarItem>
 
         <SidebarItem

@@ -21,6 +21,7 @@ import ProdutosCadastrar from "./components/Produtos/ProdutosCadastrar"
 import CadastroCliente from "./components/Cadastro/Clientes"
 import OrdemServicoForm from "./components/OrderList"
 import OrdemServicoList from "./components/OrderList/OrderServiceList"
+import Suporte from "./components/Support"
 
 interface AppRoutesProps {
   toggleTheme: () => void;
@@ -52,6 +53,7 @@ const Rotas = ({ toggleTheme, isLightTheme }: AppRoutesProps) => (
         <Route path="/pdv-entrega" element={<VendaBalcao />} />
         <Route path="/ordem-servico" element={<OrdemServicoForm />} />
         <Route path="/ordem-list" element={<OrdemServicoList/>} />
+        <Route path="/support" element={<Suporte/>} />
       </Route>
     </Route>
   </Routes>

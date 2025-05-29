@@ -6,14 +6,13 @@ import {
   useGetProdutosByNameQuery,
   useImportarProdutosXmlMutation,
   useListarFiliaisQuery,
-  useGetProdutoPorGtinQuery
+  useLazyGetProdutoPorGtinQuery,
+  useImportarProdutosXmlFilialMutation
 } from '../../../services/api'
 
-import { FaArrowRight } from "react-icons/fa"
 import * as S from '../styles'
 import { Input } from '../../../styles'
 import { Link, useNavigate } from 'react-router-dom'
-import ImagePreview from '../../Utils/img'
 
 const parseCurrency = (value: string): number => {
   return Number(value.replace(/\./g, '').replace(',', '.')) || 0
@@ -23,12 +22,12 @@ type ProdutoProps = {
   id: number
   nome: string
   descricao: string
-  precoUnitario: number
-  ean: number
+  precoUnitario: string
+  ean: string
   ncm: string
   dataVencimento: string
   ativo: boolean
-  quantidade: number
+  quantidade: string
   observacao?: string | null
   imagem: string | null;
 }
@@ -45,67 +44,79 @@ const ProdutosCadastrar = () => {
   const [produtosSelecionados, setProdutosSelecionados] = useState<ProdutoProps[]>([])
   const [quantidadesTemp, setQuantidadesTemp] = useState<Record<number, number>>({})
   const [mostrarFormulario, setMostrarFormulario] = useState(true)
-  const [activeTab, setActiveTab] = useState<'manual' | 'xml' | 'codigo'>('manual');
-  const [filialId, setFilialId] = useState<number | null>(null);
-  const [codigoBarras, setCodigoBarras] = useState('');
-  const [produtoNome, setProdutoNome] = useState('');
-  const [produtoPreco, setProdutoPreco] = useState('');
-  const [mensagem, setMensagem] = useState('');
+  const [activeTab, setActiveTab] = useState<'manual' | 'xml' | 'codigo'>('manual')
+  const [filialId, setFilialId] = useState<number | null>(null)
+  const [codigoBarras, setCodigoBarras] = useState('')
+  const [produtoNome, setProdutoNome] = useState('')
+  const [produtoPreco, setProdutoPreco] = useState('')
+  const [mensagem, setMensagem] = useState('')
+  const [etapa, setEtapa] = useState<'selecao' | 'cadastro'>('selecao')
 
-  const { data: filiais, isLoading: loadingFiliais, error: errorFiliais } = useListarFiliaisQuery();
+  const { data: filiais, isLoading: loadingFiliais, error: errorFiliais } = useListarFiliaisQuery()
+  const [buscarProdutoPorEan, { data: produtoPorEan, isUninitialized }] = useLazyGetProdutoPorGtinQuery()
 
-  const [importarXml, { isLoading: loadingImport }] = useImportarProdutosXmlMutation();
+  const [importarProdutos, { data: response }] = useImportarProdutosXmlFilialMutation();
 
   const [produto, setProduto] = useState<{
     nome: string;
     descricao: string;
-    precoUnitario: number
+    precoUnitario: string,
     ncm: string;
-    ean: number;
+    ean: string;
     dataVencimento: string;
     ativo: boolean;
-    quantidade: number;
+    quantidade: string;
     observacao: string;
+    precoCusto: string,
     imagem: string | null;
   }>({
     nome: '',
     descricao: '',
-    precoUnitario: 0,
+    precoUnitario: '',
     ncm: '',
-    ean: 0,
+    ean: '',
     dataVencimento: '',
     ativo: true,
-    quantidade: 0,
+    quantidade: '',
     observacao: '',
+    precoCusto: '',
     imagem: null,
   })
 
-  const { data: produtoPorEan, refetch: buscarProdutoPorEan } = useGetProdutoPorGtinQuery(produto.ean.toString(), {
-    skip: produto.ean === 0 || produto.ean.toString().length < 8
-  });
+  const eanValido = produto?.ean && produto.ean.toString().length >= 8;
+  useEffect(() => {
+    const ean = produto?.ean?.toString();
+
+    if (ean && ean.length >= 8) {
+      buscarProdutoPorEan(ean);
+    }
+  }, [produto.ean])
 
   useEffect(() => {
-    if (produtoPorEan) {
-      setProduto(prev => ({
-        ...prev,
-        nome: produtoPorEan.description || prev.nome,
-        descricao: produtoPorEan.category?.description || prev.descricao,
-        precoUnitario: produtoPorEan.max_price?.toString() || prev.precoUnitario,
-        ncm:
-          typeof produtoPorEan.ncm === 'object' &&
-            produtoPorEan.ncm !== null &&
-            'code' in produtoPorEan.ncm
-            ? (produtoPorEan.ncm as any).code
-            : produtoPorEan.ncm || prev.ncm,
-        dataVencimento: prev.dataVencimento, // A API não retorna isso
-        ativo: true, // Considera ativo por padrão, ajuste se necessário
-        observacao: produtoPorEan.brand?.name || prev.observacao,
-        imagem: produtoPorEan.thumbnail || prev.imagem,
-        ean: produtoPorEan.gtin?.toString() || prev.ean
-      }));
-      setMensagem('✅ Produto encontrado via EAN!');
-    }
-  }, [produtoPorEan]);
+    if (!produtoPorEan) return;
+
+    setProduto(prev => ({
+      ...prev,
+      nome: produtoPorEan.description || prev.nome,
+      descricao: produtoPorEan.category?.description || prev.descricao,
+      precoUnitario: produtoPorEan.max_price?.toString() || prev.precoUnitario,
+      ncm:
+        typeof produtoPorEan.ncm === 'object' &&
+          produtoPorEan.ncm !== null &&
+          'code' in produtoPorEan.ncm
+          ? String((produtoPorEan.ncm as any).code)
+          : produtoPorEan.ncm?.toString() || prev.ncm,
+      dataVencimento: prev.dataVencimento,
+      ativo: true,
+      quantidade: prev.quantidade,
+      observacao: produtoPorEan.brand?.name || prev.observacao,
+      imagem: produtoPorEan.thumbnail || prev.imagem,
+      ean: produtoPorEan.gtin?.toString() || prev.ean,
+      precoCusto: prev.precoCusto
+    }));
+
+    setMensagem("✅ Produto encontrado via EAN!")
+  }, [produtoPorEan])
 
   const formatForJava = (date: Date) =>
     date.toISOString().split('.')[0]
@@ -114,216 +125,231 @@ const ProdutosCadastrar = () => {
     const { name, value, type } = e.target;
 
     if (type === 'checkbox') {
-      setProduto((prev) => ({
+      setProduto((prev: any) => ({
         ...prev,
         [name]: (e.target as HTMLInputElement).checked
-      }));
+      }))
     }
     else if (type === 'file' && e.target instanceof HTMLInputElement && e.target.files?.length) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
+      const file = e.target.files[0]
+      const reader = new FileReader()
 
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
-          const base64 = reader.result.split(',')[1];
-
-          setProduto((prev) => ({
+          const base64 = reader.result.split(',')[1]
+          setProduto((prev: any) => ({
             ...prev,
             imagem: base64
-          }));
+          }))
         }
-      };
-
-      reader.readAsDataURL(file);
+      }
+      reader.readAsDataURL(file)
     }
-    else if (name === 'precoUnitario') {
-      const parsed = parseCurrency(value);
-      setProduto(prev => ({
+    else if (name === 'precoUnitario' || name === 'precoCusto') {
+      const valorFormatado = value
+        .replace(/[^0-9.,]/g, '')
+        .replace(/([,.])(?=.*\1)/g, '')
+
+      setProduto((prev: any) => ({
         ...prev,
-        precoUnitario: parsed
-      }));
+        [name]: valorFormatado
+      }))
     }
     else {
-      setProduto((prev) => ({
+      setProduto((prev: any) => ({
         ...prev,
         [name]: name === 'quantidade' ? Number(value) : value,
         dataVencimento: name === 'dataVencimento' ? value : formatForJava(new Date())
-      }));
+      }))
 
       if (name === 'ean' && value.length >= 8) {
-        buscarProdutoPorEan();
+        buscarProdutoPorEan(value)
       }
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!filialId) {
-      setMensagem('❌ Selecione uma filial antes de salvar.');
-      return;
+      setMensagem('❌ Selecione uma filial antes de continuar.')
+      return
     }
 
-    if (!produto.nome || !produto.precoUnitario || !produto.ean) {
-      setMensagem('❌ Preencha todos os campos obrigatórios.');
-      return;
-    }
-
-    const produtoParaEnviar = {
-      ...produto,
-      dataVencimento: formatForJava(new Date(produto.dataVencimento || new Date())),
-      imagem: produto.imagem || null
-    };
-
-    try {
-      await postProduto(produtoParaEnviar).unwrap();
-      alert('✅ Produto cadastrado com sucesso!');
-
-      const xml = `
-      <produtos>
-        <produto>
-          <codigo>${produto.ean}</codigo>
-          <nome>${produto.nome}</nome>
-          <preco>${produto.precoUnitario}</preco>
-        </produto>
-      </produtos>
-    `.trim();
-
-      const blob = new Blob([xml], { type: 'application/xml' });
-      const file = new File([blob], 'produto.xml', { type: 'application/xml' });
-
-      await importarXml({ file, filialId }).unwrap();
-      setMensagem('✅ Produto cadastrado e XML enviado com sucesso!');
-
-      setProduto({
-        nome: '',
-        descricao: '',
-        precoUnitario: 0,
-        ncm: '',
-        ean: 0,
-        dataVencimento: formatForJava(new Date()),
-        ativo: true,
-        quantidade: 0,
-        observacao: '',
-        imagem: null
-      });
-      setMostrarFormulario(true);
-
-    } catch (error) {
-      console.error('Erro no cadastro:', error);
-      setMensagem('❌ Erro ao cadastrar produto. Verifique o console.');
-    }
-  };
-
-  const adicionarProduto = (produto: ProdutoProps, quantidade: number) => {
-    if (!produtosSelecionados.find((p) => p.id === produto.id)) {
-      setProdutosSelecionados((prev) => [
-        ...prev,
-        {
-          ...produto,
-          quantidade
+    if (activeTab === 'manual') {
+      if (etapa === 'selecao') {
+        if (!produto.ean) {
+          setMensagem('❌ Informe o EAN do produto.')
+          return
         }
-      ])
-      setSearchTerm('')
+        setEtapa('cadastro')
+        return
+      }
+
+      if (!produto.nome || !produto.precoUnitario) {
+        setMensagem('❌ Preencha todos os campos obrigatórios.')
+        return
+      }
+
+      const parseMonetaryValue = (value: any) => {
+        const stringValue = typeof value === 'string' ? value : String(value || '')
+        const cleanValue = stringValue
+          .replace(/\./g, '')
+          .replace(',', '.')
+        return parseFloat(cleanValue) || 0
+      }
+
+      const produtoParaEnviar = {
+        ...produto,
+        precoUnitario: parseMonetaryValue(produto.precoUnitario),
+        precoCusto: parseMonetaryValue(produto.precoCusto),
+        quantidade: parseMonetaryValue(produto.quantidade),
+        ean: parseInt(produto.ean) || 0,
+        dataVencimento: formatForJava(new Date(produto.dataVencimento || new Date())),
+        imagem: produto.imagem || null,
+      }
+
+      try {
+        await postProduto(produtoParaEnviar).unwrap()
+        alert('✅ Produto cadastrado com sucesso!')
+
+        const xml = `
+        <produtos>
+          <produto>
+            <codigo>${produto.ean}</codigo>
+            <nome>${produto.nome}</nome>
+            <preco>${produto.precoUnitario}</preco>
+          </produto>
+        </produtos>
+        `.trim()
+
+        const blob = new Blob([xml], { type: 'application/xml' })
+        const file = new File([blob], 'produto.xml', { type: 'application/xml' })
+
+        await importarProdutos({ file, filialId }).unwrap()
+        setMensagem('✅ Produto cadastrado e XML enviado com sucesso!')
+
+        setProduto({
+          nome: '',
+          descricao: '',
+          precoUnitario: '',
+          ncm: '',
+          ean: '',
+          dataVencimento: formatForJava(new Date()),
+          ativo: true,
+          quantidade: '',
+          observacao: '',
+          precoCusto: '',
+          imagem: null
+        })
+        setEtapa('selecao')
+      } catch (error) {
+        console.error('Erro no cadastro:', error)
+        setMensagem('❌ Erro ao cadastrar produto. Verifique o console.')
+      }
     }
   }
-
-  const handleDeletarProdutoSelecionado = (id: number) => {
-    setProdutosSelecionados((prev) => prev.filter((p) => p.id !== id))
-  }
-
-  const handleAtualizarQuantidade = (id: number, novaQuantidade: number) => {
-    setProdutosSelecionados((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, quantidade: novaQuantidade } : p))
-    )
-  }
-
-  const parsePreco = (valor?: string | number | null): number => {
-    if (typeof valor === 'number') return valor;
-    if (typeof valor === 'string') {
-      const normalizado = valor.replace(',', '.');
-      const numero = parseFloat(normalizado);
-      return isNaN(numero) ? 0 : numero;
-    }
-    return 0;
-  };
-
-  const totalGeral = produtosSelecionados.reduce((total, p) => {
-    const preco = parsePreco(p.precoUnitario);
-    const quantidade = p.quantidade ?? 0;
-    return total + preco * quantidade;
-  }, 0);
 
   const handleXmlUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !filialId) {
+    if (!file) {
+      alert('Selecione um arquivo XML antes de importar.');
+      return;
+    }
+
+    if (!filialId) {
       alert('Selecione uma filial antes de importar o XML.');
       return;
     }
 
     try {
-      await importarXml({ file, filialId }).unwrap();
-      alert('✅ XML importado com sucesso!');
+      setMensagem('⏳ Importando XML...');
+
+      // Criar FormData corretamente
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('filialId', filialId.toString()); // Garantir que é string
+
+      // Chamar a mutation com o payload correto
+      const response = await importarProdutos({ file, filialId }).unwrap();
+
+      if (response.success) {
+        setMensagem('✅ XML importado com sucesso!');
+        alert(`Foram importados ${response.importedCount} produtos.`);
+      } else {
+        setMensagem('⚠️ Importação parcial: ' + response.message);
+        alert(`Importados ${response.importedCount} de ${response.totalCount} produtos.`);
+      }
     } catch (error: any) {
-      console.error("Erro ao importar XML:", error);
-      alert('❌ Erro ao importar XML.');
+      console.error("Erro detalhado:", error);
+      let errorMessage = '❌ Erro ao importar XML.';
+
+      if (error.data) {
+        errorMessage += ` Detalhes: ${JSON.stringify(error.data)}`;
+      } else if (error.message) {
+        errorMessage += ` ${error.message}`;
+      }
+
+      setMensagem(errorMessage);
+      alert(errorMessage);
     }
   };
 
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [scanning, setScanning] = useState(false);
-  const codeReader = useRef<BrowserMultiFormatReader | null>(null);
+
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [scanning, setScanning] = useState(false)
+  const codeReader = useRef<BrowserMultiFormatReader | null>(null)
 
   useEffect(() => {
-    codeReader.current = new BrowserMultiFormatReader();
+    codeReader.current = new BrowserMultiFormatReader()
     return () => {
       if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, []);
-
-  const iniciarLeituraCodigo = async () => {
-    if (!videoRef.current || !codeReader.current) return;
-    setScanning(true);
-
-    try {
-      const result = await codeReader.current.decodeOnceFromVideoDevice(undefined, videoRef.current);
-      const codigo = result.getText();
-      setCodigoBarras(codigo);
-
-      const response = await fetch(`/api/produtos/barcode/${codigo}`);
-      if (!response.ok) {
-        setProdutoNome('');
-        setProdutoPreco('');
-        setMensagem('❌ Produto não encontrado.');
-        return;
-      }
-
-      const produto = await response.json();
-      setProdutoNome(produto.nome || '');
-      setProdutoPreco(produto.preco?.toString() || '');
-      setMensagem('✅ Produto carregado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao ler código:', error);
-      setMensagem('❌ Erro ao ler o código ou buscar produto.');
-    } finally {
-      setScanning(false);
-
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
+        const stream = videoRef.current.srcObject as MediaStream
+        stream.getTracks().forEach((track) => track.stop())
       }
     }
-  };
+  }, [])
+
+  const iniciarLeituraCodigo = async () => {
+    if (!videoRef.current || !codeReader.current) return
+    setScanning(true)
+
+    try {
+      const result = await codeReader.current.decodeOnceFromVideoDevice(undefined, videoRef.current)
+      const codigo = result.getText()
+      setCodigoBarras(codigo)
+
+      const response = await fetch(`/api/produtos/barcode/${codigo}`)
+      if (!response.ok) {
+        setProdutoNome('')
+        setProdutoPreco('')
+        setMensagem('❌ Produto não encontrado.')
+        return
+      }
+
+      const produto = await response.json()
+      setProdutoNome(produto.nome || '')
+      setProdutoPreco(produto.preco?.toString() || '')
+      setMensagem('✅ Produto carregado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao ler código:', error)
+      setMensagem('❌ Erro ao ler o código ou buscar produto.')
+    } finally {
+      setScanning(false)
+
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream
+        stream.getTracks().forEach((track) => track.stop())
+      }
+    }
+  }
 
   const pararLeituraCodigo = () => {
     if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach((track) => track.stop());
+      const stream = videoRef.current.srcObject as MediaStream
+      stream.getTracks().forEach((track) => track.stop())
     }
-    setScanning(false);
+    setScanning(false)
   }
 
   return (
@@ -333,13 +359,31 @@ const ProdutosCadastrar = () => {
           <div>
             <S.Title>Cadastro de Produtos</S.Title>
             <S.TabContainer>
-              <S.TabButton active={activeTab === 'manual'} onClick={() => setActiveTab('manual')}>
+              <S.TabButton
+                active={activeTab === 'manual'}
+                onClick={() => {
+                  setActiveTab('manual')
+                  setEtapa('selecao')
+                }}
+              >
                 Manual
               </S.TabButton>
-              <S.TabButton active={activeTab === 'xml'} onClick={() => setActiveTab('xml')}>
+              <S.TabButton
+                active={activeTab === 'xml'}
+                onClick={() => {
+                  setActiveTab('xml')
+                  setEtapa('selecao')
+                }}
+              >
                 Importar XML
               </S.TabButton>
-              <S.TabButton active={activeTab === 'codigo'} onClick={() => setActiveTab('codigo')}>
+              <S.TabButton
+                active={activeTab === 'codigo'}
+                onClick={() => {
+                  setActiveTab('codigo')
+                  setEtapa('selecao')
+                }}
+              >
                 Código de Barras
               </S.TabButton>
             </S.TabContainer>
@@ -364,112 +408,143 @@ const ProdutosCadastrar = () => {
                   ))}
                 </Input>
               )}
-              <S.Label htmlFor="nome">Nome</S.Label>
-              <Input
-                type="text"
-                name="nome"
-                placeholder="Nome"
-                value={produto.nome}
-                onChange={handleChange}
-                required
-              />
 
-              <S.Label htmlFor="precoUnitario">Preço Unitário</S.Label>
-              <Input
-                type="text"
-                name="precoUnitario"
-                placeholder="Preço Unitário"
-                inputMode="decimal"
-                value={produto.precoUnitario}
-                onChange={(e) => {
-                  const valorDigitado = e.target.value;
-                  const valorFiltrado = valorDigitado
-                    .replace(/[^0-9,]/g, '')
-                    .replace(/(,.*),/g, '$1');
-                  handleChange({
-                    target: {
-                      name: 'precoUnitario',
-                      value: valorFiltrado,
-                    }
-                  } as React.ChangeEvent<HTMLInputElement>);
-                }}
-                required
-              />
-
-              <S.Label htmlFor="quantidade">Quantidade</S.Label>
-              <Input
-                type="number"
-                name="quantidade"
-                placeholder="Quantidade"
-                value={produto.quantidade}
-                onChange={handleChange}
-                required
-              />
               {activeTab === 'manual' && (
                 <>
-                  <S.Label htmlFor="descricao">Descrição</S.Label>
-                  <S.TextArea
-                    name="descricao"
-                    placeholder="Descrição"
-                    value={produto.descricao}
-                    onChange={handleChange}
-                  />
+                  {etapa === 'selecao' ? (
+                    <>
+                      <S.Label htmlFor="ean">EAN</S.Label>
+                      <Input
+                        type="text"
+                        name="ean"
+                        placeholder="EAN"
+                        value={produto.ean}
+                        onChange={handleChange}
+                        onBlur={() => {
+                          const ean = produto.ean?.toString()
+                          if (ean && ean.length >= 8) {
+                            buscarProdutoPorEan(ean)
+                          }
+                        }}
+                        required
+                      />
+                      <S.Button type="submit">Continuar</S.Button>
+                    </>
+                  ) : (
+                    <>
+                      <S.Label htmlFor="nome">Nome</S.Label>
+                      <Input
+                        type="text"
+                        name="nome"
+                        placeholder="Nome"
+                        value={produto.nome}
+                        onChange={handleChange}
+                        required
+                      />
 
-                  <S.Label htmlFor="dataVencimento">Data de Vencimento</S.Label>
-                  <Input
-                    type="text"
-                    name="dataVencimento"
-                    placeholder="Data de vencimento"
-                    value={produto.dataVencimento}
-                    onChange={handleChange}
-                  />
+                      <S.Label htmlFor="precoUnitario">Preço Unitário</S.Label>
+                      <Input
+                        type="text"
+                        name="precoUnitario"
+                        placeholder="Preço Unitário"
+                        value={produto.precoUnitario}
+                        onChange={(e) => {
+                          const valor = e.target.value
+                            .replace(/[^0-9.,]/g, '')
+                            .replace(/(\..*)\./g, '$1')
+                            .replace(/(,.*),/g, '$1')
+                          setProduto(prev => ({
+                            ...prev,
+                            precoUnitario: valor
+                          }))
+                        }}
+                        required
+                      />
 
-                  <S.Label htmlFor="ncm">NCM</S.Label>
-                  <Input
-                    type="text"
-                    name="ncm"
-                    placeholder="NCM"
-                    value={produto.ncm}
-                    onChange={handleChange}
-                  />
+                      <S.Label htmlFor="quantidade">Preço de custo</S.Label>
+                      <Input
+                        type="text"
+                        name="precoCusto"
+                        placeholder="Preço de custo"
+                        value={produto.precoCusto}
+                        onChange={handleChange}
+                        required
+                      />
 
-                  <S.Label htmlFor="ean">EAN</S.Label>
-                  <Input
-                    type="number"
-                    name="ean"
-                    placeholder="EAN"
-                    value={produto.ean}
-                    onChange={handleChange}
-                    onBlur={() => {
-                      if (produto.ean.toString().length >= 8) {
-                        buscarProdutoPorEan();
-                      }
-                    }}
-                  />
+                      <S.Label htmlFor="quantidade">Quantidade</S.Label>
+                      <Input
+                        type="text"
+                        name="quantidade"
+                        placeholder="Quantidade"
+                        value={produto.quantidade}
+                        onChange={handleChange}
+                        required
+                      />
 
-                  <S.Label htmlFor="observacao">Observação</S.Label>
-                  <S.TextArea
-                    name="observacao"
-                    placeholder="Observação"
-                    value={produto.observacao ?? ''}
-                    onChange={handleChange}
-                  />
+                      <S.Label htmlFor="descricao">Descrição</S.Label>
+                      <S.TextArea
+                        name="descricao"
+                        placeholder="Descrição"
+                        value={produto.descricao}
+                        onChange={handleChange}
+                      />
 
-                  <S.Label>
-                    Ativo:
-                    <Input
-                      type="checkbox"
-                      name="ativo"
-                      checked={produto.ativo}
-                      onChange={handleChange}
-                    />
-                  </S.Label>
+                      <S.Label htmlFor="dataVencimento">Data de Vencimento</S.Label>
+                      <Input
+                        type="text"
+                        name="dataVencimento"
+                        placeholder="Data de vencimento"
+                        value={produto.dataVencimento}
+                        onChange={handleChange}
+                      />
 
-                  <S.Label>
-                    Imagem:
-                    <Input type="file" accept="image/*" onChange={handleChange} />
-                  </S.Label>
-                  {produto.imagem && <ImagePreview base64={produto.imagem} />}
+                      <S.Label htmlFor="ncm">NCM</S.Label>
+                      <Input
+                        type="text"
+                        name="ncm"
+                        placeholder="NCM"
+                        value={produto.ncm}
+                        onChange={handleChange}
+                      />
+
+                      <S.Label htmlFor="observacao">Observação</S.Label>
+                      <S.TextArea
+                        name="observacao"
+                        placeholder="Observação"
+                        value={produto.observacao ?? ''}
+                        onChange={handleChange}
+                      />
+
+                      <S.Label>
+                        Ativo:
+                        <Input
+                          type="checkbox"
+                          name="ativo"
+                          checked={produto.ativo}
+                          onChange={handleChange}
+                        />
+                      </S.Label>
+
+                      <S.Label>
+                        Imagem:
+                        <Input type="file" accept="image/*" onChange={handleChange} />
+                      </S.Label>
+                      {produto.imagem && (
+                        <img
+                          src={produto.imagem.startsWith("data:") ? produto.imagem : produto.imagem}
+                          alt="Produto"
+                          style={{ width: "120px", height: "120px", objectFit: "contain" }}
+                        />
+                      )}
+
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                        <S.Button type="button" onClick={() => setEtapa('selecao')}>
+                          Voltar
+                        </S.Button>
+                        <S.Button type="submit">Cadastrar Produto</S.Button>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
@@ -480,21 +555,20 @@ const ProdutosCadastrar = () => {
                     type="file"
                     accept=".xml"
                     onChange={handleXmlUpload}
-                    disabled={loadingImport}
+                    required
                   />
-                  {loadingImport && <p>Enviando XML...</p>}
                 </>
               )}
+
               {activeTab === 'codigo' && (
                 <>
                   <S.Label htmlFor="ean">Código de Barras</S.Label>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <Input
                       type="text"
-                      name="ean"
                       placeholder="Código de barras"
-                      value={produto.ean}
-                      onChange={handleChange}
+                      value={codigoBarras}
+                      onChange={(e) => setCodigoBarras(e.target.value)}
                       required
                     />
                     {!scanning ? (
@@ -511,22 +585,23 @@ const ProdutosCadastrar = () => {
                     ref={videoRef}
                     style={{ width: '100%', maxHeight: 200, marginTop: 10, display: scanning ? 'block' : 'none' }}
                   />
+                  <S.Button type="submit" style={{ marginTop: '20px' }}>
+                    Processar Código
+                  </S.Button>
                 </>
               )}
-              <S.Button type="submit">
-                {activeTab === 'manual' ? 'Cadastrar Produto' :
-                  activeTab === 'xml' ? 'Importar XML' : 'Salvar por Código'}
-              </S.Button>
-              {mensagem && <p>{mensagem}</p>}
-              <Link to={'/pdv-mesa'}>
-                <td><S.Button>Voltar para vendas</S.Button></td>
+
+              {mensagem && <p style={{ marginTop: '10px' }}>{mensagem}</p>}
+
+              <Link to={'/pdv-mesa'} style={{ display: 'block', marginTop: '20px' }}>
+                <S.Button type="button">Voltar para vendas</S.Button>
               </Link>
             </S.Form>
           </div>
         )}
       </S.GridContent>
     </S.Container>
-  );
+  )
 }
 
 export default ProdutosCadastrar

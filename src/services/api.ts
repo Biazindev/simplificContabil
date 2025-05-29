@@ -19,6 +19,14 @@ export interface Endereco {
   cep: string; bairro: string; municipio: string; logradouro: string; numero: string; uf: string; complemento?: string
 }
 
+type ImportarProdutosResponse = {
+  success: boolean;
+  importedCount: number;
+  totalCount: number;
+  message: string;
+};
+
+
 interface DailyData {
   label: string;
   totais: {
@@ -579,18 +587,19 @@ export const api = createApi({
       invalidatesTags: ['Produto']
     }),
 
-    importarProdutosXmlFilial: builder.mutation<any, { file: File, filialId: number }>({
+    importarProdutosXmlFilial: builder.mutation<ImportarProdutosResponse, { file: File, filialId: number }>({
       query: ({ file, filialId }) => {
         const formData = new FormData();
-        formData.append('file', file); // só o file vai no body
+        formData.append('file', file);
 
         return {
-          url: `/estoque/${filialId}`, // filialId vai na URL
+          url: `/estoque/${filialId}`,
           method: 'POST',
           body: formData,
         };
       },
     }),
+
     listarFiliais: builder.query<any[], void>({
       query: () => 'filial',
       providesTags: ['Filial'],
@@ -753,7 +762,7 @@ export const api = createApi({
       }),
       invalidatesTags: ['OrdemServico']
     }),
-    limparMesa: builder.mutation<void, number>({ 
+    limparMesa: builder.mutation<void, number>({
       query: (numeroMesa) => ({
         url: `mesas/limpar/${numeroMesa}`,
         method: 'DELETE',
@@ -845,6 +854,7 @@ export const {
   useImportarProdutosXmlMutation,
   useListarFiliaisQuery,
   useGetTotalAnoQuery,
-  useGetVendasPorPeriodoQuery
+  useGetVendasPorPeriodoQuery,
+  useLazyGetProdutoPorGtinQuery
 } = api
 

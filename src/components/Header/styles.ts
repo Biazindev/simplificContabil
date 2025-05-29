@@ -75,7 +75,7 @@ export const Sidebar = styled.nav<SidebarProps>`
   }
 
   &:hover {
-    width: 220px;
+    width: 250px;
   }
 `;
 
@@ -84,7 +84,7 @@ export const SidebarItem = styled.a`
   display: flex;
   align-items: center;
   gap: 2rem;
-  padding: 0.75rem;
+  padding: 0.5rem;
   color: #ccc;
   text-decoration: none;
   border-radius: 8px;

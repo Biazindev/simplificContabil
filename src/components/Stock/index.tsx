@@ -10,6 +10,7 @@ import {
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { Input } from './styles';
 import { ProdutoProps } from '../../services/api';
+import { string } from 'yup';
 
 const Stock = () => {
   const [activeTab, setActiveTab] = useState<'manual' | 'codigo'>('manual');
@@ -190,22 +191,22 @@ const Stock = () => {
           <S.ContainerSerch style={{ display: 'flex', gap: '10px' }}>
             <div>
               <S.Input
-              type="text"
-              placeholder="Buscar por nome..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ flex: 1 }}
-            />
-            <S.Button
-              type="button"
-              onClick={() => {
-                setSearchTerm('');
-                handleBuscarProdutos();
-              }}
-              color="#3b82f6"
-            >
-              Limpar Busca
-            </S.Button>
+                type="text"
+                placeholder="Buscar por nome..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <S.Button
+                type="button"
+                onClick={() => {
+                  setSearchTerm('');
+                  handleBuscarProdutos();
+                }}
+                color="#3b82f6"
+              >
+                Limpar Busca
+              </S.Button>
             </div>
           </S.ContainerSerch>
         </S.Form>
@@ -342,11 +343,12 @@ const Stock = () => {
                       ) : (
                         <>
                           {produto.imagem && (
-                            <div style={{ maxWidth: '300px', maxHeight: '300px' }}>
-                              <img style={{ width: '100%', height: '100%', maxHeight: '250px' }} src={`data:image/webp;base64,${produto.imagem}`} alt="Preview" />
-                            </div>
+                            <img
+                              src={produto.imagem.startsWith("data:") ? produto.imagem : produto.imagem}
+                              alt="Produto"
+                              style={{ width: "100%", height: "120px", objectFit: "contain" }}
+                            />
                           )}
-                          <div><strong>Código:</strong> {produto.codigoBarras}</div>
                           <div><strong>NCM:</strong> {produto.ncm}</div>
                           <div><strong>Nome:</strong> {produto.nome}</div>
                           <div><strong>Descrição:</strong> {produto.descricao}</div>
