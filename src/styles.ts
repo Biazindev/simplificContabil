@@ -6,7 +6,6 @@ export const GlobalStyle = createGlobalStyle`
     margin: 0;
     font-family: 'Inter', sans-serif;
     background: ${({ theme }) => theme.colors.bg};
-    color: ${({ theme }) => theme.colors.text};
     transition: background 0.3s ease, color 0.3s ease;
     -webkit-font-smoothing: antialiased;
   }

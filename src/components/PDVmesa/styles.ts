@@ -137,25 +137,28 @@ export const ProductList = styled.div`
   width: 100%;
   overflow-y: auto;
   padding: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: ${({ theme }) => theme.colors.primary} transparent;
 
   @media (max-width: ${breakpoints.sm}) {
     grid-template-columns: 1fr 1fr;
   }
 
-  /* Estilo para scrollbar WebKit */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
   &::-webkit-scrollbar {
     width: 8px;
   }
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
+
   &::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-    transition: background-color 0.3s ease;
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: transparent;
   }
 
   >div {
@@ -470,8 +473,9 @@ export const Legend = styled.p`
 
 export const ImgContainer = styled.div`
     width: 100%;
-    height: 150px;
+    height: 120px;
     margin-bottom: 16px;
+    object-fit: cover;
 
     img {
     width: 100%;
@@ -480,12 +484,31 @@ export const ImgContainer = styled.div`
 `
 
 export const Description = styled.span`
-    
-    p{
-      font-size: 12px;
-      font-weight: 400;
-    }
-`
+  > div {
+    width: 150px;
+    height: 80px;
+    background-color: #718093;
+    border-radius: 8px;
+    box-shadow: 
+      inset 2px 2px 4px rgba(255, 255, 255, 0.1), 
+      inset -2px -2px 6px rgba(0, 0, 0, 0.3),
+      2px 2px 6px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    transition: all 0.3s ease;
+    margin: 8px 0 12px;
+  }
+
+  p {
+    font-size: 12px;
+    font-weight: 400;
+    color: #f5f6fa;
+    text-align: center;
+  }
+`;
+
 
 export const Icon = styled.div`
   position: absolute;
@@ -698,3 +721,7 @@ export const ClienteInfoContainer = styled.div`
     }
   }
 `;
+
+export const NameProduct = styled.span`
+    font-size: 12px;
+`

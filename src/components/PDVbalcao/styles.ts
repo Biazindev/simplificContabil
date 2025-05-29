@@ -5,6 +5,25 @@ export const Container = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
   padding: 2rem;
+
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: transparent;
+  }
 `;
 
 export const Title = styled.h1`
@@ -35,12 +54,50 @@ export const RightPane = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(4)};
+
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: transparent;
+  }
 `;
 
 export const TableSelector = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacing(1)};
+
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: transparent;
+  }
   
   button {
     background: ${({ theme }) => theme.colors.primaryAccent};
@@ -73,26 +130,26 @@ export const ProductList = styled.div`
   background: ${({ theme }) => theme.colors.surface || '#fff'};
   border-radius: ${({ theme }) => theme.radii.md};
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  scrollbar-width: thin;
-  scrollbar-color: ${({ theme }) => theme.colors.primary} transparent;
 
-  /* Estilo para scrollbar WebKit */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
   &::-webkit-scrollbar {
     width: 8px;
   }
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
+
   &::-webkit-scrollbar-thumb {
-    background-color: ${({ theme }) => theme.colors.primary};
-    border-radius: 10px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-    transition: background-color 0.3s ease;
+    background-color: transparent;
   }
+
   &::-webkit-scrollbar-thumb:hover {
-    background-color: ${({ theme }) => theme.colors.neoShadowLight || '#0053ba'};
+    background-color: transparent;
   }
+
 
   div {
     background: ${({ theme }) => theme.colors.bg};
@@ -107,17 +164,24 @@ export const ProductList = styled.div`
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 
-    &:hover {
-      background-color: ${({ theme }) => theme.colors.surface || '#e6f0ff'};
-      box-shadow: 0 6px 15px rgba(0, 83, 186, 0.3);
-      transform: translateY(-4px);
-    }
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
 
-    &:active {
-      transform: translateY(-2px);
-      box-shadow: 0 3px 10px rgba(0, 83, 186, 0.2);
-    }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: transparent;
+  }
 
     button {
       background: ${({ theme }) => theme.colors.surface || '#0053ba'};
@@ -136,16 +200,6 @@ export const ProductList = styled.div`
         background-color: ${({ theme }) => theme.colors.primary || '#003f8a'};
         box-shadow: 0 6px 18px rgba(0, 138, 34, 0.6);
         transform: scale(1.05);
-      }
-
-      &:active {
-        transform: scale(0.95);
-        box-shadow: 0 3px 8px rgba(0, 63, 138, 0.4);
-      }
-
-      &:focus-visible {
-        outline: 3px solid ${({ theme }) => theme.colors.neoShadowLight || '#a8c7ff'};
-        outline-offset: 2px;
       }
     }
   }

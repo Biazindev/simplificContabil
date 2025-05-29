@@ -25,7 +25,8 @@ import {
     Icon,
     OrderList,
     TotaisContainer,
-    ClienteInfoContainer
+    ClienteInfoContainer,
+    NameProduct
 } from './styles';
 import {
     ProdutoProps,
@@ -586,6 +587,15 @@ const VendaMesa: React.FC = () => {
         return cpf;
     }
 
+    function limitarTexto(texto: string, limite: number = 17): string {
+        return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
+    }
+
+    function limitar(texto: string, limite: number = 30): string {
+        return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
+    }
+
+
     return (
         <>
             <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
@@ -840,15 +850,21 @@ const VendaMesa: React.FC = () => {
                                                 <div onClick={() => handleAdicionarProduto(produto)}>
                                                     <ImgContainer>
                                                         {produto.imagem && (
-                                                            <img src={`data:image/webp;base64,${produto.imagem}`} alt="Preview" />
+                                                            <img
+                                                                src={produto.imagem.startsWith("data:") ? produto.imagem : produto.imagem}
+                                                                alt="Produto"
+                                                                style={{ width: "100%", height: "120px", objectFit: "contain" }}
+                                                            />
                                                         )}
 
                                                     </ImgContainer>
-                                                    <span>
-                                                        {produto.nome}
-                                                    </span>
+                                                    <NameProduct>
+                                                        {limitarTexto(produto.nome)}
+                                                    </NameProduct>
                                                     <Description>
-                                                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem dicta, porro optio sed quia alias </p>
+                                                            <div>
+                                                                <p>{limitar(produto.descricao ?? '')}</p>
+                                                            </div>
                                                     </Description>
                                                     <span>R$ {produto.precoUnitario.toFixed(2)}{' '}</span>
                                                     <Icon><span>+</span></Icon>

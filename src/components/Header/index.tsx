@@ -3,6 +3,7 @@ import { MdPersonAddAlt } from "react-icons/md";
 import { MdProductionQuantityLimits } from "react-icons/md";
 import { useNavigate, Outlet } from "react-router-dom";
 import { BiSupport } from "react-icons/bi";
+import logo from '../../assets/image/logo.png'
 import {
   RxAvatar, RxDashboard, RxBox, RxPerson, RxExit
 } from "react-icons/rx";
@@ -15,7 +16,7 @@ import { useTheme } from "styled-components";
 import { FaSun, FaMoon, FaBars } from "react-icons/fa";
 import {
   Layout, Sidebar, SidebarItem, HeaderContainer, Main, Avatar,
-  UserProfile, UserName, HeaderRight, ToggleSidebarButton, SidebarOverlay
+  UserProfile, UserName, HeaderRight, ToggleSidebarButton, SidebarOverlay, Logo, Baloon
 } from "./styles";
 import {
   useBuscarUsuarioPorIdQuery,
@@ -101,8 +102,6 @@ const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
 
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen}>
-        <h2 style={{ marginBottom: "2rem", color: theme.colors.text }}>ERP</h2>
-
         <SidebarItem href="/dashboard" onClick={closeSidebar}>
           <RxDashboard /> Dashboard
         </SidebarItem>
@@ -189,6 +188,7 @@ const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
 
       {/* Cabeçalho */}
       <HeaderContainer>
+       <Logo><img src={logo} alt="logoBerion" /></Logo>
         <HeaderRight onClick={toggleUserInfo} style={{ cursor: "pointer", position: "relative" }}>
           <UserProfile>
             <UserName>
@@ -253,6 +253,7 @@ const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
         <Outlet />
       </Main>
     </Layout>
+    <Baloon><img src={logo} alt="logoBerion" /></Baloon>
     <Footer />
     </>
   );

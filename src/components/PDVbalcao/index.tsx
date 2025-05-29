@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom';
 import InputMask from 'react-input-mask';
 import Select from 'react-select';
-import { GiHamburgerMenu } from "react-icons/gi";
 import { HiMiniMagnifyingGlass } from "react-icons/hi2";
 import { BiBarcodeReader } from "react-icons/bi";
 import {
@@ -10,38 +9,34 @@ import {
     LeftPane,
     ProductList,
     RightPane,
-    TableSelector,
     PdvButton,
     Wrapper,
     SwitchContainer,
     ToggleSwitch,
     Slider,
     Input,
-    Title,
     Top,
-    Legend,
     ImgContainer,
     Description,
     Icon,
     OrderList,
     TotaisContainer,
-    ClienteInfoContainer
-} from '../PDVmesa/styles';
+    ClienteInfoContainer,
+    NameProduct
+} from '../PDVmesa/styles'
 import {
     ProdutoProps,
     useGetProdutosQuery,
     useLazyGetClientesByPhoneQuery,
     useAddVendaMutation,
-    useCriarOuReutilizarMesaMutation,
     ClienteProps,
-    useFinalizarMesaMutation,
     useAdicionarPedidoMutation,
     useSairParaEntregaMutation,
-    useListarMesasAbertasQuery,
-    useLazyGetItensMesaQuery,
-    useLazyListarPedidosQuery
+    useLazyListarPedidosQuery,
+    
 } from '../../services/api';
 import NfContainer from '../NotaFiscal'
+import VendaEntrega from '../PDVentrega';
 import { ItemVenda } from '../../types';
 
 export type VendaData = {
@@ -57,19 +52,14 @@ export type VendaData = {
     status?: string;
 };
 
-export interface ItemMesa {
-    numeroParcelas: number;
-    formPagamento: number;
-    preco: string; // Alterado para string
-    produtoId: number;
-    nome: string;
+export interface PedidoItem {
     produto: {
-        id: number;
-        nome: string;
-        precoUnitario: string; // Alterado para string
+        id?: number;
     };
     quantidade: number;
+    observacao?: string;
 }
+
 
 export interface ClientePessoaFisica {
     cpf: string;
@@ -87,7 +77,7 @@ export interface Cliente {
 
 export interface ProdutoSelecionado {
     produtoId: number;
-    id: number;
+    id?: number;
     nome?: string;
     nomeProduto?: string;
     preco?: string; // Alterado para string
@@ -110,43 +100,34 @@ export type Pagamento = {
     totalPagamento: string; // Alterado para string
 };
 
-export type MesaLocal = {
-    numero: number;
-    ocupada: boolean;
-}
-
 const VendaBalcao: React.FC = () => {
     const [showNf, setShowNf] = useState(false);
     const [showEnt, setShowEnt] = useState(false);
-    const [mesaAtual, setMesaAtual] = useState<number | null>(null);
     const [clienteBusca, setClienteBusca] = useState('');
     const [produtoBusca, setProdutoBusca] = useState('');
-    const [vendasPorMesa, setVendasPorMesa] = useState<Record<number, VendaData>>({});
     const [addVenda, { isLoading: enviandoVenda, error: erroVenda }] = useAddVendaMutation();
     const [selectedValue, setSelectedValue] = useState<string | null>(null);
     const [selectedValuePag, setSelectedValuePag] = useState<string | null>(null);
 
     const [produtosSelecionados, setProdutosSelecionados] = useState<ProdutoSelecionado[]>([]);
-    const [dadosEntrega, setDadosEntrega] = useState<{ clienteBusca: string; produtosSelecionados: ProdutoSelecionado[] } | null>(null);
-    const [addPedidoEntrega, { isLoading: enviandoPedido }] = useFinalizarMesaMutation();
-    const [bloqueado, setBloqueado] = React.useState(false);
-    const [criarOuReutilizarMesa] = useCriarOuReutilizarMesaMutation();
     const [adicionarPedido] = useAdicionarPedidoMutation();
     const [tipoAtendimento, setTipoAtendimento] = useState<'mesa' | 'entrega' | 'balcao'>('mesa');
     const [sairParaEntrega] = useSairParaEntregaMutation()
-    const [getItensMesa] = useLazyGetItensMesaQuery();
     const [listarPedidos] = useLazyListarPedidosQuery();
-    const { data: mesasAbertas } = useListarMesasAbertasQuery();
 
-    const numerosMesasAtivas = mesasAbertas?.map((mesa) => mesa.numero) ?? [];
+    const sanitizeNumber = (value: string | number) => {
+        if (typeof value === 'string') {
+            return parseFloat(value.replace(',', '.'));
+        }
+        return value;
+    };
 
-    const [mesas, setMesas] = useState<MesaLocal[]>(
-        () =>
-            Array.from({ length: 20 }, (_, i) => ({
-                numero: i + 1,
-                ocupada: false,
-            }))
-    );
+    const parsePreco = (preco: string | number): number => {
+        if (typeof preco === 'number') {
+            return preco;
+        }
+        return Number(preco.replace(',', '.').replace(/[^\d.-]/g, '')) || 0;
+    }
 
     type VendaData = {
         emitirNotaFiscal: boolean;
@@ -165,14 +146,13 @@ const VendaBalcao: React.FC = () => {
 
     const formatarApenasNumeros = (valor: string) => valor.replace(/\D/g, '');
 
-    // Função para converter string para número com tratamento de vírgula
-    const parsePreco = (preco: string): number => {
-        return parseFloat(preco.replace(',', '.')) || 0;
-    };
-
     // Função para formatar número para string com 2 casas decimais
     const formatPreco = (valor: number): string => {
         return valor.toFixed(2).replace('.', ',');
+    };
+
+    const formatPrecoBackend = (valor: number): string => {
+        return valor.toFixed(2);
     };
 
     const gerarPayloadVenda = (
@@ -182,35 +162,35 @@ const VendaBalcao: React.FC = () => {
         somaProdutos: number,
         showNf: boolean,
     ): VendaData => {
-        const agora = new Date().toISOString();
+        const agora = new Date().toISOString(); // Será convertido no backend para LocalDateTime
 
         return {
             emitirNotaFiscal: showNf,
-            vendaAnonima: !clienteEncontrado,
-            documentoCliente: clienteEncontrado?.documento || null,
-            cliente: clienteEncontrado?.nome || null,
-            emitenteId: 1,
-            modelo: 'NFE',
+            documentoCliente: clienteEncontrado?.documento || '',
+            cliente: showNf ? clienteEncontrado : null,
+            emitenteId: showNf ? 1 : null, // obrigatório só se for emitir nota
+            modelo: showNf ? 'NFE' : null,
             itens: produtosSelecionados.map((p) => ({
                 produtoId: p.produtoId,
                 nomeProduto: p.nome,
-                precoUnitario: p.precoUnitario || '0',
+                precoUnitario: sanitizeNumber(p.precoUnitario || '0'),
                 quantidade: p.quantidade,
-                totalItem: formatPreco(parsePreco(p.precoUnitario || '0') * p.quantidade),
-            })) as unknown as ItemVenda[],
+                totalItem: sanitizeNumber(p.totalItem || '0'),
+            })),
             pagamento: {
                 formaPagamento: selectedValuePag || 'DINHEIRO',
-                valorPago: formatPreco(somaProdutos),
-                valorRestante: '0,00',
+                valorPago: formatPrecoBackend(sanitizeNumber(somaProdutos)),
+                valorRestante: formatPrecoBackend(0),
                 dataPagamento: agora,
                 status: 'PAGO',
                 numeroParcelas: Number(selectedValue) || 1,
-                totalVenda: formatPreco(somaProdutos),
-                totalDesconto: totalDesconto,
-                totalPagamento: formatPreco(somaProdutos),
+                totalVenda: formatPrecoBackend(sanitizeNumber(somaProdutos)),
+                totalDesconto: formatPrecoBackend(sanitizeNumber(totalDesconto)),
+                totalPagamento: formatPrecoBackend(sanitizeNumber(somaProdutos)),
             },
             dataVenda: agora,
             status: 'EM_PREPARO',
+            vendaAnonima: !clienteEncontrado,
         };
     };
 
@@ -242,183 +222,13 @@ const VendaBalcao: React.FC = () => {
         return () => clearTimeout(delayDebounce);
     }, [clienteBusca, buscarCliente]);
 
-    useEffect(() => {
-        if (mesaAtual !== null) {
-            const dadosMesa = vendasPorMesa[mesaAtual];
-            setClienteBusca(dadosMesa?.clienteBusca || '');
-            setProdutosSelecionados(dadosMesa?.produtosSelecionados || []);
-        }
-    }, [mesaAtual, vendasPorMesa]);
-
-    useEffect(() => {
-        const carregarDadosMesa = async () => {
-            if (mesaAtual !== null) {
-                try {
-                    const itensResponse = await getItensMesa(mesaAtual).unwrap();
-
-                    const produtosMapeados = itensResponse.map((item: any) => {
-                        const produtoId = item.produtoId;
-                        const nome = item.nome || item.produto?.nome || item.nomeProduto;
-                        const precoUnitario = item.precoUnitario || item.produto?.precoUnitario || item.preco || '0';
-                        const preco = item.preco || precoUnitario;
-                        const quantidade = item.quantidade || 1;
-                        const formPagamento = item.formPagamento?.toString() || 'DINHEIRO';
-                        const numeroParcelas = item.numeroParcelas || 1;
-
-                        return {
-                            produtoId,
-                            id: produtoId,
-                            nome,
-                            precoUnitario,
-                            preco,
-                            quantidade,
-                            formPagamento,
-                            numeroParcelas,
-                            totalItem: formatPreco(parsePreco(preco) * quantidade)
-                        } as unknown as ProdutoSelecionado;
-                    });
-
-                    setProdutosSelecionados(produtosMapeados);
-
-                    const pedidosResponse = await listarPedidos({ mesaId: mesaAtual }).unwrap();
-                    const ultimoPedido = Array.isArray(pedidosResponse)
-                        ? pedidosResponse.at(-1)
-                        : undefined;
-
-                    if (ultimoPedido?.cliente) {
-                        if (typeof ultimoPedido.cliente === 'string') {
-                            setClienteBusca(ultimoPedido.cliente);
-                        } else {
-                            const cliente = ultimoPedido.cliente as Cliente;
-                            const documento = cliente.tipoPessoa === 'FISICA'
-                                ? cliente.pessoaFisica?.cpf
-                                : cliente.pessoaJuridica?.cnpj;
-
-                            if (documento) {
-                                setClienteBusca(documento);
-                            }
-                        }
-                    }
-
-                } catch (error) {
-                    console.error('Erro ao buscar dados da mesa:', error);
-                }
-            }
-        };
-
-        carregarDadosMesa();
-    }, [mesaAtual, getItensMesa, listarPedidos]);
-
-    useEffect(() => {
-        const carregarItensMesa = async () => {
-            if (mesaAtual !== null) {
-                try {
-                    const itensResponse = await getItensMesa(mesaAtual).unwrap() as unknown as ItemMesa[];
-                    const produtosMapeados = itensResponse.map((item) => ({
-                        produtoId: item.produtoId,
-                        id: item.produtoId,
-                        nome: item.nome,
-                        precoUnitario: item.preco,
-                        quantidade: item.quantidade,
-                        formPagamento: item.formPagamento.toString(),
-                        numeroParcelas: item.numeroParcelas,
-                    }));
-                    setProdutosSelecionados(produtosSelecionados);
-                } catch (error) {
-                    console.error('Erro ao carregar itens da mesa:', error);
-                }
-            }
-        };
-
-        carregarItensMesa();
-    }, [mesaAtual, getItensMesa]);
-
-    const salvarDadosMesaAtual = () => {
-        if (mesaAtual !== null) {
-            const payload = gerarPayloadVenda(
-                clienteEncontrado ?? null,
-                produtosSelecionados,
-                pagamento,
-                parsePreco(somaProdutos.toString()),
-                showNf
-            );
-
-            setVendasPorMesa((prev) => ({
-                ...prev,
-                [mesaAtual]: {
-                    ...payload,
-                    clienteBusca,
-                    produtosSelecionados,
-                },
-            }));
-        }
-    };
-
-    const handleSelecionarMesa = async (mesa: number) => {
-        if (mesa !== mesaAtual) {
-            salvarDadosMesaAtual();
-            setMesaAtual(mesa);
-        }
-
-        try {
-            await criarOuReutilizarMesa(mesa).unwrap();
-
-            const itensResponse = await getItensMesa(mesa).unwrap();
-
-            const produtosMapeados = itensResponse.map((item: any) => ({
-                produtoId: item.produtoId || item.id,
-                id: item.produtoId || item.id,
-                nome: item.nome || item.nomeProduto,
-                precoUnitario: item.preco || item.precoUnitario || '0',
-                quantidade: item.quantidade || 1,
-                formPagamento: item.formPagamento?.toString() || 'DINHEIRO',
-                numeroParcelas: item.numeroParcelas || 1,
-                mensagem: '',
-                descricao: '',
-                ncm: '',
-                EAN: '',
-                CEST: '',
-                unidade: 'UN',
-                precoCompra: '0',
-                estoqueAtual: 0
-            }));
-
-            setProdutosSelecionados(produtosMapeados);
-
-            const pedidosResponse = await listarPedidos({ mesaId: mesa }).unwrap();
-            const ultimoPedido = Array.isArray(pedidosResponse) ? pedidosResponse.at(-1) : null;
-
-            if (ultimoPedido?.cliente) {
-                if (typeof ultimoPedido.cliente === 'string') {
-                    setClienteBusca(ultimoPedido.cliente);
-                } else {
-                    const cliente = ultimoPedido.cliente as Cliente;
-                    const documento = cliente.tipoPessoa === 'FISICA'
-                        ? cliente.pessoaFisica?.cpf
-                        : cliente.pessoaJuridica?.cnpj;
-
-                    if (documento) {
-                        setClienteBusca(documento);
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Erro ao selecionar mesa:', error);
-            alert('Ocorreu um erro ao selecionar a mesa. Por favor, tente novamente.');
-        }
-    }
-
     const somaProdutos = produtosSelecionados.reduce((total, p) => {
-        const preco = parsePreco(p.precoUnitario || '0');
-        return total + preco * (p.quantidade || 1);
+        const preco = sanitizeNumber(p.precoUnitario || '0');
+        const quantidade = sanitizeNumber(p.quantidade || 1);
+        return total + preco * quantidade;
     }, 0);
 
     const handleFinalizarVenda = async () => {
-        if (mesaAtual === null) {
-            alert('Selecione uma mesa antes de finalizar a venda.');
-            return;
-        }
-
         const payload = gerarPayloadVenda(
             clienteEncontrado ?? null,
             produtosSelecionados,
@@ -434,73 +244,61 @@ const VendaBalcao: React.FC = () => {
         }
     };
 
-    const limparEstado = () => {
-        setVendasPorMesa((prev) => {
-            const copy = { ...prev };
-            if (mesaAtual !== null) {
-                delete copy[mesaAtual];
-            }
-            return copy;
-        });
-        setClienteBusca('');
-        setProdutosSelecionados([]);
-        setMesaAtual(null);
-    };
-
     const handleRemoverProduto = (indexToRemove: number) => {
         setProdutosSelecionados((prev) => prev.filter((_, i) => i !== indexToRemove));
     };
 
     const handleAdicionarProduto = async (produto: ProdutoProps) => {
-        const novoItem = {
+        const precoUnitario = sanitizeNumber(produto.precoUnitario);
+        const quantidade = 1;
+        const totalItem = precoUnitario * quantidade;
+
+        const novoItem: ProdutoSelecionado = {
+            id: produto.id,
             produtoId: produto.id,
-            precoUnitario: produto.precoUnitario.toString(),
-            quantidade: 1,
-            totalItem: produto.precoUnitario.toString()
+            nome: produto.nome,
+            preco: produto.preco,
+            precoUnitario: precoUnitario.toFixed(2),
+            quantidade,
+            totalItem: totalItem.toFixed(2),
         };
 
         setProdutosSelecionados((prev) => {
             const existente = prev.find(p => p.produtoId === produto.id);
+
             if (existente) {
+                const novaQuantidade = existente.quantidade + 1;
+                const preco = sanitizeNumber(existente.precoUnitario ?? "0");
+                const novoTotal = preco * novaQuantidade;
+
                 return prev.map(p =>
                     p.produtoId === produto.id
                         ? {
                             ...p,
-                            quantidade: p.quantidade + 1,
-                            totalItem: formatPreco(parsePreco(p.precoUnitario || '0') * (p.quantidade + 1))
+                            precoUnitario: precoUnitario.toFixed(2),
+                            quantidade: novaQuantidade,
+                            totalItem: novoTotal.toFixed(2),
                         }
                         : p
                 );
-            } else {
-                return [...prev, {
-                    ...novoItem,
-                    id: produto.id,
-                    nome: produto.nome,
-                    preco: produto.precoUnitario.toString()
-                }];
             }
+
+            return [...prev, novoItem];
         });
 
         try {
             await adicionarPedido({
-                numeroMesa: mesaAtual!,
                 itens: [{
-                    ...novoItem,
-                    precoUnitario: novoItem.precoUnitario,
-                    totalItem: novoItem.totalItem
-                }]
+                    produtoId: produto.id,
+                    quantidade: 1,
+                    observacao: "",
+                }],
             }).unwrap();
         } catch (err) {
             console.error('Erro ao adicionar pedido:', err);
         }
     };
 
-    const renderTableInfo = (orderData: any) => {
-        if (orderData?.type === 'mesa' && orderData?.table?.tableNumber) {
-            return <h3>Mesa {orderData.table.tableNumber}</h3>;
-        }
-        return null;
-    };
 
     const opcoesPagamento = [
         { value: 'PIX', label: 'Pix' },
@@ -541,9 +339,42 @@ const VendaBalcao: React.FC = () => {
         return cpf;
     }
 
+    function limitarTexto(texto: string, limite: number = 17): string {
+        return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
+    }
+
+    function limitar(texto: string, limite: number = 30): string {
+        return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
+    }
+
+
     return (
         <>
+            <div style={{ margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+            </div>
+            <div style={{ padding: '1rem' }}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'end',
+                    width: '100%',
+                    margin: '0 auto'
+                }}><div style={{
+                    borderRadius: '8px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    fontSize: '28px',
+                    alignItems: 'center',
+                    backgroundColor: '#ccc'
+                }}>
+                    </div>
+                </div>
+                {tipoAtendimento === 'entrega' && <VendaEntrega />}
+                {tipoAtendimento === 'balcao' && <VendaBalcao />}
+            </div>
+            {tipoAtendimento === 'mesa' && (
                 <>
+                    <Top>
+                    </Top>
                     <Container>
                         <LeftPane>
                             <div>
@@ -627,8 +458,10 @@ const VendaBalcao: React.FC = () => {
                                                     <div><strong>{nome}</strong></div>
                                                     <span>ID: {id}</span>
                                                     <div>
-                                                        R$ {Number(parsePreco(preco)).toFixed(2)} x {quantidade} = <strong>R$ {Number(total).toFixed(2)}</strong>
+                                                        R$ {Number(parsePreco(preco)).toFixed(2)} x {quantidade}<strong>
+                                                        </strong>
                                                     </div>
+
                                                 </div>
                                                 <button title='remover' className="remover" onClick={() => handleRemoverProduto(index)}>×</button>
                                             </li>
@@ -650,9 +483,7 @@ const VendaBalcao: React.FC = () => {
                             <PdvButton onClick={handleFinalizarVenda} disabled={enviandoVenda}>
                                 {enviandoVenda ? 'Enviando...' : 'Finalizar Venda'}
                             </PdvButton>
-                            <PdvButton onClick={limparEstado}>Limpar mesa</PdvButton>
                         </LeftPane>
-
                         <RightPane>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <h2><span></span>Catálogos de produtos</h2>
@@ -682,15 +513,21 @@ const VendaBalcao: React.FC = () => {
                                                 <div onClick={() => handleAdicionarProduto(produto)}>
                                                     <ImgContainer>
                                                         {produto.imagem && (
-                                                            <img src={`data:image/webp;base64,${produto.imagem}`} alt="Preview" />
+                                                            <img
+                                                                src={produto.imagem.startsWith("data:") ? produto.imagem : produto.imagem}
+                                                                alt="Produto"
+                                                                style={{ width: "100%", height: "120px", objectFit: "contain" }}
+                                                            />
                                                         )}
 
                                                     </ImgContainer>
-                                                    <span>
-                                                        {produto.nome}
-                                                    </span>
+                                                    <NameProduct>
+                                                        {limitarTexto(produto.nome)}
+                                                    </NameProduct>
                                                     <Description>
-                                                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem dicta, porro optio sed quia alias </p>
+                                                            <div>
+                                                                <p>{limitar(produto.descricao ?? '')}</p>
+                                                            </div>
                                                     </Description>
                                                     <span>R$ {produto.precoUnitario.toFixed(2)}{' '}</span>
                                                     <Icon><span>+</span></Icon>
@@ -702,20 +539,7 @@ const VendaBalcao: React.FC = () => {
                         </RightPane>
                     </Container>
                 </>
-            <Wrapper>
-                <SwitchContainer>
-                    <span>Emitir Nota Fiscal</span>
-                    <ToggleSwitch>
-                        <input
-                            type="checkbox"
-                            checked={showNf}
-                            onChange={() => setShowNf((prev) => !prev)}
-                        />
-                        <Slider />
-                    </ToggleSwitch>
-                </SwitchContainer>
-            </Wrapper>
-            {showNf && <NfContainer />}
+            )}
         </>
     );
 }

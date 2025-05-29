@@ -1,5 +1,14 @@
-import styled from "styled-components";
+import styled, { keyframes } from 'styled-components';
 
+
+const girarY = keyframes`
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(-360deg);
+  }
+`;
 
 interface SidebarProps {
   isOpen: boolean;
@@ -93,7 +102,6 @@ export const SidebarItem = styled.a`
   font-size: 0.9rem;
   z-index: 1000;
 
-
   svg {
     flex-shrink: 0;
     font-size: 1.25rem;
@@ -115,12 +123,50 @@ export const SidebarItem = styled.a`
 
 `;
 
+export const Logo = styled.div`
+    margin: 0 auto;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    width: 100%;
+    height: 50px;
+    z-index: 10001;
+
+    img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    }
+`
+
+export const Baloon = styled.div`
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 100px;
+  height: 100px;
+  background-color: transparent;
+  z-index: 1000;
+  perspective: 1000px; /* Adiciona profundidade 3D */
+
+  img {
+    width: 100px;
+    height: 100px;
+    background-color: transparent;
+    object-fit: cover;
+    filter: brightness(0.8);
+    animation: ${girarY} 4s linear infinite;
+    transform-style: preserve-3d;
+    transform-origin: center;
+  }
+`;
+
 export const HeaderContainer = styled.header`
   grid-area: header;
   width: 100%;
   background-color: #1e272e;
   color: #000;
-  padding: 0 2rem;
+  padding: .5rem;
   display: flex;
   align-items: center;
   justify-content: flex-end;
