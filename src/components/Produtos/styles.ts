@@ -28,6 +28,20 @@ export const Img = styled.div`
   }
 `
 
+export const VideoScanner = styled.video`
+  width: 100%;
+  max-height: 300px;
+  margin: 10px 0;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background: #000;
+  
+  &:focus {
+    outline: none;
+    border-color: #5f27cd;
+  }
+`;
+
 export const Input = styled.input`
   width: 100%;
   padding: 0.75rem 1rem;

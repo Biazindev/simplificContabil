@@ -14,6 +14,17 @@ import * as S from '../styles'
 import { Input } from '../../../styles'
 import { Link, useNavigate } from 'react-router-dom'
 
+type Produto = {
+  ncm?: {
+    code?: number;
+    description?: string;
+    full_description?: string;
+    ex?: string | null;
+  };
+  // outras propriedades...
+};
+
+
 const parseCurrency = (value: string): number => {
   return Number(value.replace(/\./g, '').replace(',', '.')) || 0
 }
@@ -83,15 +94,6 @@ const ProdutosCadastrar = () => {
     imagem: null,
   })
 
-  const eanValido = produto?.ean && produto.ean.toString().length >= 8;
-  useEffect(() => {
-    const ean = produto?.ean?.toString();
-
-    if (ean && ean.length >= 8) {
-      buscarProdutoPorEan(ean);
-    }
-  }, [produto.ean])
-
   useEffect(() => {
     if (!produtoPorEan) return;
 
@@ -117,6 +119,23 @@ const ProdutosCadastrar = () => {
 
     setMensagem("✅ Produto encontrado via EAN!")
   }, [produtoPorEan])
+
+  useEffect(() => {
+  if (codigoBarras && codigoBarras.length >= 8) {
+    buscarProdutoPorEan(codigoBarras)
+      .unwrap()
+      .then(() => {
+        setMensagem('✅ Dados do produto carregados!');
+        setActiveTab('manual');
+        setEtapa('cadastro');
+      })
+      .catch(() => {
+        setMensagem('ℹ️ Produto não encontrado. Preencha os dados manualmente.');
+        setActiveTab('manual');
+        setEtapa('cadastro');
+      });
+  }
+}, [codigoBarras]);
 
   const formatForJava = (date: Date) =>
     date.toISOString().split('.')[0]
@@ -167,6 +186,7 @@ const ProdutosCadastrar = () => {
       }
     }
   }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -310,39 +330,60 @@ const ProdutosCadastrar = () => {
     }
   }, [])
 
-  const iniciarLeituraCodigo = async () => {
-    if (!videoRef.current || !codeReader.current) return
-    setScanning(true)
+    const iniciarLeituraCodigo = async () => {
+  if (!videoRef.current || !codeReader.current) return;
+  setScanning(true);
+  setMensagem('🔍 Lendo código de barras...');
 
-    try {
-      const result = await codeReader.current.decodeOnceFromVideoDevice(undefined, videoRef.current)
-      const codigo = result.getText()
-      setCodigoBarras(codigo)
+  try {
+    const result = await codeReader.current.decodeOnceFromVideoDevice(undefined, videoRef.current);
+    const codigo = result.getText();
+    setCodigoBarras(codigo);
 
-      const response = await fetch(`/api/produtos/barcode/${codigo}`)
-      if (!response.ok) {
-        setProdutoNome('')
-        setProdutoPreco('')
-        setMensagem('❌ Produto não encontrado.')
-        return
-      }
+    // 1. Atualiza o estado do produto com o código lido
+    setProduto(prev => ({
+      ...prev,
+      ean: codigo
+    }));
 
-      const produto = await response.json()
-      setProdutoNome(produto.nome || '')
-      setProdutoPreco(produto.preco?.toString() || '')
-      setMensagem('✅ Produto carregado com sucesso!')
-    } catch (error) {
-      console.error('Erro ao ler código:', error)
-      setMensagem('❌ Erro ao ler o código ou buscar produto.')
-    } finally {
-      setScanning(false)
+    // 2. Busca automaticamente o produto pelo EAN
+    const produtoEncontrado = await buscarProdutoPorEan(codigo).unwrap();
 
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream
-        stream.getTracks().forEach((track) => track.stop())
-      }
+    if (produtoEncontrado) {
+      setMensagem('✅ Produto encontrado via código de barras!');
+      
+      // 3. Preenche os campos do formulário com os dados encontrados
+      setProduto(prev => ({
+        ...prev,
+        nome: produtoEncontrado.description || '',
+        precoUnitario: produtoEncontrado.max_price?.toString() || '',
+        ncm: (produtoEncontrado.ncm as any)?.code?.toString() || '',
+        descricao: produtoEncontrado.category?.description || '',
+        observacao: produtoEncontrado.brand?.name || '',
+        imagem: produtoEncontrado.thumbnail || null
+      }));
+
+      // 4. Muda para a aba manual e etapa de cadastro
+      setActiveTab('manual');
+      setEtapa('cadastro');
+    } else {
+      setMensagem('ℹ️ Produto não encontrado. Preencha os dados manualmente.');
+      setActiveTab('manual');
+      setEtapa('cadastro');
+    }
+
+  } catch (error) {
+    console.error('Erro ao ler código:', error);
+    setMensagem('❌ Erro ao ler o código. Tente novamente.');
+  } finally {
+    setScanning(false);
+    // Pare a câmera
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
     }
   }
+};
 
   const pararLeituraCodigo = () => {
     if (videoRef.current && videoRef.current.srcObject) {
@@ -568,7 +609,10 @@ const ProdutosCadastrar = () => {
                       type="text"
                       placeholder="Código de barras"
                       value={codigoBarras}
-                      onChange={(e) => setCodigoBarras(e.target.value)}
+                      onChange={(e) => {
+                        setCodigoBarras(e.target.value);
+                        setProduto(prev => ({ ...prev, ean: e.target.value }));
+                      }}
                       required
                     />
                     {!scanning ? (
@@ -583,11 +627,33 @@ const ProdutosCadastrar = () => {
                   </div>
                   <video
                     ref={videoRef}
-                    style={{ width: '100%', maxHeight: 200, marginTop: 10, display: scanning ? 'block' : 'none' }}
+                    style={{
+                      width: '100%',
+                      maxHeight: 200,
+                      marginTop: 10,
+                      display: scanning ? 'block' : 'none',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px'
+                    }}
                   />
-                  <S.Button type="submit" style={{ marginTop: '20px' }}>
-                    Processar Código
-                  </S.Button>
+
+                  {produto.ean && (
+                    <div style={{ marginTop: '10px', padding: '10px', background: '#f5f5f5', borderRadius: '4px' }}>
+                      <p><strong>Código:</strong> {produto.ean}</p>
+                      {produto.nome && <p><strong>Nome:</strong> {produto.nome}</p>}
+                      {produto.precoUnitario && <p><strong>Preço:</strong> R$ {produto.precoUnitario}</p>}
+                    </div>
+                  )}
+
+                  {etapa === 'cadastro' && (
+                    <S.Button
+                      type="button"
+                      onClick={() => setMostrarFormulario(true)}
+                      style={{ marginTop: '20px' }}
+                    >
+                      Cadastrar Produto
+                    </S.Button>
+                  )}
                 </>
               )}
 
