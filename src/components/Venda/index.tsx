@@ -22,6 +22,7 @@ import {
   CheckboxContainer
 } from './styles';
 import NfContainer from '../NotaFiscal';
+import Loader from '../Loader';
 
 interface EmitirNotaButtonProps {
   vendaId: string;
@@ -252,7 +253,7 @@ const Venda = ({ vendaId, statusVenda }: EmitirNotaButtonProps) => {
       <ContainerSpace>
         <ContainerButton>
           <Button onClick={handleEnviarVenda} disabled={isLoading}>
-            {isLoading ? 'Enviando...' : 'Finalizar Venda'}
+            {isLoading ? <Loader /> : 'Finalizar Venda'}
           </Button>
         </ContainerButton>
         <ContainerButton>
@@ -286,7 +287,7 @@ const Venda = ({ vendaId, statusVenda }: EmitirNotaButtonProps) => {
               <span className="slider" />
             </div>
             <span style={{ marginLeft: '8px' }}>
-              {isLoading ? 'Emitindo...' : 'Emitir Nota Fiscal'}
+              {isLoading ? <Loader /> : 'Emitir Nota Fiscal'}
             </span>
           </label>
 

@@ -31,6 +31,7 @@ import {
     PopconfirmButton
 } from './styles';
 import { StatusOrdemServico } from '..';
+import Loader from '../../Loader/index';
 
 // Estendendo Day.js com plugins necessários
 dayjs.extend(isSameOrAfter);
@@ -114,7 +115,7 @@ const OrdemServicoList: React.FC = () => {
     });
 
     if (isLoading) {
-        return <CenteredSpin>Carregando...</CenteredSpin>;
+        return <CenteredSpin><Loader /></CenteredSpin>;
     }
 
     const handleDataInicioChange = (e: React.ChangeEvent<HTMLInputElement>) => {

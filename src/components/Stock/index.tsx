@@ -11,6 +11,7 @@ import { BrowserMultiFormatReader } from '@zxing/browser';
 import { Input } from './styles';
 import { ProdutoProps } from '../../services/api';
 import { string } from 'yup';
+import Loader from '../Loader';
 
 const Stock = () => {
   const [activeTab, setActiveTab] = useState<'manual' | 'codigo'>('manual');
@@ -218,7 +219,7 @@ const Stock = () => {
         {activeTab === 'manual' && (
           <div>
             {loadingProdutos || (searchTerm && loadingSearch) ? (
-              <p>Carregando produtos...</p>
+              <p><Loader /></p>
             ) : errorProdutos ? (
               <p>Erro ao carregar produtos</p>
             ) : (

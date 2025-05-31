@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom';
 import InputMask from 'react-input-mask';
 import Select from 'react-select';
@@ -44,7 +44,6 @@ import {
     useLimparMesaMutation
 } from '../../services/api';
 import NfContainer from '../NotaFiscal'
-import VendaEntrega from '../PDVentrega';
 import VendaBalcao from '../PDVbalcao';
 import { ItemVenda } from '../../types';
 import { number } from 'yup';
@@ -140,6 +139,7 @@ const VendaMesa: React.FC = () => {
     const [addVenda, { isLoading: enviandoVenda, error: erroVenda }] = useAddVendaMutation();
     const [selectedValue, setSelectedValue] = useState<string | null>(null);
     const [selectedValuePag, setSelectedValuePag] = useState<string | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const [produtosSelecionados, setProdutosSelecionados] = useState<ProdutoSelecionado[]>([]);
     const [dadosEntrega, setDadosEntrega] = useState<{ clienteBusca: string; produtosSelecionados: ProdutoSelecionado[] } | null>(null);
@@ -260,6 +260,10 @@ const VendaMesa: React.FC = () => {
     const [buscarCliente, { data: clienteEncontrado, isFetching: buscandoCliente, error: erroCliente }] =
         useLazyGetClientesByPhoneQuery();
     const [totalDesconto, setTotalDesconto] = React.useState(pagamento?.totalDesconto || '0,00');
+
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
 
     useEffect(() => {
         adicionarPedido
@@ -628,22 +632,7 @@ const VendaMesa: React.FC = () => {
                             fontWeight: 'bold'
                         }}
                     >
-                        Balcão
-                    </button>
-                    <button
-                        onClick={() => setTipoAtendimento('entrega')}
-                        style={{
-                            backgroundColor: tipoAtendimento === 'entrega' ? '#5f27cd' : '#ccc',
-                            width: '130px',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '24px',
-                            cursor: 'pointer',
-                            fontSize: '18px',
-                            fontWeight: 'bold'
-                        }}
-                    >
-                        Entrega
+                        Balcão/Entrega
                     </button>
                 </div>
             </div>
@@ -681,7 +670,6 @@ const VendaMesa: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                {tipoAtendimento === 'entrega' && <VendaEntrega />}
                 {tipoAtendimento === 'balcao' && <VendaBalcao />}
             </div>
             {tipoAtendimento === 'mesa' && (
@@ -827,6 +815,7 @@ const VendaMesa: React.FC = () => {
                                 <HiMiniMagnifyingGlass style={{ color: '#ccc', fontSize: '28px', position: 'relative', left: '140px', top: '15px' }} />
                                 <div style={{ width: '300px' }}>
                                     <Input
+                                        ref={inputRef}
                                         style={{ textAlign: 'right' }}
                                         type="text"
                                         placeholder="Buscar produto"
@@ -862,9 +851,9 @@ const VendaMesa: React.FC = () => {
                                                         {limitarTexto(produto.nome)}
                                                     </NameProduct>
                                                     <Description>
-                                                            <div>
-                                                                <p>{limitar(produto.descricao ?? '')}</p>
-                                                            </div>
+                                                        <div>
+                                                            <p>{limitar(produto.descricao ?? '')}</p>
+                                                        </div>
                                                     </Description>
                                                     <span>R$ {produto.precoUnitario.toFixed(2)}{' '}</span>
                                                     <Icon><span>+</span></Icon>

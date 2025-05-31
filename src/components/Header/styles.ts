@@ -63,7 +63,7 @@ export const Sidebar = styled.nav<SidebarProps>`
   grid-area: sidebar;
   background-color: #1e272e;
   color: #ccc;
-  padding: 1rem 0.5rem;
+  padding: 3.5rem .5rem;
   transition: width 0.3s ease-in-out;
   width: ${({ isOpen }) => (isOpen ? "240px" : "48px")};
   overflow: hidden;

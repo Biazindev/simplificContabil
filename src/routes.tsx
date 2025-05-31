@@ -7,7 +7,7 @@ import Cliente from "./components/PDV"
 import Dashboard from "./components/Dashboard"
 import { ForgotPassword } from './components/Credentials/ForgotPassword'
 import { ResetPassword } from './components/Credentials/ResetPassword'
-import GetClientes from "./components/Get/GetClientes"
+import GetClientes from "./components/Get"
 import { PrivateRoute } from '../src/PrivateRoute'
 import Venda from "./components/Venda"
 import User from "./components/User/User"
@@ -15,7 +15,6 @@ import SaleList from "./components/SaleList"
 import Delivery from "./components/Delivery"
 import NfContainer from "./components/NotaFiscal"
 import VendaMesa from "./components/PDVmesa/index"
-import VendaEntrega from "./components/PDVentrega"
 import VendaBalcao from "./components/PDVbalcao"
 import ProdutosCadastrar from "./components/Produtos/ProdutosCadastrar"
 import CadastroCliente from "./components/Cadastro/Clientes"
@@ -49,8 +48,7 @@ const Rotas = ({ toggleTheme, isLightTheme }: AppRoutesProps) => (
         <Route path="/delivery" element={<Delivery/>} />
         <Route path="/nf" element={<NfContainer />} />
         <Route path="/pdv-mesa" element={<VendaMesa />} />
-        <Route path="/pdv-entrega" element={<VendaEntrega />} />
-        <Route path="/pdv-entrega" element={<VendaBalcao />} />
+        <Route path="/pdv-balcao" element={<VendaBalcao />} />
         <Route path="/ordem-servico" element={<OrdemServicoForm />} />
         <Route path="/ordem-list" element={<OrdemServicoList/>} />
         <Route path="/support" element={<Suporte/>} />

@@ -4,7 +4,6 @@ import {
   useAddProdutoMutation,
   useDeleteProdutoMutation,
   useGetProdutosByNameQuery,
-  useImportarProdutosXmlMutation,
   useListarFiliaisQuery,
   useLazyGetProdutoPorGtinQuery,
   useImportarProdutosXmlFilialMutation
@@ -13,21 +12,8 @@ import {
 import * as S from '../styles'
 import { Input } from '../../../styles'
 import { Link, useNavigate } from 'react-router-dom'
+import Loader from '../../Loader/index'
 
-type Produto = {
-  ncm?: {
-    code?: number;
-    description?: string;
-    full_description?: string;
-    ex?: string | null;
-  };
-  // outras propriedades...
-};
-
-
-const parseCurrency = (value: string): number => {
-  return Number(value.replace(/\./g, '').replace(',', '.')) || 0
-}
 
 type ProdutoProps = {
   id: number
@@ -62,6 +48,7 @@ const ProdutosCadastrar = () => {
   const [produtoPreco, setProdutoPreco] = useState('')
   const [mensagem, setMensagem] = useState('')
   const [etapa, setEtapa] = useState<'selecao' | 'cadastro'>('selecao')
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: filiais, isLoading: loadingFiliais, error: errorFiliais } = useListarFiliaisQuery()
   const [buscarProdutoPorEan, { data: produtoPorEan, isUninitialized }] = useLazyGetProdutoPorGtinQuery()
@@ -117,25 +104,29 @@ const ProdutosCadastrar = () => {
       precoCusto: prev.precoCusto
     }));
 
+    useEffect(() => {
+      inputRef.current?.focus()
+    }, []);
+
     setMensagem("✅ Produto encontrado via EAN!")
   }, [produtoPorEan])
 
   useEffect(() => {
-  if (codigoBarras && codigoBarras.length >= 8) {
-    buscarProdutoPorEan(codigoBarras)
-      .unwrap()
-      .then(() => {
-        setMensagem('✅ Dados do produto carregados!');
-        setActiveTab('manual');
-        setEtapa('cadastro');
-      })
-      .catch(() => {
-        setMensagem('ℹ️ Produto não encontrado. Preencha os dados manualmente.');
-        setActiveTab('manual');
-        setEtapa('cadastro');
-      });
-  }
-}, [codigoBarras]);
+    if (codigoBarras && codigoBarras.length >= 8) {
+      buscarProdutoPorEan(codigoBarras)
+        .unwrap()
+        .then(() => {
+          setMensagem('✅ Dados do produto carregados!');
+          setActiveTab('manual');
+          setEtapa('cadastro');
+        })
+        .catch(() => {
+          setMensagem('ℹ️ Produto não encontrado. Preencha os dados manualmente.');
+          setActiveTab('manual');
+          setEtapa('cadastro');
+        });
+    }
+  }, [codigoBarras]);
 
   const formatForJava = (date: Date) =>
     date.toISOString().split('.')[0]
@@ -330,60 +321,60 @@ const ProdutosCadastrar = () => {
     }
   }, [])
 
-    const iniciarLeituraCodigo = async () => {
-  if (!videoRef.current || !codeReader.current) return;
-  setScanning(true);
-  setMensagem('🔍 Lendo código de barras...');
+  const iniciarLeituraCodigo = async () => {
+    if (!videoRef.current || !codeReader.current) return;
+    setScanning(true);
+    setMensagem('🔍 Lendo código de barras...');
 
-  try {
-    const result = await codeReader.current.decodeOnceFromVideoDevice(undefined, videoRef.current);
-    const codigo = result.getText();
-    setCodigoBarras(codigo);
+    try {
+      const result = await codeReader.current.decodeOnceFromVideoDevice(undefined, videoRef.current);
+      const codigo = result.getText();
+      setCodigoBarras(codigo);
 
-    // 1. Atualiza o estado do produto com o código lido
-    setProduto(prev => ({
-      ...prev,
-      ean: codigo
-    }));
-
-    // 2. Busca automaticamente o produto pelo EAN
-    const produtoEncontrado = await buscarProdutoPorEan(codigo).unwrap();
-
-    if (produtoEncontrado) {
-      setMensagem('✅ Produto encontrado via código de barras!');
-      
-      // 3. Preenche os campos do formulário com os dados encontrados
+      // 1. Atualiza o estado do produto com o código lido
       setProduto(prev => ({
         ...prev,
-        nome: produtoEncontrado.description || '',
-        precoUnitario: produtoEncontrado.max_price?.toString() || '',
-        ncm: (produtoEncontrado.ncm as any)?.code?.toString() || '',
-        descricao: produtoEncontrado.category?.description || '',
-        observacao: produtoEncontrado.brand?.name || '',
-        imagem: produtoEncontrado.thumbnail || null
+        ean: codigo
       }));
 
-      // 4. Muda para a aba manual e etapa de cadastro
-      setActiveTab('manual');
-      setEtapa('cadastro');
-    } else {
-      setMensagem('ℹ️ Produto não encontrado. Preencha os dados manualmente.');
-      setActiveTab('manual');
-      setEtapa('cadastro');
-    }
+      // 2. Busca automaticamente o produto pelo EAN
+      const produtoEncontrado = await buscarProdutoPorEan(codigo).unwrap();
 
-  } catch (error) {
-    console.error('Erro ao ler código:', error);
-    setMensagem('❌ Erro ao ler o código. Tente novamente.');
-  } finally {
-    setScanning(false);
-    // Pare a câmera
-    if (videoRef.current?.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
+      if (produtoEncontrado) {
+        setMensagem('✅ Produto encontrado via código de barras!');
+
+        // 3. Preenche os campos do formulário com os dados encontrados
+        setProduto(prev => ({
+          ...prev,
+          nome: produtoEncontrado.description || '',
+          precoUnitario: produtoEncontrado.max_price?.toString() || '',
+          ncm: (produtoEncontrado.ncm as any)?.code?.toString() || '',
+          descricao: produtoEncontrado.category?.description || '',
+          observacao: produtoEncontrado.brand?.name || '',
+          imagem: produtoEncontrado.thumbnail || null
+        }));
+
+        // 4. Muda para a aba manual e etapa de cadastro
+        setActiveTab('manual');
+        setEtapa('cadastro');
+      } else {
+        setMensagem('ℹ️ Produto não encontrado. Preencha os dados manualmente.');
+        setActiveTab('manual');
+        setEtapa('cadastro');
+      }
+
+    } catch (error) {
+      console.error('Erro ao ler código:', error);
+      setMensagem('❌ Erro ao ler o código. Tente novamente.');
+    } finally {
+      setScanning(false);
+      // Pare a câmera
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
     }
-  }
-};
+  };
 
   const pararLeituraCodigo = () => {
     if (videoRef.current && videoRef.current.srcObject) {
@@ -432,7 +423,7 @@ const ProdutosCadastrar = () => {
             <S.Form onSubmit={handleSubmit}>
               <S.Label htmlFor="filial-select">Selecione a Filial:</S.Label>
               {loadingFiliais ? (
-                <p>Carregando filiais...</p>
+                <p><Loader /></p>
               ) : errorFiliais ? (
                 <p>Erro ao carregar filiais</p>
               ) : (
@@ -456,6 +447,7 @@ const ProdutosCadastrar = () => {
                     <>
                       <S.Label htmlFor="ean">EAN</S.Label>
                       <Input
+                        ref={inputRef}
                         type="text"
                         name="ean"
                         placeholder="EAN"
@@ -606,6 +598,7 @@ const ProdutosCadastrar = () => {
                   <S.Label htmlFor="ean">Código de Barras</S.Label>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <Input
+                      ref={inputRef}
                       type="text"
                       placeholder="Código de barras"
                       value={codigoBarras}

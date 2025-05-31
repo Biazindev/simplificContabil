@@ -24,6 +24,7 @@ import {
 } from "../../services/api";
 import KeyboardShortcutHandler from "../shortcuts/KeyboardShortcutHandler";
 import Footer from "../Footer";
+import Loader from "../Loader";
 
 interface HeaderProps {
   toggleTheme: () => void;
@@ -193,7 +194,7 @@ const Header = ({ toggleTheme, isLightTheme }: HeaderProps) => {
           <UserProfile>
             <UserName>
               {isLoading
-                ? "Carregando..."
+                ? <Loader />
                 : error
                   ? "Erro ao carregar usuário"
                   : usuario?.nome ?? "Usuário"}

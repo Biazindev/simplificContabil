@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCriarUsuarioMutation } from '../../services/api'
 import { Button, ErrorMessage, FormContainer, Input, Select, SuccessMessage, Title } from './styles';
+import Loader from '../Loader';
 
 export type Perfil = 'ADMIN' | 'COMUM'
 
@@ -88,7 +89,7 @@ const User = () => {
       </Select>
 
       <Button type="submit" disabled={isLoading}>
-        {isLoading ? 'Cadastrando...' : 'Cadastrar Usuário'}
+        {isLoading ? <Loader /> : 'Cadastrar Usuário'}
       </Button>
 
       {isSuccess && <SuccessMessage>Usuário cadastrado com sucesso!</SuccessMessage>}

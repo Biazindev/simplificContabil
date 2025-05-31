@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate, Navigate } from 'react-router-dom'
 
 import { useResetPasswordMutation } from '../../services/api'
+import Loader from '../Loader'
 
 function isErrorWithStatus(e: any): e is { status: number } {
     return e && typeof e === 'object' && 'status' in e
@@ -52,7 +53,7 @@ export function ResetPassword() {
                 required
             />
             <button type="submit" disabled={isLoading}>
-                {isLoading ? 'Aguarde...' : 'Redefinir senha'}
+                {isLoading ? <Loader /> : 'Redefinir senha'}
             </button>
             {message && <p>{message}</p>}
         </form>

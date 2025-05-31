@@ -9,9 +9,7 @@ import {
 import { Mutex } from 'async-mutex'
 import { EmitirNotaPayload } from '../components/Venda/types'
 import { OrdemServicoDTO } from '../Enum/enum'
-import { ItemMesa } from '../components/PDVmesa/index'
-import { number } from 'yup'
-import { ProdutoSelecionado } from '@/components/PDVentrega'
+import { ItemMesa, ProdutoSelecionado } from '../components/PDVmesa/index'
 
 export interface ForgotPasswordRequest { email: string }
 export interface ResetPasswordRequest { token: string; newPassword: string }
@@ -26,6 +24,18 @@ type ImportarProdutosResponse = {
   message: string;
 };
 
+export interface PedidoEntregaDTO {
+  pedidoId: number;
+  cliente_id?: number | null;
+  fone: string;
+  enderecoEntrega: Endereco;
+  observacao?: string;
+  nomeMotoboy?: string;
+  precisaTroco?: boolean;
+  trocoPara?: number;
+  status?: 'EM_PREPARO' | 'SAIU_PARA_ENTREGA' | 'ENTREGUE' | 'CANCELADO';
+  produtos?: ProdutoProps[];
+}
 
 interface DailyData {
   label: string;
@@ -66,7 +76,6 @@ export interface PedidoItem {
   totalItem?: string | number
   observacao?: string
   produto?: ProdutoSelecionado[]
-  // outros campos se existirem, ex: preço, nome, etc
 }
 
 export interface PedidoMesaDTO {
@@ -86,7 +95,6 @@ export enum StatusPedido {
   ABERTO = 'ABERTO',
   CONCLUIDO = 'CONCLUIDO',
   CANCELADO = 'CANCELADO',
-  // adicione outros status conforme seu enum Java
 }
 
 export interface PessoaFisica {
@@ -772,10 +780,18 @@ export const api = createApi({
       query: (codigo) => `produtos/gtins/${codigo}`,
       providesTags: (result, error, codigo) => [{ type: 'Produto', id: codigo }],
     }),
+    enviarParaEntrega: builder.mutation<PedidoEntregaDTO, PedidoEntregaDTO>({
+      query: (pedidoEntrega) => ({
+        url: 'pedidos-entrega',
+        method: 'POST',
+        body: pedidoEntrega,
+      }),
+    }),
   }),
 })
 
 export const {
+  useEnviarParaEntregaMutation,
   useGetProdutoPorGtinQuery,
   useLimparMesaMutation,
   useAtualizarOrdemServicoMutation,

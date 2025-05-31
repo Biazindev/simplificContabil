@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useForgotPasswordMutation } from '../../services/api'
+import Loader from '../Loader'
 
 export function ForgotPassword() {
     const [email, setEmail] = useState('')
@@ -29,7 +30,7 @@ export function ForgotPassword() {
                 required
             />
             <button type="submit" disabled={isLoading}>
-                {isLoading ? 'Enviando...' : 'Enviar link'}
+                {isLoading ? <Loader /> : 'Enviar link'}
             </button>
             {message && <p>{message}</p>}
         </form>

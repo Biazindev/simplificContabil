@@ -37,7 +37,7 @@ import {
   ContainerDash,
   CardContainer,
 } from "./styles";
-import { data } from "react-router-dom";
+import Loader from '../Loader/index';
 
 const COLORS = [
   "#EF4444", // Vermelho forte
@@ -76,7 +76,7 @@ const Dashboard = () => {
   const vendasMes = typeof monthlyData === "number" ? monthlyData : 0;
   const vendasAno = typeof yearData === "number" ? yearData : 0;
 
-  if (isLoading) return <p>Carregando...</p>;
+  if (isLoading) return <p><Loader /></p>;
   if (error || !dailySingleData) return <p>Erro ao carregar.</p>;
 
   const formatChartDataFromObject = (
@@ -123,7 +123,7 @@ const Dashboard = () => {
 
   console.log('Valor PIX extraído:', valorPix);
   console.log('Valor PIX extraído:', valorPix);
-  if (isLoading) return <p>Carregando...</p>;
+  if (isLoading) return <p><Loader /></p>;
   if (error || !dailySingleData) return <p>Erro ao carregar.</p>;
 
   return (

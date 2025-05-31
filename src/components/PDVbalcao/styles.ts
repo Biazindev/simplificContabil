@@ -75,6 +75,61 @@ export const RightPane = styled.div`
   }
 `;
 
+export const SwitchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+`;
+
+export const ToggleSwitch = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+`;
+
+export const Slider = styled.span`
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+
+  &:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+`;
+
+export const ToggleInput = styled.input`
+  opacity: 0;
+  width: 0;
+  height: 0;
+
+  &:checked + ${Slider} {
+    background-color: #2196F3;
+  }
+
+  &:focus + ${Slider} {
+    box-shadow: 0 0 1px #2196F3;
+  }
+
+  &:checked + ${Slider}:before {
+    transform: translateX(26px);
+  }
+`;
+
 export const TableSelector = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -251,56 +306,4 @@ export const Input = styled.input`
 
 export const Wrapper = styled.div`
   padding: 1rem;
-`;
-
-export const SwitchContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-`;
-
-export const ToggleSwitch = styled.label`
-  position: relative;
-  display: inline-block;
-  width: 42px;
-  height: 24px;
-
-  input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-
-    &:checked + span {
-      background-color: #4caf50;
-    }
-
-    &:checked + span:before {
-      transform: translateX(18px);
-    }
-  }
-`;
-
-export const Slider = styled.span`
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 24px;
-
-  &:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
-  }
 `;

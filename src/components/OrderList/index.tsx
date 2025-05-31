@@ -3,6 +3,7 @@ import { useCriarOrdemServicoMutation, useBuscarOrdemServicoQuery, useAtualizarO
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import styled from 'styled-components';
+import Loader from '../Loader';
 
 export enum StatusOrdemServico {
     ABERTA = 'ABERTA',
@@ -297,7 +298,7 @@ const OrdemServicoForm: React.FC<OrdemServicoFormProps> = ({ isEdit = false }) =
     };
 
     if (isEdit && isLoadingOrder) {
-        return <LoadingSpinner>Carregando...</LoadingSpinner>;
+        return <LoadingSpinner><Loader /></LoadingSpinner>;
     }
 
     return (

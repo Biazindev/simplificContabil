@@ -16,6 +16,7 @@ import { useAddNfeMutation } from '../../services/api'
 import { useDispatch, useSelector } from 'react-redux'
 import { Produto, setCliente, setProdutos } from '../../store/reducers/vendaSlice'
 import { Cliente, EmitirNotaPayload } from '../Venda/types';
+import Loader from '../Loader';
 
 const NfContainer = () => {
     const [selectedType, setSelectedType] = useState<'Nota Fiscal de Serviço' | 'Nota Fiscal' | 'Cupom Fiscal'>('Nota Fiscal de Serviço');
@@ -232,7 +233,7 @@ const NfContainer = () => {
                         </Button>
                     </ContainerButton>
 
-                    {isLoading && <Message>Emitindo nota...</Message>}
+                    {isLoading && <Message>Emitindo nota...<Loader /></Message>}
                     {isSuccess && resposta && <SuccessMessage>Nota emitida com sucesso</SuccessMessage>}
                     {isError && <ErrorMessage>Erro ao emitir nota: {JSON.stringify(error)}</ErrorMessage>}
                 </Form>
@@ -301,7 +302,7 @@ const NfContainer = () => {
                         </Button>
                     </ContainerButton>
 
-                    {isLoading && <Message>Emitindo nota...</Message>}
+                    {isLoading && <Message>Emitindo nota...<Loader /></Message>}
                     {isSuccess && resposta && <SuccessMessage>Nota emitida com sucesso</SuccessMessage>}
                     {isError && <ErrorMessage>Erro ao emitir nota: {JSON.stringify(error)}</ErrorMessage>}
                 </Form>
@@ -369,7 +370,7 @@ const NfContainer = () => {
                         </Button>
                     </ContainerButton>
 
-                    {isLoading && <Message>Emitindo nota...</Message>}
+                    {isLoading && <Message>Emitindo nota...<Loader /></Message>}
                     {isSuccess && resposta && <SuccessMessage>Nota emitida com sucesso</SuccessMessage>}
                     {isError && <ErrorMessage>Erro ao emitir nota: {JSON.stringify(error)}</ErrorMessage>}
                 </Form>

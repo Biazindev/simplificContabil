@@ -21,6 +21,7 @@ import {
   ForgotButton,
   ContainerForm,
 } from './styles';
+import Loader from '../Loader';
 
 const Credentials = () => {
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -124,7 +125,7 @@ const Credentials = () => {
           disabled={isLoggingIn}
           style={{ whiteSpace: 'nowrap' }}
         >
-          {isLoggingIn ? 'Entrando…' : 'Login'}
+          {isLoggingIn ? <Loader /> : 'Login'}
         </ForgotButton>
 
         {mensagem && <p style={{ color: '#fff' }}>{mensagem}</p>}
@@ -146,7 +147,7 @@ const Credentials = () => {
               height: 'auto',
             }}
           >
-            {isSendingReset ? 'Enviando link…' : 'Esqueci a Senha'}
+            {isSendingReset ? <Loader /> : 'Esqueci a Senha'}
           </ForgotButton>
 
           <label style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
